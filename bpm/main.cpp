@@ -7,6 +7,7 @@
 
 #include <imageOperation.h>
 
+
 using namespace cv;
 using namespace std;
 
@@ -26,89 +27,8 @@ void adjustOutput (Mat image) {
 
 }
 
-int readCamNormal () {
-    VideoCapture cam(0);
-    
-    if(!cam.isOpened())
-        return -1;
-    
-    // Execute while ended by user
-    while (true) {
-        
-        // Handle frame rate
-        // int frameRate = 15;
-        
-        // sleep(100);
-        
-        // Grab video frame
-        Mat in;
-        cam >> in;
-        
-        // Resize
-        in = resizeImage(in, 300);
-        
-        // Output
-        Mat out = in;
-        
-        // Adjustemnt of output
-        adjustOutput(out);
-        
-        // Merge original + adjusted
-        Mat window;
-        hconcat(in, out, window);
-        
-        
-        //put the image onto a screen
-        imshow("video:", window);
-        
-        //press anything within the poped-up window to close this program
-        if (waitKey(1) >= 0) break;
-    }
-    
-    return 0;
-}
 
-int readCamAdjust () {
-    VideoCapture cam(0);
-    
-    if(!cam.isOpened())
-        return -1;
-    
-    // Execute while ended by user
-    while (true) {
-        
-        // Handle frame rate
-        // int frameRate = 15;
-        
-        // sleep(100);
-        
-        // Grab video frame
-        Mat in;
-        cam >> in;
-        
-        // Resize
-        in = resizeImage(in, 300);
-        
-        // Output
-        Mat out = in;
-        
-        // Adjustemnt of output
-        adjustOutput(out);
-        
-        // Merge original + adjusted
-        Mat window;
-        hconcat(in, out, window);
-        
-        
-        //put the image onto a screen
-        imshow("video:", window);
-        
-        //press anything within the poped-up window to close this program
-        if (waitKey(1) >= 0) break;
-    }
-    
-    return 0;
-}
+
 
 
 int main (int argc, const char * argv[]) {
@@ -119,7 +39,6 @@ int main (int argc, const char * argv[]) {
     if(!cam.isOpened())
         return -1;
 
-    
     // Execute while ended by user
     while (true) {
         
