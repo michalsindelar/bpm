@@ -80,13 +80,13 @@ int main (int argc, const char * argv[]) {
         }
         
         // Resize
-        in = resizeImage(in, 300);
+        in = resizeImage(in, 700);
         
         // Output
         Mat out = in.clone();
 
         // Adjustemnt of output
-        fakeBeating(out, i, 30);
+        fakeBeating(out, i, FRAME_RATE/10);
         
         // Merge original + adjusted
         hconcat(in, out, window);
