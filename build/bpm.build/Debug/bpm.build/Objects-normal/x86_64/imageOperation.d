@@ -48,4 +48,4 @@ dependencies: /Users/michal/Dev/bpm/imageOperation.cpp \
   /usr/local/include/opencv2/highgui/highgui_c.h \
   /usr/local/include/opencv2/imgcodecs/imgcodecs_c.h \
   /usr/local/include/opencv2/videoio/videoio_c.h \
-  /usr/local/include/opencv2/ml.hpp
+  /usr/local/include/opencv2/ml.hpp /Users/michal/Dev/bpm/skinDetect.h

@@ -11,7 +11,6 @@ using namespace cv;
 using namespace std;
 
 Mat resizeImage (Mat image, const double width);
-Mat detectSkin (Mat image);
 void adjustOutput (Mat image);
 void fakeBeating (Mat image, double index, int maxValue);
 

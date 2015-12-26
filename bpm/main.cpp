@@ -10,6 +10,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <imageOperation.h>
+#include <skinDetect.h>
 
 #define INITIAL_FRAMES 20
 #define BUFFER_FRAMES 20

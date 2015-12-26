@@ -689,4 +689,5 @@ dependencies: /Users/michal/Dev/bpm/bpm/main.cpp \
   /usr/local/include/opencv2/core/affine.hpp \
   /usr/local/include/opencv2/calib3d/calib3d_c.h \
   /usr/local/include/opencv2/ml.hpp \
-  /Users/michal/Dev/bpm/imageOperation.h
+  /Users/michal/Dev/bpm/imageOperation.h \
+  /Users/michal/Dev/bpm/skinDetect.h
