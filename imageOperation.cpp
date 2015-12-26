@@ -33,7 +33,7 @@ void adjustOutput (Mat image) {
 }
 
 void fakeBeating (Mat image, double index, int maxValue) {
-    sleep(1);
+
     double alpha = 1;
 
     double brightness = 30*sin(index);
