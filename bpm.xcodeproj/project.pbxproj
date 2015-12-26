@@ -59,6 +59,9 @@
 		90A0C7411C2D6B070023EC93 /* libopencv_videostab.3.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C70F1C2D6B060023EC93 /* libopencv_videostab.3.0.0.dylib */; };
 		90A0C7421C2D6B070023EC93 /* libopencv_videostab.3.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C7101C2D6B060023EC93 /* libopencv_videostab.3.0.0.dylib */; };
 		90A0C7491C2DB9940023EC93 /* imageOperation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90A0C7481C2DB9940023EC93 /* imageOperation.cpp */; };
+		90A0C91C1C2E06B60023EC93 /* libboost_atomic.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C91A1C2E06B60023EC93 /* libboost_atomic.dylib */; };
+		90A0C91D1C2E06B60023EC93 /* libboost_thread.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C91B1C2E06B60023EC93 /* libboost_thread.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
+		90A0C9241C2E0BB40023EC93 /* libboost_system.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C9221C2E0BB40023EC93 /* libboost_system.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -128,6 +131,9 @@
 		90A0C7101C2D6B060023EC93 /* libopencv_videostab.3.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videostab.3.0.0.dylib; path = "../opencv-3.0.0/build/lib/libopencv_videostab.3.0.0.dylib"; sourceTree = "<group>"; };
 		90A0C7461C2DB8410023EC93 /* imageOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imageOperation.h; sourceTree = "<group>"; };
 		90A0C7481C2DB9940023EC93 /* imageOperation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imageOperation.cpp; sourceTree = "<group>"; };
+		90A0C91A1C2E06B60023EC93 /* libboost_atomic.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_atomic.dylib; path = /usr/local/lib/libboost_atomic.dylib; sourceTree = "<absolute>"; };
+		90A0C91B1C2E06B60023EC93 /* libboost_thread.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_thread.dylib; path = ../../../../usr/local/lib/libboost_thread.dylib; sourceTree = SOURCE_ROOT; };
+		90A0C9221C2E0BB40023EC93 /* libboost_system.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_system.dylib; path = /usr/local/lib/libboost_system.dylib; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +141,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90A0C91D1C2E06B60023EC93 /* libboost_thread.dylib in Frameworks */,
 				90A0C73A1C2D6B070023EC93 /* libopencv_stitching.3.0.0.dylib in Frameworks */,
 				90A0C7211C2D6B060023EC93 /* libopencv_hal.a in Frameworks */,
 				90A0C73E1C2D6B070023EC93 /* libopencv_video.3.0.0.dylib in Frameworks */,
@@ -169,10 +176,12 @@
 				90A0C7331C2D6B060023EC93 /* libopencv_objdetect.3.0.0.dylib in Frameworks */,
 				90A0C7141C2D6B060023EC93 /* libopencv_flann.3.0.0.dylib in Frameworks */,
 				90A0C73C1C2D6B070023EC93 /* libopencv_superres.3.0.0.dylib in Frameworks */,
+				90A0C9241C2E0BB40023EC93 /* libboost_system.dylib in Frameworks */,
 				90A0C71F1C2D6B060023EC93 /* libopencv_videoio.3.0.0.dylib in Frameworks */,
 				90A0C7321C2D6B060023EC93 /* libopencv_ml.3.0.0.dylib in Frameworks */,
 				90A0C7241C2D6B060023EC93 /* libopencv_calib3d.3.0.0.dylib in Frameworks */,
 				90A0C7291C2D6B060023EC93 /* libopencv_flann.3.0.0.dylib in Frameworks */,
+				90A0C91C1C2E06B60023EC93 /* libboost_atomic.dylib in Frameworks */,
 				90A0C7121C2D6B060023EC93 /* libopencv_core.3.0.0.dylib in Frameworks */,
 				90A0C7391C2D6B070023EC93 /* libopencv_stitching.3.0.0.dylib in Frameworks */,
 				90A0C7281C2D6B060023EC93 /* libopencv_features2d.3.0.0.dylib in Frameworks */,
@@ -194,6 +203,7 @@
 		90A0C6CC1C2D679D0023EC93 = {
 			isa = PBXGroup;
 			children = (
+				90A0C7571C2E065C0023EC93 /* boostLib */,
 				90A0C7471C2DB97A0023EC93 /* lib */,
 				90A0C7451C2DB8140023EC93 /* headers */,
 				90A0C7431C2D6C530023EC93 /* opencvLib */,
@@ -289,6 +299,16 @@
 				90A0C7481C2DB9940023EC93 /* imageOperation.cpp */,
 			);
 			name = lib;
+			sourceTree = "<group>";
+		};
+		90A0C7571C2E065C0023EC93 /* boostLib */ = {
+			isa = PBXGroup;
+			children = (
+				90A0C9221C2E0BB40023EC93 /* libboost_system.dylib */,
+				90A0C91A1C2E06B60023EC93 /* libboost_atomic.dylib */,
+				90A0C91B1C2E06B60023EC93 /* libboost_thread.dylib */,
+			);
+			name = boostLib;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -393,10 +413,15 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = "/Users/michal/Dev/opencv-3.0.0/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/michal/Dev/opencv-3.0.0/build/lib",
+					/Users/michal/Dev/boost_1_60_0/libs,
+					/usr/local/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -433,9 +458,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = "/Users/michal/Dev/opencv-3.0.0/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/michal/Dev/opencv-3.0.0/build/lib",
+					/Users/michal/Dev/boost_1_60_0/libs,
+					/usr/local/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "";
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -446,7 +476,18 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				FRAMEWORK_SEARCH_PATHS = /usr/local/lib;
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = "/Users/michal/Dev/opencv-3.0.0/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/michal/Dev/opencv-3.0.0/build/lib",
+					/Users/michal/Dev/boost_1_60_0/libs,
+					/usr/local/Cellar/postgresql/9.4.1/lib,
+					/usr/local/Cellar/freetype/2.5.5/lib,
+					/usr/local/Cellar/graphicsmagick/1.3.21/lib,
+					/usr/local/Cellar/jpeg/8d/lib,
+					/usr/local/Cellar/libtool/2.4.6/lib,
+					/usr/local/Cellar/libpng/1.6.16/lib,
+					/usr/local/lib,
+				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -457,7 +498,18 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				FRAMEWORK_SEARCH_PATHS = /usr/local/lib;
 				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = "/Users/michal/Dev/opencv-3.0.0/build/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"/Users/michal/Dev/opencv-3.0.0/build/lib",
+					/Users/michal/Dev/boost_1_60_0/libs,
+					/usr/local/Cellar/postgresql/9.4.1/lib,
+					/usr/local/Cellar/freetype/2.5.5/lib,
+					/usr/local/Cellar/graphicsmagick/1.3.21/lib,
+					/usr/local/Cellar/jpeg/8d/lib,
+					/usr/local/Cellar/libtool/2.4.6/lib,
+					/usr/local/Cellar/libpng/1.6.16/lib,
+					/usr/local/lib,
+				);
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -481,6 +533,7 @@
 				90A0C6DE1C2D679D0023EC93 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
