@@ -103,6 +103,6 @@ int main (int argc, const char * argv[]) {
         // handle frame rate
         usleep((double) MICROSECONDS / FRAME_RATE);
 
-        i += .1;
+        i += .2;
     }
 }

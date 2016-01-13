@@ -58,7 +58,7 @@ void detectSkin (Mat mask) {
     
     /* creating HSV mask of image */
     Mat hsvMask;
-    createHsvMask(source, hsvMask, INCANDESCENT);
+    createHsvMask(source, hsvMask, DAYLIGHT);
     //dilate(hsvMask, hsvMask, Mat(5, 5, CV_16U));
     
     /* labeling of components */
@@ -73,7 +73,8 @@ void detectSkin (Mat mask) {
     vector<vector<Point>> chosenContours;
     for (int i = 0; i < contours.size(); i++) {
         double a = contourArea(contours[i], false);
-        if (a >= 5000) {
+        
+        if (a >= 500) {
             drawContours(mask, contours, i, Scalar(255, 255, 255), FILLED, 8, hierarchy);
             chosenContours.push_back(contours[i]);
         }
