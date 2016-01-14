@@ -11,5 +11,6 @@ using namespace cv;
 using namespace std;
 
 void detectSkin (Mat image);
+void detectFace (Mat image);
 
 #endif
