@@ -1,16 +1,11 @@
 #include <iostream>
-#include <ctime>
-#include <unistd.h>
 #include <boost/thread.hpp>
-
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
-#include <imageOperation.h>
-#include <skinDetect.h>
+#include "../imageOperation.h"
 
 #define INITIAL_FRAMES 20
 #define BUFFER_FRAMES 20
@@ -43,7 +38,8 @@ int main (int argc, const char * argv[]) {
     
     Mat imagesBuffer[BUFFER_FRAMES];
 
-    
+
+    // Class for initial compute
     InitialWorker worker;
 
     bool initialWorkerFlag = false;

@@ -1,10 +1,7 @@
-#include <imageOperation.h>
-#include <skinDetect.h>
-
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
+#include "imageOperation.h"
 
 Mat resizeImage (Mat image, const double width) {
     // Resize in
@@ -52,9 +49,7 @@ void fakeBeating (Mat image, double index, int maxValue) {
     }
     
     // Blur mask
-    //    GaussianBlur(mask, newMask, Size(10,10), 0, 0);
-    
-    
+    // GaussianBlur(mask, newMask, Size(10,10), 0, 0);
     
     for( int y = 0; y < image.rows; y++ ){
         for( int x = 0; x < image.cols; x++ ) {
