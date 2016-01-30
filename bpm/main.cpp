@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/types_c.h>
 
 #include "../imageOperation.h"
 
@@ -51,20 +52,15 @@ int main (int argc, const char * argv[]) {
 
     
     // Execute while ended by user
-    for (int frames = 0; true; frames++) {
-        
-        // Handle frame rate
-        // int frameRate = 15;
+    for (int frame = 0; true; frame++) {
         
         // Grab video frame
         Mat in;
         cam >> in;
-        
-        // Push to buffer according to refresh rate
-        imagesBuffer[frames % BUFFER_FRAMES] = in;
-        
+
+        // TODO: Connect
         // Initial compute in own thread
-        if (frames == INITIAL_FRAMES) {
+        if (frame == INITIAL_FRAMES) {
             boost::function<void()> th_func = boost::bind(&InitialWorker::Compute, &worker);
             boost::thread th(th_func);
         }
@@ -75,10 +71,14 @@ int main (int argc, const char * argv[]) {
             currBpm = worker.bpm;
             cout << "FINISHED";
         }
-        
-        // Resize
+
+        // Resize captured frame
         in = resizeImage(in, 700);
-        
+
+        // Push to buffer according captured resized frame
+        imagesBuffer[frame % BUFFER_FRAMES] = in;
+        if (frame % BUFFER_FRAMES == 0) {}
+
         // Output
         Mat out = in.clone();
 
@@ -90,7 +90,6 @@ int main (int argc, const char * argv[]) {
 
         //put the image onto a screen
         imshow("video:", window);
-        
         
         //press anything within the poped-up window to close this program
         if (waitKey(1) >= 0) break;
