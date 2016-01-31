@@ -69,25 +69,31 @@ void bandpass(Mat video[], Mat filtered[], int lowLimit, int highLimit, int vide
 
         // Convert to desired type
 
+        int height = video[i].rows;
+        int width = video[i].cols;
 
         // Multi channel img
         for (int j = 0; j < 1; j++) {
             // Fourier
-            channels[j].convertTo(channels[j], CV_32FC1, 1/255.0);
+            // channels[j].convertTo(channels[j], CV_32FC1, 1/255.0);
 
             imshow("converted", channels[j]);
-            dft(channels[j], channels[j], CV_DXT_INVERSE);
 
-            // Apply mask and remove freq. cut off
-            // channels[j] = channels[j].mul(mask);
+            Mat planes[] = {Mat_<float>(channels[j]), Mat::zeros(channels[j].size(), CV_32F)};
+            Mat complexI;
+            merge(planes, 2, complexI);
+            dft(complexI, complexI);  // Applying DFT
 
-            normalize(channels[j], channels[j], 0, 1, CV_MINMAX);
-            // Inverse fourier
-            idft(channels[j], channels[j]);
+            // Here will be masking (!)
 
-            channels[j].convertTo(channels[j], CV_8U, 255.0);
 
-            imshow("Filtered", channels[j]);
+
+            // Reconstructing original imae from the DFT coefficients
+            Mat invDFT, invDFTcvt;
+            idft(complexI, invDFT, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
+            invDFT.convertTo(invDFTcvt, CV_8U);
+            imshow("Output", invDFTcvt);
+
         }
 
         // Merge rgb back

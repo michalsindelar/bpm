@@ -6,6 +6,7 @@
 #define BPM_AMPLIFY_H
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/mat.hpp>
 
 using namespace cv;
 using namespace std;
