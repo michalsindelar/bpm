@@ -37,7 +37,7 @@ public:
         int ret = 100;
 
         // do stuff
-        amplifySpatial(videoBuffer, filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 3);
+        amplifySpatial(videoBuffer, filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 6);
 
         bpm = ret;
 
@@ -51,19 +51,6 @@ public:
     
     Mat *filtered;
     Mat *videoBuffer;
-};
-
-class FilteredVideo {
-    public:
-        void play() {
-            if (this->video) {
-                for (int i = 0; i < BUFFER_FRAMES; i++) {
-                    imshow("filtered", video[i]);
-                    if (i == BUFFER_FRAMES - 1) i = 0;
-                }
-            }
-        }
-        Mat * video;
 };
 
 
@@ -135,7 +122,7 @@ int main (int argc, const char * argv[]) {
 
         // At least first filtered vid computed
         if (bpmWorker.initialFlag) {
-            imshow("FILTERED", filtered[frame % BUFFER_FRAMES]);
+            imshow("FILTERED", resizeImage(filtered[frame % BUFFER_FRAMES], 1200));
         }
 
         // Output

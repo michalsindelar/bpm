@@ -13,7 +13,8 @@ using namespace std;
 
 void amplifySpatial(Mat video[], Mat out[], double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level);
 void buildGDownStack(Mat video[], Mat stack[], int framesCount, int level);
-Mat blurDn(Mat frame, int level);
+Mat blurDn(Mat frame, int level, Mat kernel);
 void bandpass(Mat video[], Mat filtered[], int lowLimit, int highLimit, int videoRate, int framesCount);
+Mat binom5Kernel();
 
 #endif //BPM_AMPLIFY_H
