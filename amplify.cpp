@@ -32,6 +32,7 @@ void buildGDownStack(Mat video[], Mat stack[], int framesCount, int level) {
     for (int i = 0; i < framesCount; i++) {
         // TODO: Should be in ntsc
         stack[i] = blurDn(video[i], level);
+        //imshow("stack", stack[i]);
     }
 }
 
@@ -77,23 +78,18 @@ void bandpass(Mat video[], Mat filtered[], int lowLimit, int highLimit, int vide
             // Fourier
             // channels[j].convertTo(channels[j], CV_32FC1, 1/255.0);
 
-            imshow("converted", channels[j]);
-
             Mat planes[] = {Mat_<float>(channels[j]), Mat::zeros(channels[j].size(), CV_32F)};
             Mat complexI;
             merge(planes, 2, complexI);
             dft(complexI, complexI);  // Applying DFT
 
             // Here will be masking (!)
-
-
+            video[j] = filtered[j];
 
             // Reconstructing original imae from the DFT coefficients
             Mat invDFT, invDFTcvt;
             idft(complexI, invDFT, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
             invDFT.convertTo(invDFTcvt, CV_8U);
-            imshow("Output", invDFTcvt);
-
         }
 
         // Merge rgb back

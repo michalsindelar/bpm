@@ -37,19 +37,35 @@ public:
         int ret = 100;
 
         // do stuff
-        amplifySpatial(videoBuffer, filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 1);
+        amplifySpatial(videoBuffer, filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 3);
 
         bpm = ret;
 
         flag = true;
+        initialFlag = true;
         cout << "Computed bpm in class";
     }
     int bpm;
     bool flag;
+    bool initialFlag;
     
     Mat *filtered;
     Mat *videoBuffer;
 };
+
+class FilteredVideo {
+    public:
+        void play() {
+            if (this->video) {
+                for (int i = 0; i < BUFFER_FRAMES; i++) {
+                    imshow("filtered", video[i]);
+                    if (i == BUFFER_FRAMES - 1) i = 0;
+                }
+            }
+        }
+        Mat * video;
+};
+
 
 int main (int argc, const char * argv[]) {
     VideoCapture cam(0);
@@ -82,12 +98,8 @@ int main (int argc, const char * argv[]) {
         
         // Grab video frame
         Mat in;
-        cam >> in;
-        // type: CV_8U
+        cam >> in; // type: CV_8U
 
-
-
-        // TODO: Connect
         // Initial compute in own thread
         if (frame == INITIAL_FRAMES) {
             boost::function<void()> th_func = boost::bind(&InitialWorker::Compute, &worker);
@@ -102,8 +114,6 @@ int main (int argc, const char * argv[]) {
 
         // Resize captured frame
         in = resizeImage(in, 700);
-
-
 
         // Push to buffer according captured resized frame
         videoBuffer[frame % BUFFER_FRAMES] = in;
@@ -123,6 +133,10 @@ int main (int argc, const char * argv[]) {
             currBpm = bpmWorker.bpm;
         }
 
+        // At least first filtered vid computed
+        if (bpmWorker.initialFlag) {
+            imshow("FILTERED", filtered[frame % BUFFER_FRAMES]);
+        }
 
         // Output
         Mat out = in.clone();
