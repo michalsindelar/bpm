@@ -30,17 +30,14 @@ void buildGDownStack(Mat video[], Mat stack[], int framesCount, int level) {
     int channels = 3;
 
     Mat kernel = binom5Kernel();
-
     for (int i = 0; i < framesCount; i++) {
         // TODO: Should be in ntsc
         // Split into channels
         vector<Mat> channels;
         split(video[i], channels);
-
         channels[0] = blurDn(channels[0], level, kernel);
         channels[1] = blurDn(channels[1], level, kernel);
         channels[2] = blurDn(channels[2], level, kernel);
-
         merge(channels, stack[i]);
     }
 }
@@ -56,12 +53,12 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     if (level == 1) return frame;
     if (level > 1) frame = blurDn(frame, level-1, kernel);
 
-    // pyrDown(frame, frame, Size((frame.cols+1)/2, (frame.rows+1)/2), BORDER_REFLECT);
-
     // resize 1/2
     resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
+
     // blur via binomial filter
     filter2D(frame, frame, -1, kernel);
+
     return frame;
 }
 
@@ -168,5 +165,6 @@ Mat binom5Kernel() {
     kernel.at<float>(4,4) = 4.0f;
     kernel.at<float>(5,4) = 1.0f;
 
+    normalize(kernel, kernel);
     return kernel;
 }
