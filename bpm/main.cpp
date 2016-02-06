@@ -10,25 +10,12 @@
 #include "../amplify.h"
 
 #define INITIAL_FRAMES 20
-#define BUFFER_FRAMES 50
+#define BUFFER_FRAMES 20
 #define FRAME_RATE 15
 #define MICROSECONDS 1000000
 
 using namespace cv;
 using namespace std;
-
-class InitialWorker {
-public:
-    void Compute(){
-        cout << "Computing in class";
-        // do stuff
-        sleep(5);
-        flag = true;
-        cout << "Computed in class";
-    }
-    bool flag = false;
-};
-
 
 class AmplificationWorker {
 public:
@@ -37,20 +24,22 @@ public:
         int ret = 100;
 
         // do stuff
-        amplifySpatial(videoBuffer, filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 6);
-
+        amplifySpatial(this->videoBuffer, this->filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 6);
         bpm = ret;
-
         flag = true;
         initialFlag = true;
         cout << "Computed bpm in class";
-    }
+    };
+    AmplificationWorker() {
+        this->initialFlag = false;
+        this->flag = false;
+    };
     int bpm;
     bool flag;
     bool initialFlag;
-    
-    Mat *filtered;
-    Mat *videoBuffer;
+
+    vector<Mat> videoBuffer;
+    vector<Mat> filtered;
 };
 
 
@@ -59,12 +48,6 @@ int main (int argc, const char * argv[]) {
     
     if(!cam.isOpened())
         return -1;
-    
-    Mat videoBuffer[BUFFER_FRAMES];
-
-
-    // Class for initial compute
-    InitialWorker worker;
 
     // Class for bpm computing
     AmplificationWorker bpmWorker;
@@ -74,42 +57,35 @@ int main (int argc, const char * argv[]) {
     int currBpm;
     double i = 0;
 
-    // Computed from amplify
-    Mat filtered[BUFFER_FRAMES];
+    // VideoBuffer
+    vector<Mat> videoBuffer;
+    vector<Mat> filtered;
 
     // OS window
     Mat window;
 
     // Execute while ended by user
     for (int frame = 0; true; frame++) {
-        
         // Grab video frame
         Mat in;
         cam >> in; // type: CV_8U
-
-        // Initial compute in own thread
-        if (frame == INITIAL_FRAMES) {
-            boost::function<void()> th_func = boost::bind(&InitialWorker::Compute, &worker);
-            boost::thread th(th_func);
-        }
-
-        // Check if initial compute is done
-        if (worker.flag && !initialWorkerFlag) {
-            initialWorkerFlag = true;
-            cout << "FINISHED";
-        }
-
         // Resize captured frame
         in = resizeImage(in, 700);
 
+        // Output
+        Mat out = in.clone();
+
         // Push to buffer according captured resized frame
-        videoBuffer[frame % BUFFER_FRAMES] = in;
+        videoBuffer.push_back(out);
 
         // Start computing when buffer filled
-        if (frame % BUFFER_FRAMES == 0 && frame != 0) {
-            bpmWorker.videoBuffer = videoBuffer;
-            bpmWorker.filtered = filtered;
+        // TODO: REMOVE DEV ONLY
+        if ((frame + 1) == BUFFER_FRAMES && frame != 0) {
 
+            for (int j = 0; j < BUFFER_FRAMES; j++) {
+                bpmWorker.videoBuffer.push_back(videoBuffer[j].clone());
+            }
+            videoBuffer.clear();
             boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::Compute, &bpmWorker);
             boost::thread th(th_bpm);
         }
@@ -122,19 +98,19 @@ int main (int argc, const char * argv[]) {
 
         // At least first filtered vid computed
         if (bpmWorker.initialFlag) {
-            imshow("FILTERED", resizeImage(filtered[frame % BUFFER_FRAMES], 1200));
+            imshow("FILTERED", bpmWorker.videoBuffer[0]);
         }
 
-        // Output
-        Mat out = in.clone();
+
 
         // Adjustemnt of output
-        fakeBeating(out, i, FRAME_RATE/10);
+        //        fakeBeating(out, i, FRAME_RATE/10);
 
         // Merge original + adjusted
         hconcat(in, out, window);
 
         //put the image onto a screen
+
         imshow("video:", window);
 
         //press anything within the poped-up window to close this program
@@ -142,7 +118,7 @@ int main (int argc, const char * argv[]) {
 
 
         // handle frame rate
-        usleep((double) MICROSECONDS / FRAME_RATE);
+//        usleep((double) MICROSECONDS / FRAME_RATE);
 
         i += .2;
     }
