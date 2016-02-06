@@ -6,30 +6,30 @@
 
 void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
 
-    vector<Mat> stack;
     // Create gdown stack
-    buildGDownStack(video, stack, framesCount, level);
+    buildGDownStack(video, out, framesCount, level);
     // Filtering
-    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
+//    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
+
 }
 
 // Based on https://github.com/diego898/matlab-utils/blob/master/toolbox/EVM_Matlab/build_GDown_stack.m
 // TODO: Check wheter rgb separate channels needed
 void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level) {
-    Mat kernel = binom5Kernel();
+//    Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
         // TODO: Should be in ntsc
         // Split into channels
-        vector<Mat> channels;
-        Mat tmp;
+//        vector<Mat> channels;
+//        Mat tmp;
 
-        split(video[i], channels);
-        channels[0] = blurDn(channels[0], level, kernel);
-        channels[1] = blurDn(channels[1], level, kernel);
-        channels[2] = blurDn(channels[2], level, kernel);
+//        split(video[i], channels);
+//        channels[0] = blurDn(channels[0], level, kernel);
+//        channels[1] = blurDn(channels[1], level, kernel);
+//        channels[2] = blurDn(channels[2], level, kernel);
 
-        merge(channels, tmp);
-        stack.push_back(tmp);
+//        merge(channels, tmp);
+        stack.push_back(video[i]);
     }
 }
 
@@ -104,9 +104,15 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
         merge(channels, tmp);
         filtered.push_back(tmp);
 
+        tmp.release();
+        while (channels.size()) {
+            channels.pop_back();
+        }
+
         // Amplification
         //filtered[i].mul(filtered[i], 50);
     }
+    mask.release();
 }
 /**
 * BINOMIAL 5 - kernel
