@@ -139,10 +139,6 @@ int main (int argc, const char * argv[]) {
         //press anything within the poped-up window to close this program
         if (waitKey(10) >= 0) break;
 
-
-        // handle frame rate
-        // usleep((double) MICROSECONDS / FRAME_RATE);
-
         i += .2;
     }
 }
