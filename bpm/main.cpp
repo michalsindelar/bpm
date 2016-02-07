@@ -111,7 +111,7 @@ int main (int argc, const char * argv[]) {
 
         // Start computing when buffer filled
         // TODO: REMOVE DEV ONLY
-        if ((frame + 1) % BUFFER_FRAMES == 0 && frame != 1) {
+        if ((frame + 1) == BUFFER_FRAMES  && frame != 1) {
             boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::Compute, &bpmWorker, videoBuffer);
             boost::thread th(th_bpm);
         }
@@ -135,7 +135,7 @@ int main (int argc, const char * argv[]) {
         out.release();
 
         //press anything within the poped-up window to close this program
-        if (waitKey(10) >= 0) break;
+        if (waitKey(1) >= 0) break;
 
         i += .2;
     }
