@@ -24,9 +24,18 @@ void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, in
         Mat tmp;
 
         split(video[i], channels);
+
+        channels[0].convertTo(channels[0], CV_32F);
+        channels[1].convertTo(channels[1], CV_32F);
+        channels[2].convertTo(channels[2], CV_32F);
+
         channels[0] = blurDn(channels[0], level, kernel);
         channels[1] = blurDn(channels[1], level, kernel);
         channels[2] = blurDn(channels[2], level, kernel);
+
+        channels[0].convertTo(channels[0], CV_8U);
+        channels[1].convertTo(channels[1], CV_8U);
+        channels[2].convertTo(channels[2], CV_8U);
 
         merge(channels, tmp);
         stack.push_back(tmp.clone());
