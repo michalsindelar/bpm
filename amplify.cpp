@@ -4,41 +4,32 @@
 
 #include "amplify.h"
 
-void amplifySpatial(Mat video[], Mat out[], double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
-    int height = video[0].size().height;
-    int width = video[0].size().width;
-
-    int channels = 3;
-
-    // TODO: Vector<Mat> Mat http://answers.opencv.org/question/6054/what-is-the-difference-between-vecmat-and-mat/
-    Mat *stack = new Mat[framesCount];
+void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
 
     // Create gdown stack
-    buildGDownStack(video, stack, framesCount, level);
-
+    buildGDownStack(video, out, framesCount, level);
     // Filtering
-    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
+//    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
 
-    delete[] stack;
 }
 
 // Based on https://github.com/diego898/matlab-utils/blob/master/toolbox/EVM_Matlab/build_GDown_stack.m
 // TODO: Check wheter rgb separate channels needed
-void buildGDownStack(Mat video[], Mat stack[], int framesCount, int level) {
-    int height = video[0].size().height;
-    int width = video[0].size().width;
-    int channels = 3;
-
-    Mat kernel = binom5Kernel();
+void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level) {
+//    Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
         // TODO: Should be in ntsc
         // Split into channels
-        vector<Mat> channels;
-        split(video[i], channels);
-        channels[0] = blurDn(channels[0], level, kernel);
-        channels[1] = blurDn(channels[1], level, kernel);
-        channels[2] = blurDn(channels[2], level, kernel);
-        merge(channels, stack[i]);
+//        vector<Mat> channels;
+//        Mat tmp;
+
+//        split(video[i], channels);
+//        channels[0] = blurDn(channels[0], level, kernel);
+//        channels[1] = blurDn(channels[1], level, kernel);
+//        channels[2] = blurDn(channels[2], level, kernel);
+
+//        merge(channels, tmp);
+        stack.push_back(video[i]);
     }
 }
 
@@ -62,7 +53,7 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     return frame;
 }
 
-void bandpass(Mat video[], Mat filtered[], int lowLimit, int highLimit, int videoRate, int framesCount) {
+void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount) {
     // TODO: Describe
     int height =  video[0].size().height;
     int width =  video[0].size().width;
@@ -101,7 +92,6 @@ void bandpass(Mat video[], Mat filtered[], int lowLimit, int highLimit, int vide
             dft(complexI, complexI);  // Applying DFT
 
             // Here will be masking (!)
-            video[j] = filtered[j];
 
             // Reconstructing original imae from the DFT coefficients
             Mat invDFT, invDFTcvt;
@@ -110,13 +100,19 @@ void bandpass(Mat video[], Mat filtered[], int lowLimit, int highLimit, int vide
         }
 
         // Merge rgb back
-        merge(channels, filtered[i]);
+        Mat tmp;
+        merge(channels, tmp);
+        filtered.push_back(tmp);
 
-        video[i] = filtered[i];
+        tmp.release();
+        while (channels.size()) {
+            channels.pop_back();
+        }
 
         // Amplification
-        filtered[i].mul(filtered[i], 50);
+        //filtered[i].mul(filtered[i], 50);
     }
+    mask.release();
 }
 /**
 * BINOMIAL 5 - kernel

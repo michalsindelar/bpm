@@ -4,67 +4,62 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/types_c.h>
 
 #include "../imageOperation.h"
 #include "../amplify.h"
 
 #define INITIAL_FRAMES 20
-#define BUFFER_FRAMES 50
+#define BUFFER_FRAMES 40
 #define FRAME_RATE 15
+#define CAMERA_INIT 5
 #define MICROSECONDS 1000000
 
 using namespace cv;
 using namespace std;
 
-class InitialWorker {
-public:
-    void Compute(){
-        cout << "Computing in class";
-        // do stuff
-        sleep(5);
-        flag = true;
-        cout << "Computed in class";
-    }
-    bool flag = false;
-};
-
-
 class AmplificationWorker {
 public:
-    void Compute(){
+    void Compute(deque<Mat> videoBuffer){
+        // At first fill class buffer with copies!
+        this->setVideoBuffer(videoBuffer);
+
         cout << "Computing bpm";
         int ret = 100;
 
         // do stuff
-        amplifySpatial(videoBuffer, filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 6);
+        amplifySpatial(this->videoBuffer, this->filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 3);
+        this->videoBuffer.clear();
 
         bpm = ret;
-
         flag = true;
         initialFlag = true;
         cout << "Computed bpm in class";
-    }
+    };
+
+    void setVideoBuffer(deque<Mat> videoBuffer) {
+        for (Mat img : videoBuffer) {
+            this->videoBuffer.push_back(img.clone());
+        }
+    };
+
+    AmplificationWorker() {
+        this->initialFlag = false;
+        this->flag = false;
+    };
     int bpm;
     bool flag;
     bool initialFlag;
-    
-    Mat *filtered;
-    Mat *videoBuffer;
+
+    vector<Mat> videoBuffer;
+    vector<Mat> filtered;
 };
 
 
 int main (int argc, const char * argv[]) {
     VideoCapture cam(0);
-    
+
     if(!cam.isOpened())
         return -1;
-    
-    Mat videoBuffer[BUFFER_FRAMES];
-
-
-    // Class for initial compute
-    InitialWorker worker;
 
     // Class for bpm computing
     AmplificationWorker bpmWorker;
@@ -74,62 +69,60 @@ int main (int argc, const char * argv[]) {
     int currBpm;
     double i = 0;
 
-    // Computed from amplify
-    Mat filtered[BUFFER_FRAMES];
+    // VideoBuffer
+    deque<Mat> videoBuffer;
+    vector<Mat> filtered;
 
     // OS window
     Mat window;
 
     // Execute while ended by user
     for (int frame = 0; true; frame++) {
-        
         // Grab video frame
         Mat in;
         cam >> in; // type: CV_8U
-
-        // Initial compute in own thread
-        if (frame == INITIAL_FRAMES) {
-            boost::function<void()> th_func = boost::bind(&InitialWorker::Compute, &worker);
-            boost::thread th(th_func);
-        }
-
-        // Check if initial compute is done
-        if (worker.flag && !initialWorkerFlag) {
-            initialWorkerFlag = true;
-            cout << "FINISHED";
-        }
-
         // Resize captured frame
         in = resizeImage(in, 700);
-
-        // Push to buffer according captured resized frame
-        videoBuffer[frame % BUFFER_FRAMES] = in;
-
-        // Start computing when buffer filled
-        if (frame % BUFFER_FRAMES == 0 && frame != 0) {
-            bpmWorker.videoBuffer = videoBuffer;
-            bpmWorker.filtered = filtered;
-
-            boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::Compute, &bpmWorker);
-            boost::thread th(th_bpm);
-        }
-
-        // Update bpm once bpmWorker ready
-        if (bpmWorker.flag) {
-            bpmWorker.flag = false;
-            currBpm = bpmWorker.bpm;
-        }
-
-        // At least first filtered vid computed
-        if (bpmWorker.initialFlag) {
-            imshow("FILTERED", resizeImage(filtered[frame % BUFFER_FRAMES], 1200));
-        }
 
         // Output
         Mat out = in.clone();
 
+        // Keep maximum BUFFER_FRAMES size
+        if (videoBuffer.size() == BUFFER_FRAMES) {
+            videoBuffer.pop_front();
+        }
+
+        videoBuffer.push_back(in.clone());
+
+        // Update bpm once bpmWorker ready
+        // Clear current filtered array
+        // Copy to loop filtered vid
+        // Clear bpmWorker filtered array
+        if (bpmWorker.flag) {
+            filtered.clear();
+
+            for (Mat img : bpmWorker.filtered) {
+                filtered.push_back(img.clone());
+            }
+
+            bpmWorker.filtered.clear();
+            bpmWorker.flag = false;
+        }
+
+        // Start computing when buffer filled
+        // TODO: REMOVE DEV ONLY
+        if ((frame + 1) % BUFFER_FRAMES == 0 && frame != 1) {
+            boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::Compute, &bpmWorker, videoBuffer);
+            boost::thread th(th_bpm);
+        }
+
+        // Show filtered video after initialization compute
+        if (bpmWorker.initialFlag) {
+            imshow("FILTERED", filtered.at(frame % BUFFER_FRAMES));
+        }
+
         // Adjustemnt of output
-        fakeBeating(out, i, FRAME_RATE/10);
+        // fakeBeating(out, i, FRAME_RATE/10);
 
         // Merge original + adjusted
         hconcat(in, out, window);
@@ -137,12 +130,12 @@ int main (int argc, const char * argv[]) {
         //put the image onto a screen
         imshow("video:", window);
 
+        // Free
+        in.release();
+        out.release();
+
         //press anything within the poped-up window to close this program
-        if (waitKey(1) >= 0) break;
-
-
-        // handle frame rate
-        usleep((double) MICROSECONDS / FRAME_RATE);
+        if (waitKey(10) >= 0) break;
 
         i += .2;
     }
