@@ -10,13 +10,37 @@ Mat resizeImage (Mat image, const double width) {
     // Keep aspect ratio
     double aspect = (double) origSize.width / origSize.height;
     
-    // Compute heigh
+    // Compute height
     double height = width / aspect;
     
     // Resize
     resize(image, image, Size(width, height), 0, 0, INTER_LINEAR);
     
     return image;
+}
+
+bool compareColorAndBwMatrix(Mat color, Mat bw) {
+
+
+    int rows = bw.rows;
+    int cols = bw.cols;
+
+    if (rows != color.rows || cols != color.cols) return false;
+
+    vector<Mat> channels;
+    split(color, channels);
+
+    for (int x = 0; x < cols; x++) {
+        for (int y = 0; y < rows; y++) {
+            if (channels[0].at<int>(x,y) != bw.at<int>(x,y)) return false;
+            if (channels[1].at<int>(x,y) != bw.at<int>(x,y)) return false;
+            if (channels[2].at<int>(x,y) != bw.at<int>(x,y)) return false;
+        }
+    }
+
+    channels.clear();
+
+    return true;
 }
 
 

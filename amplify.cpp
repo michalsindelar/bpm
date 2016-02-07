@@ -3,6 +3,7 @@
 //
 
 #include "amplify.h"
+#include "imageOperation.h"
 
 void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
 
@@ -18,30 +19,18 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowL
 void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level) {
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
-        // TODO: Should be in ntsc
-        // Split into channels
-        vector<Mat> channels;
-        Mat tmp;
-
-        split(video[i], channels);
-
-        channels[0].convertTo(channels[0], CV_32F);
-        channels[1].convertTo(channels[1], CV_32F);
-        channels[2].convertTo(channels[2], CV_32F);
-
-        channels[0] = blurDn(channels[0], level, kernel);
-        channels[1] = blurDn(channels[1], level, kernel);
-        channels[2] = blurDn(channels[2], level, kernel);
-
-        channels[0].convertTo(channels[0], CV_8U);
-        channels[1].convertTo(channels[1], CV_8U);
-        channels[2].convertTo(channels[2], CV_8U);
-
-        merge(channels, tmp);
+        // Result image push to stack
+        Mat tmp = blurDn(video[i], level, kernel);
         stack.push_back(tmp.clone());
 
+        Mat bw;
+        cvtColor( tmp, bw, CV_8U );
+        imwrite( "/Users/michal/Desktop/tmp/img_"+to_string(i)+".jpg", bw );
+        cvtColor( video[i], bw, CV_8U );
+        imwrite( "/Users/michal/Desktop/tmp/img_"+to_string(i)+"_orig.jpg", bw );
+        bw.release();
+
         tmp.release();
-        channels.clear();
     }
     kernel.release();
 }
@@ -61,7 +50,8 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
 
     // blur via binomial filter
-    filter2D(frame, frame, -1, kernel);
+    filter2D(frame, frame, -1, kernel, Point(-1,-1), 0, BORDER_REFLECT);
+    //    GaussianBlur(frame,frame, Size(5,5), 0, 0);
 
     return frame;
 }
@@ -139,42 +129,40 @@ Mat binom5Kernel() {
     Mat kernel(5, 5, CV_32F);
 
     // 1st row
-    kernel.at<float>(0,0) = 1.0f;
-    kernel.at<float>(1,0) = 4.0f;
-    kernel.at<float>(2,0) = 6.0f;
-    kernel.at<float>(3,0) = 4.0f;
-    kernel.at<float>(4,0) = 1.0f;
+    kernel.at<float>(0,0) = 1.0f / 256.0f;
+    kernel.at<float>(1,0) = 4.0f / 256.0f;
+    kernel.at<float>(2,0) = 6.0f / 256.0f;
+    kernel.at<float>(3,0) = 4.0f / 256.0f;
+    kernel.at<float>(4,0) = 1.0f / 256.0f;
 
     // 2nd row
-    kernel.at<float>(0,1) = 4.0f;
-    kernel.at<float>(1,1) = 16.0f;
-    kernel.at<float>(2,1) = 24.0f;
-    kernel.at<float>(3,1) = 16.0f;
-    kernel.at<float>(4,1) = 4.0f;
+    kernel.at<float>(0,1) = 4.0f / 256.0f;
+    kernel.at<float>(1,1) = 16.0f / 256.0f;
+    kernel.at<float>(2,1) = 24.0f / 256.0f;
+    kernel.at<float>(3,1) = 16.0f / 256.0f;
+    kernel.at<float>(4,1) = 4.0f / 256.0f;
 
     // 3rd row
-    kernel.at<float>(0,2) = 6.0f;
-    kernel.at<float>(1,2) = 24.0f;
-    kernel.at<float>(2,2) = 36.0f;
-    kernel.at<float>(3,2) = 24.0f;
-    kernel.at<float>(4,2) = 6.0f;
+    kernel.at<float>(0,2) = 6.0f / 256.0f;
+    kernel.at<float>(1,2) = 24.0f / 256.0f;
+    kernel.at<float>(2,2) = 36.0f / 256.0f;
+    kernel.at<float>(3,2) = 24.0f / 256.0f;
+    kernel.at<float>(4,2) = 6.0f / 256.0f;
 
 
     // 4th row
-    kernel.at<float>(0,1) = 4.0f;
-    kernel.at<float>(1,1) = 16.0f;
-    kernel.at<float>(2,1) = 24.0f;
-    kernel.at<float>(3,1) = 16.0f;
-    kernel.at<float>(4,1) = 4.0f;
+    kernel.at<float>(0,3) = 4.0f / 256.0f;
+    kernel.at<float>(1,3) = 16.0f / 256.0f;
+    kernel.at<float>(2,3) = 24.0f / 256.0f;
+    kernel.at<float>(3,3) = 16.0f / 256.0f;
+    kernel.at<float>(4,3) = 4.0f / 256.0f;
 
     // 5th row
-    kernel.at<float>(0,4) = 1.0f;
-    kernel.at<float>(1,4) = 4.0f;
-    kernel.at<float>(2,4) = 6.0f;
-    kernel.at<float>(3,4) = 4.0f;
-    kernel.at<float>(4,4) = 1.0f;
-
-    normalize(kernel, kernel);
+    kernel.at<float>(0,4) = 1.0f / 256.0f;
+    kernel.at<float>(1,4) = 4.0f / 256.0f;
+    kernel.at<float>(2,4) = 6.0f / 256.0f;
+    kernel.at<float>(3,4) = 4.0f / 256.0f;
+    kernel.at<float>(4,4) = 1.0f / 256.0f;
 
     return kernel;
 }
