@@ -4,7 +4,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/types_c.h>
 
 #include "../imageOperation.h"
 #include "../amplify.h"
@@ -20,16 +19,15 @@ using namespace std;
 
 class AmplificationWorker {
 public:
-    void Compute(vector<Mat> videoBuffer){
+    void Compute(deque<Mat> videoBuffer){
         // At first fill class buffer with copies!
-        this->setVideoBUffer(videoBuffer);
+        this->setVideoBuffer(videoBuffer);
 
         cout << "Computing bpm";
         int ret = 100;
 
         // do stuff
         amplifySpatial(this->videoBuffer, this->filtered, 50, 50/60, 180/60, FRAME_RATE, BUFFER_FRAMES, 3);
-
         this->videoBuffer.clear();
 
         bpm = ret;
@@ -38,9 +36,9 @@ public:
         cout << "Computed bpm in class";
     };
 
-    void setVideoBUffer(vector<Mat> videoBuffer) {
-        for (int j = 0; j < BUFFER_FRAMES; j++) {
-            this->videoBuffer.push_back(videoBuffer[j].clone());
+    void setVideoBuffer(deque<Mat> videoBuffer) {
+        for (Mat img : videoBuffer) {
+            this->videoBuffer.push_back(img.clone());
         }
     };
 
@@ -72,7 +70,7 @@ int main (int argc, const char * argv[]) {
     double i = 0;
 
     // VideoBuffer
-    vector<Mat> videoBuffer;
+    deque<Mat> videoBuffer;
     vector<Mat> filtered;
 
     // OS window
@@ -91,7 +89,7 @@ int main (int argc, const char * argv[]) {
 
         // Keep maximum BUFFER_FRAMES size
         if (videoBuffer.size() == BUFFER_FRAMES) {
-            videoBuffer.pop_back();
+            videoBuffer.pop_front();
         }
 
         videoBuffer.push_back(in.clone());
@@ -103,8 +101,8 @@ int main (int argc, const char * argv[]) {
         if (bpmWorker.flag) {
             filtered.clear();
 
-            for (int j = 0; j < BUFFER_FRAMES; j++) {
-                filtered.push_back(bpmWorker.filtered[j].clone());
+            for (Mat img : bpmWorker.filtered) {
+                filtered.push_back(img.clone());
             }
 
             bpmWorker.filtered.clear();
@@ -120,7 +118,7 @@ int main (int argc, const char * argv[]) {
 
         // Show filtered video after initialization compute
         if (bpmWorker.initialFlag) {
-            imshow("FILTERED", filtered[frame % BUFFER_FRAMES]);
+            imshow("FILTERED", filtered.at(frame % BUFFER_FRAMES));
         }
 
         // Adjustemnt of output
