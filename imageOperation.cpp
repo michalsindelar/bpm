@@ -85,7 +85,5 @@ void fakeBeating (Mat image, double index, int maxValue) {
             }
         }
     }
-
-    
 }
 
