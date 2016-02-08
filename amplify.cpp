@@ -7,11 +7,17 @@
 
 void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
 
-    // Create gdown stack
-    buildGDownStack(video, out, framesCount, level);
-    // Filtering
-//    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
+    // Allocate stack
+    vector<Mat> stack;
 
+    // Create gdown stack
+    buildGDownStack(video, stack, framesCount, level);
+
+    // Filtering
+    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
+
+    // Clear data
+    stack.clear();
 }
 
 // Based on https://github.com/diego898/matlab-utils/blob/master/toolbox/EVM_Matlab/build_GDown_stack.m
@@ -41,6 +47,9 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     // resize 1/2
     resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
 
+    // FLoat at first
+    cvtColor(frame, frame, CV_32F);
+
     // Convert to hsv (similar as ntsc)
     cvtColor(frame, frame, CV_BGR2HSV);
 
@@ -55,10 +64,14 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     int height =  video[0].size().height;
     int width =  video[0].size().width;
 
+    // TODO:
+    float fps = 30.0f;
+
     // Prepare freq.
     int freq[height];
     int tmp[height];
     Mat mask;
+    float videoSize = (float) video.size();
 
     for (int i = 0; i < height; i++) {
         freq[i] = (i*height)/videoRate;
@@ -66,6 +79,16 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     }
 
     //repeat((const _InputArray &) tmp, 1, width * framesCount, mask);
+
+    // Create mask
+    MatExpr kernel = Mat::zeros(height, width, CV_32F);
+
+    // Create row 0.25 - 0.5 ----- 30.0
+    Mat col(1, height, CV_32F);
+    for (int i = 1; i < width; i++) {
+        float value = (i-1)/videoSize*fps;
+        col.at<float>(0,i-1) = value;
+    }
 
     for (int i = 0; i < framesCount; i++) {
         // Split into channels
@@ -76,6 +99,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
         int height = video[i].rows;
         int width = video[i].cols;
+
+
 
         // Multi channel img
         for (int j = 0; j < 1; j++) {
@@ -89,6 +114,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
             dft(complexI, complexI);  // Applying DFT
 
             // Here will be masking (!)
+
 
             // Reconstructing original imae from the DFT coefficients
             Mat invDFT, invDFTcvt;
