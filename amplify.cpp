@@ -56,6 +56,9 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     // blur via binomial filter
     filter2D(frame, frame, -1, kernel);
 
+    // Convert back
+    cvtColor(frame, frame, CV_HSV2BGR);
+    cvtColor(frame, frame, CV_8U);
     return frame;
 }
 
@@ -65,7 +68,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     int width =  video[0].size().width;
 
     // TODO: Connect with main class
-    int fps = 30.0f;
+    int fps = 30.0;
     int fl = 60/50; // Low freq cut-off
     int fh = 160/60; // High freg cut-off
 
@@ -79,10 +82,11 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     createTimeChangeStack(video, timeStack);
 
 
-    for (int i = 0; i < framesCount; i++) {
+
+    for (int i = 0; i < timeStack.size(); i++) {
         // Split into channels
         vector<Mat> channels;
-        split(video[i],channels);
+        split(timeStack[i],channels);
 
         // Convert to desired type
         // Multi channel img
@@ -109,9 +113,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
         Mat tmp;
         merge(channels, tmp);
 
-        // Convert back
-        cvtColor(tmp, tmp, CV_HSV2BGR);
-        cvtColor(tmp, tmp, CV_8U);
+        // TODO: Inverse to create TimeChange stack!! -> mask over face
+
         filtered.push_back(tmp);
 
         tmp.release();
@@ -124,6 +127,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
         //filtered[i].mul(filtered[i], 50);
     }
     kernel.release();
+    timeStack.clear();
 }
 
 // Assume video is single channel
@@ -144,7 +148,28 @@ void createTimeChangeStack(vector<Mat>& video, vector<Mat>& dst) {
         for (int j = 0; j < dstVectorWidth; j++) {
             for(int k = 0; k < dstVectorHeight; k++) {
                 // because y,x indexation -> k, i
-                frame.at<float>() = video[j].at<float>(k, i);
+                frame.at<float>(k,j) = video[j].at<float>(k, i);
+            }
+        }
+        dst.push_back(frame);
+        frame.release();
+    }
+}
+
+void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst) {
+
+    int dstCount = stack[0].size().width;
+    int dstWidth = (int) stack.size();
+    int dstHeight = stack[0].size().height;
+
+    for (int i = 0; i < dstCount; i++) {
+        // One frame
+        Mat frame(dstHeight, dstWidth, CV_32F);
+
+        for (int j = 0; j < dstWidth; j++) {
+            for(int k = 0; k < dstHeight; k++) {
+                // because y,x indexation -> k, i
+                //frame.at<float>() = dst[j].at<float>(k, i);
             }
         }
         dst.push_back(frame);
@@ -152,9 +177,6 @@ void createTimeChangeStack(vector<Mat>& video, vector<Mat>& dst) {
     }
 
 }
-
-
-
 
 
 
