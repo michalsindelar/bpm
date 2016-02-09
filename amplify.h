@@ -17,5 +17,7 @@ void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, in
 Mat blurDn(Mat frame, int level, Mat kernel);
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount);
 Mat binom5Kernel();
+void createTimeChangeStack(vector<Mat>& video, vector<Mat>& dst);
+Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh);
 
 #endif //BPM_AMPLIFY_H

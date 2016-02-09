@@ -64,31 +64,20 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     int height =  video[0].size().height;
     int width =  video[0].size().width;
 
-    // TODO:
-    float fps = 30.0f;
+    // TODO: Connect with main class
+    int fps = 30.0f;
+    int fl = 60/50; // Low freq cut-off
+    int fh = 160/60; // High freg cut-off
 
     // Prepare freq.
-    int freq[height];
-    int tmp[height];
-    Mat mask;
-    float videoSize = (float) video.size();
-
-    for (int i = 0; i < height; i++) {
-        freq[i] = (i*height)/videoRate;
-        tmp[i] = (freq[i] > lowLimit && freq[i] < highLimit) ? 1 : 0;
-    }
-
-    //repeat((const _InputArray &) tmp, 1, width * framesCount, mask);
 
     // Create mask
-    MatExpr kernel = Mat::zeros(height, width, CV_32F);
+    Mat kernel = maskKernel(width, height, video.size(), fps, fl, fh);
 
-    // Create row 0.25 - 0.5 ----- 30.0
-    Mat col(1, height, CV_32F);
-    for (int i = 1; i < width; i++) {
-        float value = (i-1)/videoSize*fps;
-        col.at<float>(0,i-1) = value;
-    }
+    // Create time stack change
+    vector<Mat> timeStack;
+    createTimeChangeStack(video, timeStack);
+
 
     for (int i = 0; i < framesCount; i++) {
         // Split into channels
@@ -96,13 +85,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
         split(video[i],channels);
 
         // Convert to desired type
-
-        int height = video[i].rows;
-        int width = video[i].cols;
-
-
-
         // Multi channel img
+        // TODO: 3 channels
         for (int j = 0; j < 1; j++) {
 
             // Should be each channel separate
@@ -115,7 +99,6 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
             // Here will be masking (!)
 
-
             // Reconstructing original imae from the DFT coefficients
             Mat invDFT, invDFTcvt;
             idft(complexI, invDFT, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
@@ -125,18 +108,76 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
         // Merge rgb back
         Mat tmp;
         merge(channels, tmp);
+
+        // Convert back
+        cvtColor(tmp, tmp, CV_HSV2BGR);
+        cvtColor(tmp, tmp, CV_8U);
         filtered.push_back(tmp);
 
         tmp.release();
         while (channels.size()) {
             channels.pop_back();
         }
+        channels.clear();
 
         // Amplification
         //filtered[i].mul(filtered[i], 50);
     }
-    mask.release();
+    kernel.release();
 }
+
+// Assume video is single channel
+void createTimeChangeStack(vector<Mat>& video, vector<Mat>& dst) {
+
+    // DST vector
+    // video[0].size().width - vectors count
+    // width: video.size()
+    // height video[0].size().height
+
+    int dstVectorCount = video[0].size().width;
+    int dstVectorWidth = (int) video.size();
+    int dstVectorHeight = video[0].size().height;
+
+    for (int i = 0; i < dstVectorCount; i++) {
+        // One frame
+        Mat frame(dstVectorHeight, dstVectorWidth, CV_32F);
+        for (int j = 0; j < dstVectorWidth; j++) {
+            for(int k = 0; k < dstVectorHeight; k++) {
+                // because y,x indexation -> k, i
+                frame.at<float>() = video[j].at<float>(k, i);
+            }
+        }
+        dst.push_back(frame);
+        frame.release();
+    }
+
+}
+
+
+
+
+
+
+Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
+    Mat kernel;
+
+    // Create row 0.25 - 0.5 ----- 30.0
+    Mat col(height, 1, CV_32F);
+    for (int i = 1; i < height; i++) {
+        float value = (i-1)/( (float) videoSize)* (float) fps;
+
+        // We want to mask freq out of [fl, fh]
+        if (value < fl || value > fh) {
+            value = 0;
+        }
+        col.at<float>(i-1, 0) = value;
+    }
+    repeat(col, 1, width, kernel);
+
+    return kernel;
+}
+
+
 /**
 * BINOMIAL 5 - kernel
 * 1 4 6 4 1
