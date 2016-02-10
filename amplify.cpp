@@ -83,22 +83,50 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     Mat kernel = maskKernel(width, height, video.size(), fps, fl, fh);
 
 
-    // Create time stack change
-    vector <vector<Mat> > timeStack(3);
 
-    // Must be in color channels
-    createTimeChangeStack(video, timeStack, RED_CHANNEL);
-    createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
-    createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
+    for (int i = 0; i < video.size(); i++) {
+        // Split into channels
+        vector<Mat> channels(3);
+        split(video[i],channels);
 
+        // Convert to desired type
+        // Multi channel img
+        for (int j = 0; j < 3; j++) {
 
-    for (int i = 0; i < timeStack[0].size(); i++) {
-        filtered.push_back(timeStack[0][i]);
+            // Should be each channel separate
+            // Planes only for dft purposes
+            Mat planes[] = {Mat_<float>(channels[j]), Mat::zeros(channels[j].size(), CV_32F)};
+
+            Mat complexI;
+            merge(planes, 2, complexI);
+            dft(complexI, complexI);  // Applying DFT
+
+            // Here will be masking (!)
+
+            // Reconstructing original imae from the DFT coefficients
+            Mat invDFT, invDFTcvt;
+            idft(complexI, invDFT, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
+            invDFT.convertTo(invDFTcvt, CV_8U);
+        }
+
+        // Merge rgb back
+        Mat tmp;
+        merge(channels, tmp);
+
+        // TODO: Inverse to create TimeChange stack!! -> mask over face
+
+        filtered.push_back(tmp);
+
+        tmp.release();
+        while (channels.size()) {
+            channels.pop_back();
+        }
+        channels.clear();
+
         // Amplification
         //filtered[i].mul(filtered[i], 50);
     }
     kernel.release();
-    timeStack.clear();
 }
 
 // Assume video is single channel
