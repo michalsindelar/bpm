@@ -5,6 +5,11 @@
 #include "amplify.h"
 #include "imageOperation.h"
 
+
+#define BLUE_CHANNEL 0
+#define GREEN_CHANNEL 1
+#define RED_CHANNEL 2
+
 void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
 
     // Allocate stack
@@ -68,7 +73,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     int width =  video[0].size().width;
 
     // TODO: Connect with main class
-    int fps = 30.0;
+    int fps = 30;
     int fl = 60/50; // Low freq cut-off
     int fh = 160/60; // High freg cut-off
 
@@ -77,52 +82,18 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     // Create mask
     Mat kernel = maskKernel(width, height, video.size(), fps, fl, fh);
 
+
     // Create time stack change
-    vector<Mat> timeStack;
-    createTimeChangeStack(video, timeStack);
+    vector <vector<Mat> > timeStack(3);
+
+    // Must be in color channels
+    createTimeChangeStack(video, timeStack, RED_CHANNEL);
+    createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
+    createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
 
-
-    for (int i = 0; i < timeStack.size(); i++) {
-        // Split into channels
-        vector<Mat> channels;
-        split(timeStack[i],channels);
-
-        // Convert to desired type
-        // Multi channel img
-        // TODO: 3 channels
-        for (int j = 0; j < 1; j++) {
-
-            // Should be each channel separate
-            // Planes only for dft purposes
-            Mat planes[] = {Mat_<float>(channels[j]), Mat::zeros(channels[j].size(), CV_32F)};
-
-            Mat complexI;
-            merge(planes, 2, complexI);
-            dft(complexI, complexI);  // Applying DFT
-
-            // Here will be masking (!)
-
-            // Reconstructing original imae from the DFT coefficients
-            Mat invDFT, invDFTcvt;
-            idft(complexI, invDFT, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
-            invDFT.convertTo(invDFTcvt, CV_8U);
-        }
-
-        // Merge rgb back
-        Mat tmp;
-        merge(channels, tmp);
-
-        // TODO: Inverse to create TimeChange stack!! -> mask over face
-
-        filtered.push_back(tmp);
-
-        tmp.release();
-        while (channels.size()) {
-            channels.pop_back();
-        }
-        channels.clear();
-
+    for (int i = 0; i < timeStack[0].size(); i++) {
+        filtered.push_back(timeStack[0][i]);
         // Amplification
         //filtered[i].mul(filtered[i], 50);
     }
@@ -131,13 +102,12 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 }
 
 // Assume video is single channel
-void createTimeChangeStack(vector<Mat>& video, vector<Mat>& dst) {
+void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel) {
 
     // DST vector
     // video[0].size().width - vectors count
     // width: video.size()
     // height video[0].size().height
-
     int dstVectorCount = video[0].size().width;
     int dstVectorWidth = (int) video.size();
     int dstVectorHeight = video[0].size().height;
@@ -147,11 +117,17 @@ void createTimeChangeStack(vector<Mat>& video, vector<Mat>& dst) {
         Mat frame(dstVectorHeight, dstVectorWidth, CV_32F);
         for (int j = 0; j < dstVectorWidth; j++) {
             for(int k = 0; k < dstVectorHeight; k++) {
+
+                // Split into channel and take the desired one
+                // TODO: Optimalization split video outside loop into channels
+                vector<Mat> channels;
+                split(video[j],channels);
+
                 // because y,x indexation -> k, i
-                frame.at<float>(k,j) = video[j].at<float>(k, i);
+                frame.at<float>(k,j) = channels[channel].at<float>(k, i);
             }
         }
-        dst.push_back(frame);
+        dst[channel].push_back(frame);
         frame.release();
     }
 }
@@ -187,7 +163,6 @@ Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
     Mat col(height, 1, CV_32F);
     for (int i = 1; i < height; i++) {
         float value = (i-1)/( (float) videoSize)* (float) fps;
-
         // We want to mask freq out of [fl, fh]
         if (value < fl || value > fh) {
             value = 0;
