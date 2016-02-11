@@ -20,6 +20,10 @@ Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
 void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst, int channel);
 Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh);
+
+// FT functions
 void shift(Mat magI);
+Mat computeDFT(Mat image);
+Mat updateResult(Mat complex);
 
 #endif //BPM_AMPLIFY_H

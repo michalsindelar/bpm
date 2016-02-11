@@ -98,75 +98,36 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     // TODO: Connect with main class
     int fps = 30;
     int fl = 60/50; // Low freq cut-off
-    int fh = 160/60; // High freg cut-off
+    int fh = 60/60; // High freg cut-off
+
+    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
 
     // Prepare freq.
-
     // Create mask
-    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
-    Mat kernel = maskKernel(width, height, video.size(), fps, fl, fh);
-    shift(kernel);
-    Mat kernelPlanes[] = {
-        Mat::zeros(video[0].size(), CV_32F),
-        Mat::zeros(video[0].size(), CV_32F)
-    };
-    Mat kernelSpec;
-    kernelPlanes[0] = kernel; // real
-    kernelPlanes[1] = kernel; // imaginar
-    merge(kernelPlanes, 2, kernelSpec);
-
+    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
     float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
     for (int i = 0; i < video.size(); i++) {
-        // Split into channels
-        vector<Mat> channels;
+        vector<Mat> channels(3);
+        vector<Mat> complex;
         split(video[i],channels);
 
-        // Convert to desired type
-        // Multi channel img
-        for (int j = 0; j < 3; j++) {
-
-            // Should be each channel separate
-            // Planes only for dft purposes
-            Mat planes[] = {Mat_<float>(channels[j]), Mat::zeros(channels[j].size(), CV_32F)};
-
-            Mat complexI;
-            merge(planes, 2, complexI);
-            dft(complexI, complexI, DFT_COMPLEX_OUTPUT);  // Applying DFT
-
-            // Masking
-//            mulSpectrums(complexI, kernelSpec, complexI, DFT_ROWS);
-
-            // Reconstructing original imae from the DFT coefficients
-            Mat work;
-            idft(complexI, work);
-            Mat planesInverse[] = {Mat::zeros(complexI.size(), CV_32F), Mat::zeros(complexI.size(), CV_32F)};
-            split(work, planesInverse);                // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
-
-            magnitude(planesInverse[0], planesInverse[1], work);    // === sqrt(Re(DFT(I))^2 + Im(DFT(I))^2)
-
-            // Amplification
-            work = work*amplCoeffs[j];
-
-            // Normalize
-            normalize(work, work, 0, 1, NORM_MINMAX);
-            work.convertTo(channels[j], CV_8U);
-
+        for (int channel = 0; channel < 4; channel++) {
+            Mat tmp = computeDFT(channels[channel]);
+//            NOTWORKING
+//            mulSpectrums(tmp, kernelSpec, tmp, DFT_ROWS);
+            tmp = tmp*0;
+            channels[channel] = updateResult(tmp);
         }
 
-        // Merge rgb back
         Mat tmp;
         merge(channels, tmp);
-        tmp.convertTo(tmp, CV_8U);
         filtered.push_back(tmp);
-
         tmp.release();
-        channels.clear();
-
-        // Amplification
-        //filtered[i].mul(filtered[i], 50);
     }
-    kernel.release();
+
+
+    kernelSpec.release();
 }
 
 // Assume video is single channel
@@ -222,6 +183,7 @@ void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst) {
 
 }
 
+
 Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
     Mat kernel;
 
@@ -237,7 +199,46 @@ Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
     }
     repeat(col, 1, width, kernel);
 
-    return kernel;
+//    shift(kernel);
+    Mat kernelPlanes[] = {
+            Mat::zeros(height, width, CV_32F),
+            Mat::zeros(height, width, CV_32F)
+    };
+    Mat kernelSpec;
+    kernelPlanes[0] = kernel; // real
+    kernelPlanes[1] = kernel; // imaginar
+    merge(kernelPlanes, 2, kernelSpec);
+
+    return kernelSpec;
+}
+
+
+Mat computeDFT(Mat image) {
+    Mat padded;
+    int m = getOptimalDFTSize(image.rows);
+    int n = getOptimalDFTSize(image.cols);
+    // create output image of optimal size
+    copyMakeBorder(image, padded, 0, m - image.rows, 0, n - image.cols, BORDER_CONSTANT, Scalar::all(0));
+    // copy the source image, on the border add zero values
+    Mat planes[] = { Mat_< float> (padded), Mat::zeros(padded.size(), CV_32F) };
+    // create a complex matrix
+    Mat complex;
+    merge(planes, 2, complex);
+    dft(complex, complex, DFT_COMPLEX_OUTPUT);  // fourier transform
+    return complex;
+}
+
+Mat updateResult(Mat complex) {
+    Mat work;
+    idft(complex, work);
+    //  dft(complex, work, DFT_INVERSE + DFT_SCALE);
+    Mat planes[] = {Mat::zeros(complex.size(), CV_32F), Mat::zeros(complex.size(), CV_32F)};
+    split(work, planes);                // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
+
+    magnitude(planes[0], planes[1], work);    // === sqrt(Re(DFT(I))^2 + Im(DFT(I))^2)
+    normalize(work, work, 0, 1, NORM_MINMAX);
+
+    return work;
 }
 
 /**
