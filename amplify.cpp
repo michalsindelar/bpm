@@ -132,19 +132,26 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
             Mat complexI;
             merge(planes, 2, complexI);
-            dft(complexI, complexI);  // Applying DFT
+            dft(complexI, complexI, DFT_COMPLEX_OUTPUT);  // Applying DFT
 
             // Masking
-            mulSpectrums(complexI, kernelSpec, complexI, DFT_ROWS);
-
-            // Amplification
-            //complexI = complexI*amplCoeffs[j];
-
+//            mulSpectrums(complexI, kernelSpec, complexI, DFT_ROWS);
 
             // Reconstructing original imae from the DFT coefficients
-            Mat tmp;
-            idft(complexI, tmp, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
-            tmp.convertTo(channels[j], CV_8U);
+            Mat work;
+            idft(complexI, work);
+            Mat planesInverse[] = {Mat::zeros(complexI.size(), CV_32F), Mat::zeros(complexI.size(), CV_32F)};
+            split(work, planesInverse);                // planes[0] = Re(DFT(I)), planes[1] = Im(DFT(I))
+
+            magnitude(planesInverse[0], planesInverse[1], work);    // === sqrt(Re(DFT(I))^2 + Im(DFT(I))^2)
+
+            // Amplification
+            work = work*amplCoeffs[j];
+
+            // Normalize
+            normalize(work, work, 0, 1, NORM_MINMAX);
+            work.convertTo(channels[j], CV_8U);
+
         }
 
         // Merge rgb back
