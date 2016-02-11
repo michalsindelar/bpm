@@ -20,7 +20,7 @@ void AmplificationWorker::compute(deque<Mat> videoBuffer){
     int fps = 30;
 
     // Amplify
-    amplifySpatial(this->videoBuffer, this->visualization, 50, 50/60, 180/60, 30, int(videoBuffer.size()), 5);
+    amplifySpatial(this->videoBuffer, this->visualization, 50, 50/60, 180/60, 30, int(videoBuffer.size()), 4);
     this->videoBuffer.clear();
 
     bpm = ret;

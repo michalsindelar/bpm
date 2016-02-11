@@ -20,5 +20,6 @@ Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
 void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst, int channel);
 Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh);
+void shift(Mat magI);
 
 #endif //BPM_AMPLIFY_H

@@ -63,8 +63,31 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
 
     // Convert back
     cvtColor(frame, frame, CV_HSV2BGR);
-    cvtColor(frame, frame, CV_8U);
+    cvtColor(frame, frame, CV_32F);
+
     return frame;
+}
+
+void shift(Mat magI) {
+
+    // crop if it has an odd number of rows or columns
+    magI = magI(Rect(0, 0, magI.cols & -2, magI.rows & -2));
+
+    int cx = magI.cols/2;
+    int cy = magI.rows/2;
+
+    Mat q0(magI, Rect(0, 0, cx, cy));   // Top-Left - Create a ROI per quadrant
+    Mat q1(magI, Rect(cx, 0, cx, cy));  // Top-Right
+    Mat q2(magI, Rect(0, cy, cx, cy));  // Bottom-Left
+    Mat q3(magI, Rect(cx, cy, cx, cy)); // Bottom-Right
+
+    Mat tmp;                            // swap quadrants (Top-Left with Bottom-Right)
+    q0.copyTo(tmp);
+    q3.copyTo(q0);
+    tmp.copyTo(q3);
+    q1.copyTo(tmp);                     // swap quadrant (Top-Right with Bottom-Left)
+    q2.copyTo(q1);
+    tmp.copyTo(q2);
 }
 
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount) {
@@ -80,13 +103,23 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     // Prepare freq.
 
     // Create mask
+    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
     Mat kernel = maskKernel(width, height, video.size(), fps, fl, fh);
+    shift(kernel);
+    Mat kernelPlanes[] = {
+        Mat::zeros(video[0].size(), CV_32F),
+        Mat::zeros(video[0].size(), CV_32F)
+    };
+    Mat kernelSpec;
+    kernelPlanes[0] = kernel; // real
+    kernelPlanes[1] = kernel; // imaginar
+    merge(kernelPlanes, 2, kernelSpec);
 
-
+    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
     for (int i = 0; i < video.size(); i++) {
         // Split into channels
-        vector<Mat> channels(3);
+        vector<Mat> channels;
         split(video[i],channels);
 
         // Convert to desired type
@@ -101,26 +134,26 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
             merge(planes, 2, complexI);
             dft(complexI, complexI);  // Applying DFT
 
-            // Here will be masking (!)
+            // Masking
+            mulSpectrums(complexI, kernelSpec, complexI, DFT_ROWS);
+
+            // Amplification
+            //complexI = complexI*amplCoeffs[j];
+
 
             // Reconstructing original imae from the DFT coefficients
-            Mat invDFT, invDFTcvt;
-            idft(complexI, invDFT, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
-            invDFT.convertTo(invDFTcvt, CV_8U);
+            Mat tmp;
+            idft(complexI, tmp, DFT_SCALE | DFT_REAL_OUTPUT ); // Applying IDFT
+            tmp.convertTo(channels[j], CV_8U);
         }
 
         // Merge rgb back
         Mat tmp;
         merge(channels, tmp);
-
-        // TODO: Inverse to create TimeChange stack!! -> mask over face
-
+        tmp.convertTo(tmp, CV_8U);
         filtered.push_back(tmp);
 
         tmp.release();
-        while (channels.size()) {
-            channels.pop_back();
-        }
         channels.clear();
 
         // Amplification
@@ -182,8 +215,6 @@ void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst) {
 
 }
 
-
-
 Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
     Mat kernel;
 
@@ -201,7 +232,6 @@ Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
 
     return kernel;
 }
-
 
 /**
 * BINOMIAL 5 - kernel
