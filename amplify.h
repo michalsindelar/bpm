@@ -18,8 +18,8 @@ Mat blurDn(Mat frame, int level, Mat kernel);
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount);
 Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
-void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst, int channel);
-Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh);
+void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
+vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh);
 
 // FT functions
 void shift(Mat magI);

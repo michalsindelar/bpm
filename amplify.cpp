@@ -56,14 +56,14 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     cvtColor(frame, frame, CV_32F);
 
     // Convert to hsv (similar as ntsc)
-    cvtColor(frame, frame, CV_BGR2HSV);
+//    cvtColor(frame, frame, CV_BGR2HSV);
 
     // blur via binomial filter
     filter2D(frame, frame, -1, kernel);
 
     // Convert back
-    cvtColor(frame, frame, CV_HSV2BGR);
-    cvtColor(frame, frame, CV_32F);
+//    cvtColor(frame, frame, CV_HSV2BGR);
+    cvtColor(frame, frame, CV_8U);
 
     return frame;
 }
@@ -97,37 +97,29 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
     // TODO: Connect with main class
     int fps = 30;
-    int fl = 60/50; // Low freq cut-off
-    int fh = 60/60; // High freg cut-off
+    int fl = 60/60; // Low freq cut-off
+    int fh = 200/60; // High freg cut-off
 
     // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
 
     // Prepare freq.
     // Create mask
-    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
-    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
-
-    for (int i = 0; i < video.size(); i++) {
-        vector<Mat> channels(3);
-        vector<Mat> complex;
-        split(video[i],channels);
-
-        for (int channel = 0; channel < 4; channel++) {
-            Mat tmp = computeDFT(channels[channel]);
-//            NOTWORKING
-//            mulSpectrums(tmp, kernelSpec, tmp, DFT_ROWS);
-            tmp = tmp*0;
-            channels[channel] = updateResult(tmp);
-        }
-
-        Mat tmp;
-        merge(channels, tmp);
-        filtered.push_back(tmp);
-        tmp.release();
-    }
+    vector <float> maskingCoeffs = coeffsRow(getOptimalDFTSize(video[0].cols), video.size(), fps, fl, fh);
 
 
-    kernelSpec.release();
+    // Create time stack change
+    vector <vector<Mat> > timeStack(3);
+
+    // Must be in color channels
+    createTimeChangeStack(video, timeStack, RED_CHANNEL);
+    createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
+    createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
+
+    vector <Mat> vidBack;
+    inverseCreateTimeChangeStack(timeStack, filtered);
+
+    // functional time stack and back
+
 }
 
 // Assume video is single channel
@@ -152,8 +144,7 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
                 vector<Mat> channels;
                 split(video[j],channels);
 
-                // because y,x indexation -> k, i
-                frame.at<float>(k,j) = channels[channel].at<float>(k, i);
+                frame.at<float>(k,j) = channels[channel].at<float>(k,i);
             }
         }
         dst[channel].push_back(frame);
@@ -161,55 +152,53 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
     }
 }
 
-void inverseCreateTimeChangeStack(vector<Mat>& stack, vector<Mat>& dst) {
+void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst) {
 
-    int dstCount = stack[0].size().width;
-    int dstWidth = (int) stack.size();
-    int dstHeight = stack[0].size().height;
+    int dstCount = stack[0][0].size().width;
+    int dstWidth = (int) stack[0].size();
+    int dstHeight = stack[0][0].size().height;
 
     for (int i = 0; i < dstCount; i++) {
-        // One frame
-        Mat frame(dstHeight, dstWidth, CV_32F);
+
+        Mat frameB(dstHeight, dstWidth, CV_8U);
+        Mat frameG(dstHeight, dstWidth, CV_8U);
+        Mat frameR(dstHeight, dstWidth, CV_8U);
+        vector<Mat> colorArray;
+        Mat colorFrame;
 
         for (int j = 0; j < dstWidth; j++) {
             for(int k = 0; k < dstHeight; k++) {
-                // because y,x indexation -> k, i
-                //frame.at<float>() = dst[j].at<float>(k, i);
+                frameB.at<float>(k, j)  = stack[BLUE_CHANNEL][j].at<float>(k,i);
+                frameG.at<float>(k, j)  = stack[GREEN_CHANNEL][j].at<float>(k,i);
+                frameR.at<float>(k, j)  = stack[RED_CHANNEL][j].at<float>(k,i);
             }
         }
-        dst.push_back(frame);
-        frame.release();
-    }
+        colorArray.push_back(frameB);
+        colorArray.push_back(frameG);
+        colorArray.push_back(frameR);
 
+        // Merge here
+        merge(colorArray, colorFrame);
+        dst.push_back(colorFrame);
+
+        colorArray.clear();
+
+    }
 }
 
 
-Mat maskKernel(int width, int height, int videoSize, int fps, int fl, int fh) {
-    Mat kernel;
-
+vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh) {
     // Create row 0.25 - 0.5 ----- 30.0
-    Mat col(height, 1, CV_32F);
-    for (int i = 1; i < height; i++) {
+    vector<float> row;
+    for (int i = 1; i < width; i++) {
         float value = (i-1)/( (float) videoSize)* (float) fps;
         // We want to mask freq out of [fl, fh]
         if (value < fl || value > fh) {
             value = 0;
         }
-        col.at<float>(i-1, 0) = value;
+        row.push_back(value);
     }
-    repeat(col, 1, width, kernel);
-
-//    shift(kernel);
-    Mat kernelPlanes[] = {
-            Mat::zeros(height, width, CV_32F),
-            Mat::zeros(height, width, CV_32F)
-    };
-    Mat kernelSpec;
-    kernelPlanes[0] = kernel; // real
-    kernelPlanes[1] = kernel; // imaginar
-    merge(kernelPlanes, 2, kernelSpec);
-
-    return kernelSpec;
+    return row;
 }
 
 
