@@ -62,6 +62,7 @@
 		90A0C91C1C2E06B60023EC93 /* libboost_atomic.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C91A1C2E06B60023EC93 /* libboost_atomic.dylib */; };
 		90A0C91D1C2E06B60023EC93 /* libboost_thread.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C91B1C2E06B60023EC93 /* libboost_thread.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		90A0C9241C2E0BB40023EC93 /* libboost_system.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 90A0C9221C2E0BB40023EC93 /* libboost_system.dylib */; };
+		90DBFA441C2F531000E2A306 /* skinDetect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90DBFA431C2F531000E2A306 /* skinDetect.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -134,6 +135,8 @@
 		90A0C91A1C2E06B60023EC93 /* libboost_atomic.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_atomic.dylib; path = /usr/local/lib/libboost_atomic.dylib; sourceTree = "<absolute>"; };
 		90A0C91B1C2E06B60023EC93 /* libboost_thread.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_thread.dylib; path = ../../../../usr/local/lib/libboost_thread.dylib; sourceTree = SOURCE_ROOT; };
 		90A0C9221C2E0BB40023EC93 /* libboost_system.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_system.dylib; path = /usr/local/lib/libboost_system.dylib; sourceTree = "<absolute>"; };
+		90DBFA421C2F52DE00E2A306 /* skinDetect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = skinDetect.h; sourceTree = "<group>"; };
+		90DBFA431C2F531000E2A306 /* skinDetect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = skinDetect.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -297,6 +300,8 @@
 			children = (
 				90A0C7461C2DB8410023EC93 /* imageOperation.h */,
 				90A0C7481C2DB9940023EC93 /* imageOperation.cpp */,
+				90DBFA421C2F52DE00E2A306 /* skinDetect.h */,
+				90DBFA431C2F531000E2A306 /* skinDetect.cpp */,
 			);
 			name = lib;
 			sourceTree = "<group>";
@@ -367,6 +372,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90DBFA441C2F531000E2A306 /* skinDetect.cpp in Sources */,
 				90A0C6D91C2D679D0023EC93 /* main.cpp in Sources */,
 				90A0C7491C2DB9940023EC93 /* imageOperation.cpp in Sources */,
 			);

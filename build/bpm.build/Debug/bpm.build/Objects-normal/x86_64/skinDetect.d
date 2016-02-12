@@ -1,5 +1,5 @@
-dependencies: /Users/michal/Dev/bpm/imageOperation.cpp \
-  /Users/michal/Dev/bpm/imageOperation.h \
+dependencies: /Users/michal/Dev/bpm/skinDetect.cpp \
+  /Users/michal/Dev/bpm/skinDetect.h \
   /usr/local/include/opencv2/opencv.hpp \
   /usr/local/include/opencv2/core.hpp \
   /usr/local/include/opencv2/core/cvdef.h \
@@ -48,7 +48,4 @@ dependencies: /Users/michal/Dev/bpm/imageOperation.cpp \
   /usr/local/include/opencv2/highgui/highgui_c.h \
   /usr/local/include/opencv2/imgcodecs/imgcodecs_c.h \
   /usr/local/include/opencv2/videoio/videoio_c.h \
-  /usr/local/include/opencv2/ml.hpp /Users/michal/Dev/bpm/skinDetect.h \
-  /usr/local/include/opencv2/objdetect/objdetect.hpp \
-  /usr/local/include/opencv2/highgui/highgui.hpp \
-  /usr/local/include/opencv2/imgproc/imgproc.hpp
+  /usr/local/include/opencv2/ml.hpp
