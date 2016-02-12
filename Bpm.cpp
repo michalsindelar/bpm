@@ -38,6 +38,9 @@ int Bpm::run() {
         // Output
         Mat out = in.clone();
 
+        // Detect face
+        // this->faces = detectFace (out);
+
         // Keep maximum BUFFER_FRAMES size
         if (videoBuffer.size() == BUFFER_FRAMES) {
             videoBuffer.pop_front();
@@ -74,6 +77,7 @@ int Bpm::run() {
 
         // Adjustemnt of output
         //        fakeBeating(out, i, FRAME_RATE/10);
+
 
         // Merge original + adjusted
         hconcat(in, out, window);

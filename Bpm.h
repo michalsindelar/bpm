@@ -17,6 +17,8 @@
 #include "./amplify.h"
 #include "./AmplificationWorker.h"
 
+#include "skinDetect.h"
+
 #define BUFFER_FRAMES 40
 #define FRAME_RATE 15
 #define CAMERA_INIT 10
@@ -38,6 +40,9 @@ class Bpm {
 
         // OS window
         Mat window;
+
+        // Detected face
+        vector<Rect> faces;
 
         // Worker for computing
         AmplificationWorker bpmWorker;

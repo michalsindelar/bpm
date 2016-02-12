@@ -24,6 +24,21 @@ Mat resizeImage (Mat image, const double width) {
     return image;
 }
 
+vector<Rect> detectFace (Mat image) {
+    CascadeClassifier face_cascade;
+    face_cascade.load("/Users/michal/Dev/bpm/haarcascade_frontalface_alt.xml");
+
+    // Create bw mat
+    Mat frame_gray;
+    cvtColor(image, frame_gray, CV_BGR2GRAY );
+
+    // Init faces
+    vector<Rect> faces;
+    face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(80, 80) );
+
+    return faces;
+}
+
 void fakeBeating (Mat image, double index, int maxValue) {
 
     double alpha = 1;
