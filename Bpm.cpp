@@ -49,6 +49,7 @@ int Bpm::run() {
         // Copy to loop bpmVisualization vid
         // Clear bpmWorker bpmVisualization array
         if (this->bpmWorker.isReady()) {
+            this->bpmWorker.setReady(false);
             this->bpmVisualization.clear();
 
             for (Mat img : this->bpmWorker.getVisualization()) {
@@ -56,7 +57,6 @@ int Bpm::run() {
             }
 
             this->bpmWorker.clearVisualization();
-            this->bpmWorker.setReady(false);
         }
 
         // Start computing when buffer filled

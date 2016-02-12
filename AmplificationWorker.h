@@ -30,14 +30,14 @@ class AmplificationWorker {
         void clearVisualization();
 
         bool isReady() {
-            return ready;
+            return this->ready;
         }
         bool getInitialFlag() {
             return initialFlag;
         }
 
         const vector<Mat> &getVisualization() const {
-            return visualization;
+            return this->visualization;
         }
 
         void setReady(bool ready) {

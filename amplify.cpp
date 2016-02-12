@@ -119,10 +119,12 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
     createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
-    vector <Mat> vidBack;
-    inverseCreateTimeChangeStack(timeStack, filtered);
+    // TODO: Insert Magic here!
 
-    // functional time stack and back
+
+
+
+    inverseCreateTimeChangeStack(timeStack, filtered);
 
 }
 
