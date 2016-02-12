@@ -40,6 +40,7 @@ int Bpm::run() {
 
         // Detect face
         // this->faces = detectFace (out);
+        // TODO: pop only cropped frame with face
 
         // Keep maximum BUFFER_FRAMES size
         if (videoBuffer.size() == BUFFER_FRAMES) {

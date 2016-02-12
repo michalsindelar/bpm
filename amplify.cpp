@@ -121,8 +121,6 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
     createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
-    // TODO: Insert Magic here!
-
     //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
     float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
@@ -131,6 +129,18 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
         for (int channel = 0; channel < 3; channel++) {
             // DFT
             Mat tmp = computeDFT(timeStack[channel][i]);
+
+
+            // Mask here!
+            Mat mask; tmp.copyTo(mask);
+            mask.setTo(1);
+            int radius = (int) tmp.size().width/2;
+            Point center(tmp.size().width/2, tmp.size().height/2);
+            circle(mask, center, radius, 0);
+
+            // mask
+            tmp = tmp.mul(mask);
+
             // IDFT
             timeStack[channel][i] = updateResult(tmp);
             // CLEAR
@@ -161,10 +171,7 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
             split(video[j],channels);
 
             for(int k = 0; k < dstVectorHeight; k++) {
-                float value = channels[channel].at<float>(k,i);
-
                 frame.at<float>(k,j) = channels[channel].at<float>(k,i);
-
             }
         }
         dst[channel].push_back(frame);
@@ -202,7 +209,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         // Merge here
         merge(colorArray, colorFrame);
 
-//        cvtColor(colorFrame, colorFrame, CV_8U);
+        cvtColor(colorFrame, colorFrame, CV_RGB2GRAY);
         dst.push_back(colorFrame);
 
         colorArray.clear();
@@ -253,7 +260,6 @@ Mat updateResult(Mat complex) {
 
     magnitude(planes[0], planes[1], work);    // === sqrt(Re(DFT(I))^2 + Im(DFT(I))^2)
     normalize(work, work, 0, 1, NORM_MINMAX);
-
 
     return work;
 }
