@@ -30,10 +30,8 @@ void AmplificationWorker::compute(deque<Mat> videoBuffer){
 };
 
 void AmplificationWorker::setVideoBuffer(deque<Mat> videoBuffer) {
-    int i = 0;
     for (Mat img : videoBuffer) {
         this->videoBuffer.push_back(img.clone());
-        i++;
     }
 };
 

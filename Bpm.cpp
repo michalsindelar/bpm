@@ -68,7 +68,7 @@ int Bpm::run() {
 
         // Show bpmVisualization video after initialization compute
         if (this->bpmWorker.getInitialFlag()) {
-            imshow("FILTERED", resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), 40));
+            imshow("FILTERED", resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), 1000));
             if (waitKey(10) >= 0) break;
         }
 

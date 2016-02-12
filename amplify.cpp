@@ -31,6 +31,10 @@ void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, in
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
         // Result image push to stack
+        if (video[i].rows == 0) {
+            // TODO: Handle dropped frame by camera?
+        }
+
         Mat tmp = blurDn(video[i], level, kernel);
         stack.push_back(tmp.clone());
         tmp.release();
@@ -56,14 +60,14 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     cvtColor(frame, frame, CV_32F);
 
     // Convert to hsv (similar as ntsc)
-//    cvtColor(frame, frame, CV_BGR2HSV);
+    cvtColor(frame, frame, CV_BGR2HSV);
 
     // blur via binomial filter
     filter2D(frame, frame, -1, kernel);
 
     // Convert back
-//    cvtColor(frame, frame, CV_HSV2BGR);
-    cvtColor(frame, frame, CV_8U);
+    cvtColor(frame, frame, CV_HSV2BGR);
+    cvtColor(frame, frame, CV_32F);
 
     return frame;
 }

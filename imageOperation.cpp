@@ -4,45 +4,25 @@
 #include "imageOperation.h"
 
 Mat resizeImage (Mat image, const double width) {
-    // Resize in
-    Size origSize = image.size();
-    
-    // Keep aspect ratio
-    double aspect = (double) origSize.width / origSize.height;
-    
-    // Compute height
-    double height = width / aspect;
-    
-    // Resize
-    resize(image, image, Size(width, height), 0, 0, INTER_LINEAR);
-    
-    return image;
-}
-
-bool compareColorAndBwMatrix(Mat color, Mat bw) {
-
-
-    int rows = bw.rows;
-    int cols = bw.cols;
-
-    if (rows != color.rows || cols != color.cols) return false;
-
-    vector<Mat> channels;
-    split(color, channels);
-
-    for (int x = 0; x < cols; x++) {
-        for (int y = 0; y < rows; y++) {
-            if (channels[0].at<int>(x,y) != bw.at<int>(x,y)) return false;
-            if (channels[1].at<int>(x,y) != bw.at<int>(x,y)) return false;
-            if (channels[2].at<int>(x,y) != bw.at<int>(x,y)) return false;
-        }
+    // Check if image has size
+    if (image.rows == 0) {
+        return image;
     }
 
-    channels.clear();
+    // Resize in
+    Size origSize = image.size();
 
-    return true;
+    // Keep aspect ratio
+    double aspect = (double) origSize.width / origSize.height;
+
+    // Compute height
+    double height = width / aspect;
+
+    // Resize
+    resize(image, image, Size(width, height), 0, 0, INTER_LINEAR);
+
+    return image;
 }
-
 
 void fakeBeating (Mat image, double index, int maxValue) {
 
