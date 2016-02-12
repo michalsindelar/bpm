@@ -121,10 +121,29 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
     // TODO: Insert Magic here!
 
+    //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
+    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
+    for (int i = 0; i < video.size(); i++) {
+        vector<Mat> channels(3);
+        vector<Mat> complex;
+        split(video[i],channels);
 
+        for (int channel = 0; channel < 4; channel++) {
+            Mat tmp = computeDFT(channels[channel]);
+//            NOTWORKING
+//            mulSpectrums(tmp, kernelSpec, tmp, DFT_ROWS);
+//            tmp = tmp*0;
+            channels[channel] = updateResult(tmp);
+        }
 
-    inverseCreateTimeChangeStack(timeStack, filtered);
+        Mat tmp;
+        merge(channels, tmp);
+        filtered.push_back(tmp);
+        tmp.release();
+    }
+
+//    inverseCreateTimeChangeStack(timeStack, filtered);
 
 }
 
@@ -179,6 +198,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
                 frameR.at<float>(k, j)  = stack[RED_CHANNEL][j].at<float>(k,i);
             }
         }
+
         colorArray.push_back(frameB);
         colorArray.push_back(frameG);
         colorArray.push_back(frameR);
@@ -210,8 +230,8 @@ vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh) {
 
 Mat computeDFT(Mat image) {
     Mat padded;
-    int m = getOptimalDFTSize(image.rows);
-    int n = getOptimalDFTSize(image.cols);
+    int m = (image.rows);
+    int n = (image.cols);
     // create output image of optimal size
     copyMakeBorder(image, padded, 0, m - image.rows, 0, n - image.cols, BORDER_CONSTANT, Scalar::all(0));
     // copy the source image, on the border add zero values
@@ -220,6 +240,10 @@ Mat computeDFT(Mat image) {
     Mat complex;
     merge(planes, 2, complex);
     dft(complex, complex, DFT_COMPLEX_OUTPUT);  // fourier transform
+
+    int channels = complex.channels();
+
+
     return complex;
 }
 
