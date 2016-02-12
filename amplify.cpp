@@ -58,7 +58,6 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
 
     // FLoat at first
     cvtColor(frame, frame, CV_32F);
-
     // Convert to hsv (similar as ntsc)
     cvtColor(frame, frame, CV_BGR2HSV);
 
@@ -68,6 +67,9 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     // Convert back
     cvtColor(frame, frame, CV_HSV2BGR);
     cvtColor(frame, frame, CV_32F);
+
+    // This normalization is superimportant !!!!
+    normalize(frame, frame, 0, 1, NORM_MINMAX, CV_32F);
 
     return frame;
 }
@@ -124,26 +126,19 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
     float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
-    for (int i = 0; i < video.size(); i++) {
-        vector<Mat> channels(3);
-        vector<Mat> complex;
-        split(video[i],channels);
-
-        for (int channel = 0; channel < 4; channel++) {
-            Mat tmp = computeDFT(channels[channel]);
-//            NOTWORKING
-//            mulSpectrums(tmp, kernelSpec, tmp, DFT_ROWS);
-//            tmp = tmp*0;
-            channels[channel] = updateResult(tmp);
+    for (int i = 0; i < timeStack[0].size(); i++) {
+        vector <Mat> tmp;
+        for (int channel = 0; channel < 3; channel++) {
+            // DFT
+            Mat tmp = computeDFT(timeStack[channel][i]);
+            // IDFT
+            timeStack[channel][i] = updateResult(tmp);
+            // CLEAR
+            tmp.release();
         }
-
-        Mat tmp;
-        merge(channels, tmp);
-        filtered.push_back(tmp);
-        tmp.release();
     }
 
-//    inverseCreateTimeChangeStack(timeStack, filtered);
+    inverseCreateTimeChangeStack(timeStack, filtered);
 
 }
 
@@ -162,14 +157,14 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
         // One frame
         Mat frame(dstVectorHeight, dstVectorWidth, CV_32F);
         for (int j = 0; j < dstVectorWidth; j++) {
-            for(int k = 0; k < dstVectorHeight; k++) {
+            vector<Mat> channels;
+            split(video[j],channels);
 
-                // Split into channel and take the desired one
-                // TODO: Optimalization split video outside loop into channels
-                vector<Mat> channels;
-                split(video[j],channels);
+            for(int k = 0; k < dstVectorHeight; k++) {
+                float value = channels[channel].at<float>(k,i);
 
                 frame.at<float>(k,j) = channels[channel].at<float>(k,i);
+
             }
         }
         dst[channel].push_back(frame);
@@ -185,15 +180,16 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 
     for (int i = 0; i < dstCount; i++) {
 
-        Mat frameB(dstHeight, dstWidth, CV_8U);
-        Mat frameG(dstHeight, dstWidth, CV_8U);
-        Mat frameR(dstHeight, dstWidth, CV_8U);
+        Mat frameB(dstHeight, dstWidth, CV_32F);
+        Mat frameG(dstHeight, dstWidth, CV_32F);
+        Mat frameR(dstHeight, dstWidth, CV_32F);
         vector<Mat> colorArray;
         Mat colorFrame;
 
         for (int j = 0; j < dstWidth; j++) {
             for(int k = 0; k < dstHeight; k++) {
-                frameB.at<float>(k, j)  = stack[BLUE_CHANNEL][j].at<float>(k,i);
+                // from stack incorrect values or 0
+                frameB.at<float>(k, j) = stack[BLUE_CHANNEL][j].at<float>(k,i);
                 frameG.at<float>(k, j)  = stack[GREEN_CHANNEL][j].at<float>(k,i);
                 frameR.at<float>(k, j)  = stack[RED_CHANNEL][j].at<float>(k,i);
             }
@@ -201,14 +197,15 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 
         colorArray.push_back(frameB);
         colorArray.push_back(frameG);
-        colorArray.push_back(frameR);
+        colorArray.push_back(frameR); //32F
 
         // Merge here
         merge(colorArray, colorFrame);
+
+//        cvtColor(colorFrame, colorFrame, CV_8U);
         dst.push_back(colorFrame);
 
         colorArray.clear();
-
     }
 }
 
@@ -230,8 +227,8 @@ vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh) {
 
 Mat computeDFT(Mat image) {
     Mat padded;
-    int m = (image.rows);
-    int n = (image.cols);
+    int m = image.rows;
+    int n = image.cols;
     // create output image of optimal size
     copyMakeBorder(image, padded, 0, m - image.rows, 0, n - image.cols, BORDER_CONSTANT, Scalar::all(0));
     // copy the source image, on the border add zero values
@@ -256,6 +253,7 @@ Mat updateResult(Mat complex) {
 
     magnitude(planes[0], planes[1], work);    // === sqrt(Re(DFT(I))^2 + Im(DFT(I))^2)
     normalize(work, work, 0, 1, NORM_MINMAX);
+
 
     return work;
 }
