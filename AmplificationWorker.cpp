@@ -6,14 +6,19 @@
 
 AmplificationWorker::AmplificationWorker() {
     this->initialFlag = false;
-    this->ready = false;
+    this->working = false;
 };
 
-void AmplificationWorker::compute(deque<Mat> videoBuffer){
+void AmplificationWorker::compute(vector<Mat> videoBuffer){
+    if (this->working) return;
+
+    // Start work!
+    this->working = true;
+    cout << "Computing bpm";
+
     // At first fill class buffer with copies!
     this->setVideoBuffer(videoBuffer);
 
-    cout << "Computing bpm";
     int ret = 100;
 
     // TODO: Remove -DEV ONLY
@@ -23,16 +28,14 @@ void AmplificationWorker::compute(deque<Mat> videoBuffer){
     amplifySpatial(this->videoBuffer, this->visualization, 50, 50/60, 180/60, 30, int(videoBuffer.size()), 4);
     this->videoBuffer.clear();
 
-    bpm = ret;
-    ready = true;
-    initialFlag = true;
+    this->bpm = ret;
+    this->working = false;
+    this->initialFlag = true;
     cout << "Computed bpm in class";
 };
 
-void AmplificationWorker::setVideoBuffer(deque<Mat> videoBuffer) {
-    for (Mat img : videoBuffer) {
-        this->videoBuffer.push_back(img.clone());
-    }
+void AmplificationWorker::setVideoBuffer(vector<Mat> videoBuffer) {
+    this->videoBuffer.swap(videoBuffer);
 };
 
 void AmplificationWorker::clearVisualization() {

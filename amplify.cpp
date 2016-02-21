@@ -134,12 +134,12 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
             // Mask here!
             Mat mask; tmp.copyTo(mask);
             mask.setTo(1);
-            int radius = (int) tmp.size().width/2;
+            int radius = tmp.size().width/2;
             Point center(tmp.size().width/2, tmp.size().height/2);
             circle(mask, center, radius, 0);
 
             // mask
-            tmp = tmp.mul(mask);
+            // tmp = tmp.mul(mask);
 
             // IDFT
             timeStack[channel][i] = updateResult(tmp);

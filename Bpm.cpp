@@ -33,7 +33,7 @@ int Bpm::run() {
         if (frame < CAMERA_INIT) continue;
 
         // Resize captured frame
-        in = resizeImage(in, 700);
+        in = resizeImage(in, 1000);
 
         // Output
         Mat out = in.clone();
@@ -44,7 +44,8 @@ int Bpm::run() {
 
         // Keep maximum BUFFER_FRAMES size
         if (videoBuffer.size() == BUFFER_FRAMES) {
-            videoBuffer.pop_front();
+            // Erase first frame
+            videoBuffer.erase(videoBuffer.begin());
         }
         videoBuffer.push_back(in.clone());
 
@@ -52,20 +53,17 @@ int Bpm::run() {
         // Clear current bpmVisualization array
         // Copy to loop bpmVisualization vid
         // Clear bpmWorker bpmVisualization array
-        if (this->bpmWorker.isReady()) {
-            this->bpmWorker.setReady(false);
+        if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag()) {
             this->bpmVisualization.clear();
 
-            for (Mat img : this->bpmWorker.getVisualization()) {
-                this->bpmVisualization.push_back(img.clone());
-            }
+            this->bpmWorker.getVisualization().swap(this->bpmVisualization);
 
             this->bpmWorker.clearVisualization();
         }
 
         // Start computing when buffer filled
         // TODO: REMOVE DEV ONLY
-        if ((frame + 1) % BUFFER_FRAMES == 0 && frame > CAMERA_INIT + BUFFER_FRAMES) {
+        if (frame > CAMERA_INIT + BUFFER_FRAMES && videoBuffer.size() == BUFFER_FRAMES && !bpmWorker.isWorking()) {
             boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
             boost::thread th(th_bpm);
         }
@@ -96,5 +94,5 @@ int Bpm::run() {
         i += .2;
     }
 
-
+    return 0;
 }

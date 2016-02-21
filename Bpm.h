@@ -34,7 +34,7 @@ class Bpm {
 
         VideoCapture cam;
         // Deque for storing captured frames
-        deque<Mat> videoBuffer;
+        vector<Mat> videoBuffer;
         // Processed mask of blood flow
         vector<Mat> bpmVisualization;
 
