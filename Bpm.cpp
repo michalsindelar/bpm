@@ -32,7 +32,10 @@ int Bpm::run() {
         Mat out = in.clone();
 
         // Detect face
-        // this->faces = detectFace (out);
+        if (this->faces.size() == 0) {
+            this->faces = detectFace(out);
+        }
+
         // TODO: pop only cropped frame with face
 
         // Keep maximum BUFFER_FRAMES size
@@ -59,18 +62,14 @@ int Bpm::run() {
         // Show bpmVisualization video after initialization compute
         if (this->bpmWorker.getInitialFlag()) {
             imshow("FILTERED", resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), 800));
-            if (waitKey(10) >= 0) break;
         }
-
-        // Adjustemnt of output
-        //        fakeBeating(out, i, FRAME_RATE/10);
-
 
         // Merge original + adjusted
         hconcat(in, out, window);
 
-        //put the image onto a screen
-        imshow("video:", window);
+        // Put the image onto a screen
+        namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
+        imshow( "Display Image", window);
 
         // Free
         in.release();
