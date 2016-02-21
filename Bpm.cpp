@@ -6,17 +6,10 @@
 
 // Constructor
 Bpm::Bpm() {
-
     // Open Video Camera
-    // TODO Merge!
-    try {
-        this->cam = VideoCapture(0);
-    } catch(int e) {
-        cout << "Unable to open Video Camera";
-    };
+    this->cam = VideoCapture(0);
 
-    if(!cam.isOpened())
-        cout << "Unable to open Video Camera";
+    if(!cam.isOpened()) cout << "Unable to open Video Camera";
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
@@ -50,15 +43,10 @@ int Bpm::run() {
         videoBuffer.push_back(in.clone());
 
         // Update bpm once bpmWorker ready
-        // Clear current bpmVisualization array
-        // Copy to loop bpmVisualization vid
-        // Clear bpmWorker bpmVisualization array
         if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag()) {
-            this->bpmVisualization.clear();
-
-            this->bpmWorker.getVisualization().swap(this->bpmVisualization);
-
-            this->bpmWorker.clearVisualization();
+            this->bpmVisualization.clear(); // Clear current bpmVisualization array
+            this->bpmWorker.getVisualization().swap(this->bpmVisualization); // Copy to loop bpmVisualization vid
+            this->bpmWorker.clearVisualization(); // Clear bpmWorker bpmVisualization array
         }
 
         // Start computing when buffer filled

@@ -121,21 +121,19 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
     for (int i = 0; i < timeStack[0].size(); i++) {
-        vector <Mat> tmp;
         for (int channel = 0; channel < 3; channel++) {
             // DFT
             Mat tmp = computeDFT(timeStack[channel][i]);
 
-
             // Mask here!
             Mat mask; tmp.copyTo(mask);
             mask.setTo(1);
-            int radius = tmp.size().width/2;
+            int radius = tmp.size().width * 3/5;
             Point center(tmp.size().width/2, tmp.size().height/2);
             circle(mask, center, radius, 0);
 
             // mask
-            // tmp = tmp.mul(mask);
+            tmp = tmp.mul(mask);
 
             // IDFT
             timeStack[channel][i] = updateResult(tmp);
@@ -145,6 +143,12 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     }
 
     inverseCreateTimeChangeStack(timeStack, filtered);
+
+
+    // DEV testing only - Push back only blurred vi
+//    for (int i = 0; i < video.size(); i++) {
+//        filtered.push_back(video[i]);
+//    }
 
 }
 
@@ -193,8 +197,8 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
             for(int k = 0; k < dstHeight; k++) {
                 // from stack incorrect values or 0
                 frameB.at<float>(k, j) = stack[BLUE_CHANNEL][j].at<float>(k,i);
-                frameG.at<float>(k, j)  = stack[GREEN_CHANNEL][j].at<float>(k,i);
-                frameR.at<float>(k, j)  = stack[RED_CHANNEL][j].at<float>(k,i);
+                frameG.at<float>(k, j) = stack[GREEN_CHANNEL][j].at<float>(k,i);
+                frameR.at<float>(k, j) = stack[RED_CHANNEL][j].at<float>(k,i);
             }
         }
 
@@ -240,9 +244,6 @@ Mat computeDFT(Mat image) {
     Mat complex;
     merge(planes, 2, complex);
     dft(complex, complex, DFT_COMPLEX_OUTPUT);  // fourier transform
-
-    int channels = complex.channels();
-
 
     return complex;
 }
