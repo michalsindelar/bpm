@@ -31,10 +31,6 @@ void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, in
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
         // Result image push to stack
-        if (video[i].rows == 0) {
-            // TODO: Handle dropped frame by camera?
-        }
-
         Mat tmp = blurDn(video[i], level, kernel);
         stack.push_back(tmp.clone());
         tmp.release();
@@ -68,7 +64,7 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     cvtColor(frame, frame, CV_HSV2BGR);
     cvtColor(frame, frame, CV_32F);
 
-    // This normalization is superimportant !!!!
+    // This normalization is super important !!!!
     normalize(frame, frame, 0, 1, NORM_MINMAX, CV_32F);
 
     return frame;
@@ -110,7 +106,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
     // Prepare freq.
     // Create mask
-    vector <float> maskingCoeffs = coeffsRow(getOptimalDFTSize(video[0].cols), video.size(), fps, fl, fh);
+    vector <float> maskingCoeffs = coefsRow(getOptimalDFTSize(video[0].cols), video.size(), fps, fl, fh);
 
 
     // Create time stack change
@@ -217,7 +213,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 }
 
 
-vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh) {
+vector <float> coefsRow (int width, int videoSize, int fps, int fl, int fh) {
     // Create row 0.25 - 0.5 ----- 30.0
     vector<float> row;
     for (int i = 1; i < width; i++) {
