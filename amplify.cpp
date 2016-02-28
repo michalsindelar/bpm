@@ -106,7 +106,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
     // Prepare freq.
     // Create mask
-    vector <float> maskingCoeffs = coefsRow(getOptimalDFTSize(video[0].cols), video.size(), fps, fl, fh);
+    Mat mask = maskingCoeffs(video.size(), fps, fl, fh);
 
 
     // Create time stack change
@@ -118,30 +118,29 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
     //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
-    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
+    //    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
-            // DFT
-            Mat tmp = computeDFT(timeStack[channel][i]);
+                for (int row = 0; row < timeStack[channel][i].rows; row++) {
+                    // DFT
+                    Mat tmp = computeDFT(timeStack[channel][i].row(row));
 
-            // Mask here!
-            Mat mask; tmp.copyTo(mask);
-            mask.setTo(1);
-            int radius = tmp.size().width * 3/5;
-            Point center(tmp.size().width/2, tmp.size().height/2);
-            circle(mask, center, radius, 0);
+                    int type1 = mask.type();
+                    int type2 = tmp.type();
 
-            // mask
-            tmp = tmp.mul(mask);
+                    // Masking
+                    tmp = tmp.mul(mask);
 
-            // IDFT
-            timeStack[channel][i] = updateResult(tmp);
-            // CLEAR
-            tmp.release();
+                    // IDFT
+                    updateResult(tmp).copyTo(timeStack[channel][i].row(row));
+
+                    // CLEAR
+                    tmp.release();
+            }
         }
     }
-
+    mask.release();
     inverseCreateTimeChangeStack(timeStack, filtered);
 
 
@@ -217,34 +216,29 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 }
 
 
-vector <float> coefsRow (int width, int videoSize, int fps, int fl, int fh) {
+Mat maskingCoeffs(int width, int fps, int fl, int fh) {
+    Mat row(1, width, CV_32FC2);
+
+    // 1st row
+    row.at<float>(0,0) = ((1.0f / 256.0f < fl) || (1.0f / 256.0f > fh)) ? 0 : 1;
+
     // Create row 0.25 - 0.5 ----- 30.0
-    vector<float> row;
     for (int i = 1; i < width; i++) {
-        float value = (i-1)/( (float) videoSize)* (float) fps;
-        // We want to mask freq out of [fl, fh]
-        if (value < fl || value > fh) {
-            value = 0;
-        }
-        row.push_back(value);
+        float value = (i-1)/( (float) width)* (float) fps;
+        value = (value < fl || value > fh) ? 0 : 1;
+        row.at<float>(0, i) = value;
     }
     return row;
 }
 
 
 Mat computeDFT(Mat image) {
-    Mat padded;
-    int m = image.rows;
-    int n = image.cols;
-    // create output image of optimal size
-    copyMakeBorder(image, padded, 0, m - image.rows, 0, n - image.cols, BORDER_CONSTANT, Scalar::all(0));
     // copy the source image, on the border add zero values
-    Mat planes[] = { Mat_< float> (padded), Mat::zeros(padded.size(), CV_32F) };
+    Mat planes[] = { Mat_< float> (image), Mat::zeros(image.size(), CV_32F) };
     // create a complex matrix
     Mat complex;
     merge(planes, 2, complex);
     dft(complex, complex, DFT_COMPLEX_OUTPUT);  // fourier transform
-
     return complex;
 }
 
