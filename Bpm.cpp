@@ -43,7 +43,12 @@ int Bpm::run() {
             // Erase first frame
             videoBuffer.erase(videoBuffer.begin());
         }
-        videoBuffer.push_back(in.clone());
+
+        // Start cropping frames to face only after init
+        if (frame > CAMERA_INIT) {
+            Mat croppedToFace = in(Rect(this->faces[0].x, this->faces[0].y, this->faces[0].width, this->faces[0].height)).clone();
+            videoBuffer.push_back(croppedToFace);
+        }
 
         // Update bpm once bpmWorker ready
         if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag()) {
@@ -74,6 +79,7 @@ int Bpm::run() {
         // Free
         in.release();
         out.release();
+
 
         //press anything within the poped-up window to close this program
         if (waitKey(10) >= 0) break;

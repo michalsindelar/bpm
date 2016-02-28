@@ -3,8 +3,6 @@
 //
 
 #include "amplify.h"
-#include "imageOperation.h"
-
 
 #define BLUE_CHANNEL 0
 #define GREEN_CHANNEL 1
@@ -70,28 +68,6 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     return frame;
 }
 
-void shift(Mat magI) {
-
-    // crop if it has an odd number of rows or columns
-    magI = magI(Rect(0, 0, magI.cols & -2, magI.rows & -2));
-
-    int cx = magI.cols/2;
-    int cy = magI.rows/2;
-
-    Mat q0(magI, Rect(0, 0, cx, cy));   // Top-Left - Create a ROI per quadrant
-    Mat q1(magI, Rect(cx, 0, cx, cy));  // Top-Right
-    Mat q2(magI, Rect(0, cy, cx, cy));  // Bottom-Left
-    Mat q3(magI, Rect(cx, cy, cx, cy)); // Bottom-Right
-
-    Mat tmp;                            // swap quadrants (Top-Left with Bottom-Right)
-    q0.copyTo(tmp);
-    q3.copyTo(q0);
-    tmp.copyTo(q3);
-    q1.copyTo(tmp);                     // swap quadrant (Top-Right with Bottom-Left)
-    q2.copyTo(q1);
-    tmp.copyTo(q2);
-}
-
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount) {
     // TODO: Describe
     int height =  video[0].size().height;
@@ -126,11 +102,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
                     // DFT
                     Mat tmp = computeDFT(timeStack[channel][i].row(row));
 
-                    int type1 = mask.type();
-                    int type2 = tmp.type();
-
-                    // Masking
-                    tmp = tmp.mul(mask);
+                    // MASK
+//                    tmp = tmp.mul(mask);
 
                     // IDFT
                     updateResult(tmp).copyTo(timeStack[channel][i].row(row));
