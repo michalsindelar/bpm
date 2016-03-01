@@ -105,7 +105,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
                     dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                     // MASKING
-                    fourierTransform = fourierTransform.mul(mask);
+                    // fourierTransform = fourierTransform.mul(mask);
 
                     // IFFT
                     dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
@@ -176,10 +176,12 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 
         // Merge here
         merge(colorArray, colorFrame);
+        colorFrame.convertTo(colorFrame, CV_8UC3);
+        // TODO: WRONG CONVERSION!!
+        normalize(colorFrame, colorFrame, 0, 255, NORM_MINMAX, CV_8UC3 );
 
-        cvtColor(colorFrame, colorFrame, CV_8U);
+
         dst.push_back(colorFrame);
-
         colorArray.clear();
     }
 }

@@ -22,6 +22,7 @@
 #define BUFFER_FRAMES 40
 #define FRAME_RATE 15
 #define CAMERA_INIT 10
+#define RESIZED_FRAME_WIDTH 1000
 
 
 using namespace cv;

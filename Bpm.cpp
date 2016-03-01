@@ -26,7 +26,7 @@ int Bpm::run() {
         if (frame < CAMERA_INIT) continue;
 
         // Resize captured frame
-        in = resizeImage(in, 1000);
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
         // Output
         Mat out = in.clone();
@@ -45,6 +45,7 @@ int Bpm::run() {
         }
 
         // Start cropping frames to face only after init
+        // TODO: Can't run without face!
         if (frame > CAMERA_INIT) {
             Mat croppedToFace = in(Rect(this->faces[0].x, this->faces[0].y, this->faces[0].width, this->faces[0].height)).clone();
             videoBuffer.push_back(croppedToFace);
@@ -66,7 +67,15 @@ int Bpm::run() {
 
         // Show bpmVisualization video after initialization compute
         if (this->bpmWorker.getInitialFlag()) {
-            imshow("FILTERED", resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), 800));
+            Mat visual = in.clone();
+            int type1 = this->bpmVisualization.at(frame % BUFFER_FRAMES).type();
+            int type2 = visual.type();
+
+            // Resize according to face
+            // TODO: PERFORMANCE!!!
+            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), this->faces[0].width);
+            tmp.copyTo(visual(cv::Rect(this->faces[0].x,this->faces[0].y, tmp.cols, tmp.rows)));
+            imshow("FILTERED", visual);
         }
 
         // Merge original + adjusted
