@@ -99,28 +99,24 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
                 for (int row = 0; row < timeStack[channel][i].rows; row++) {
-                    // DFT
-                    Mat tmp = computeDFT(timeStack[channel][i].row(row));
 
-                    // MASK
-//                    tmp = tmp.mul(mask);
+                    // FFT
+                    Mat fourierTransform;
+                    dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
-                    // IDFT
-                    updateResult(tmp).copyTo(timeStack[channel][i].row(row));
+                    // MASKING
+                    fourierTransform = fourierTransform.mul(mask);
 
-                    // CLEAR
-                    tmp.release();
+                    // IFFT
+                    dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+
+                    // RELEASE
+                    fourierTransform.release();
             }
         }
     }
     mask.release();
     inverseCreateTimeChangeStack(timeStack, filtered);
-
-
-    // DEV testing only - Push back only blurred vi
-//    for (int i = 0; i < video.size(); i++) {
-//        filtered.push_back(video[i]);
-//    }
 
 }
 
@@ -181,7 +177,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         // Merge here
         merge(colorArray, colorFrame);
 
-        cvtColor(colorFrame, colorFrame, CV_RGB2GRAY);
+        cvtColor(colorFrame, colorFrame, CV_8U);
         dst.push_back(colorFrame);
 
         colorArray.clear();
