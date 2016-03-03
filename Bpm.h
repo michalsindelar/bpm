@@ -32,6 +32,7 @@ class Bpm {
     private:
         bool initialWorkerFlag = false;
         int currBpm;
+        float beatVisibilityFactor = 10;
 
         VideoCapture cam;
         // Deque for storing captured frames

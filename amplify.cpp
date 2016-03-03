@@ -105,7 +105,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
                     dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                     // MASKING
-                    // fourierTransform = fourierTransform.mul(mask);
+                     fourierTransform = fourierTransform.mul(mask);
 
                     // IFFT
                     dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
@@ -155,34 +155,31 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 
     for (int i = 0; i < dstCount; i++) {
 
-        Mat frameB(dstHeight, dstWidth, CV_32F);
-        Mat frameG(dstHeight, dstWidth, CV_32F);
-        Mat frameR(dstHeight, dstWidth, CV_32F);
-        vector<Mat> colorArray;
-        Mat colorFrame;
+        // Initialize channels
+        // TODO: Can't be one line??
+        vector<Mat> channels;
+        for (int channel = 0; channel < 3; channel++) {
+            channels.push_back(Mat(dstHeight, dstWidth, CV_32F));
+        }
 
         for (int j = 0; j < dstWidth; j++) {
             for(int k = 0; k < dstHeight; k++) {
-                // from stack incorrect values or 0
-                frameB.at<float>(k, j) = stack[BLUE_CHANNEL][j].at<float>(k,i);
-                frameG.at<float>(k, j) = stack[GREEN_CHANNEL][j].at<float>(k,i);
-                frameR.at<float>(k, j) = stack[RED_CHANNEL][j].at<float>(k,i);
+                for (int channel = 0; channel < 3; channel++) {
+                    channels[channel].at<float>(k, j) = stack[channel][j].at<float>(k,i);
+                }
             }
         }
 
-        colorArray.push_back(frameB);
-        colorArray.push_back(frameG);
-        colorArray.push_back(frameR); //32F
+        // Merge channels into colorFrame
+        Mat colorFrame;
+        merge(channels, colorFrame);
 
-        // Merge here
-        merge(colorArray, colorFrame);
-        colorFrame.convertTo(colorFrame, CV_8UC3);
-        // TODO: WRONG CONVERSION!!
-        normalize(colorFrame, colorFrame, 0, 255, NORM_MINMAX, CV_8UC3 );
-
+        // Convert to basic CV_8UC3 in range [0,255]
+        colorFrame.convertTo(colorFrame, CV_8UC3, 255);
 
         dst.push_back(colorFrame);
-        colorArray.clear();
+        channels.clear();
+        colorFrame.release();
     }
 }
 
