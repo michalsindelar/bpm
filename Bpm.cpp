@@ -13,6 +13,17 @@ Bpm::Bpm() {
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
+    this->faceDetector = FaceDetectorWorker();
+}
+
+void Bpm::updateFace(Rect face) {
+    if (!this->face.x) {
+        this->face = face;
+    } else {
+        // Handle face size better
+        this->face.x = face.x;
+        this->face.y = face.y;
+    }
 }
 
 int Bpm::run() {
@@ -31,12 +42,15 @@ int Bpm::run() {
         // Output
         Mat out = in.clone();
 
-        // Detect face only once
-        if (this->faces.size() == 0) {
-            this->faces = detectFace(out);
+        // Detect face in own thread
+        if (!faceDetector.isWorking()) {
+            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
         }
 
-        // TODO: pop only cropped frame with face
+        if (faceDetector.getFaces().size()) {
+            // TODO: function get biggest face
+            this->updateFace(faceDetector.getFaces()[0]);
+        }
 
         // Keep maximum BUFFER_FRAMES size
         if (videoBuffer.size() == BUFFER_FRAMES) {
@@ -48,7 +62,7 @@ int Bpm::run() {
         // TODO: Can't run without face!
         // Or can be choosen center of image
         if (frame > CAMERA_INIT) {
-            Mat croppedToFace = in(Rect(this->faces[0].x, this->faces[0].y, this->faces[0].width, this->faces[0].height)).clone();
+            Mat croppedToFace = in(Rect(face.x, face.y, face.width, face.height)).clone();
             videoBuffer.push_back(croppedToFace);
         }
 
@@ -67,11 +81,12 @@ int Bpm::run() {
         }
 
         // Show bpmVisualization video after initialization compute
+        // TODO: Check if this is performance ok
         if (this->bpmWorker.getInitialFlag()) {
             Mat visual = in.clone();
             visual.setTo(0);
-            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), this->faces[0].width);
-            tmp.copyTo(visual(cv::Rect(this->faces[0].x,this->faces[0].y, tmp.cols, tmp.rows)));
+            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), face.width);
+            tmp.copyTo(visual(cv::Rect(face.x,face.y, tmp.cols, tmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
             normalize(out, out, 0, 255, NORM_MINMAX, CV_8UC3);
         }
