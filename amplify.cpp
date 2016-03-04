@@ -3,8 +3,6 @@
 //
 
 #include "amplify.h"
-#include "imageOperation.h"
-
 
 #define BLUE_CHANNEL 0
 #define GREEN_CHANNEL 1
@@ -31,10 +29,6 @@ void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, in
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
         // Result image push to stack
-        if (video[i].rows == 0) {
-            // TODO: Handle dropped frame by camera?
-        }
-
         Mat tmp = blurDn(video[i], level, kernel);
         stack.push_back(tmp.clone());
         tmp.release();
@@ -68,32 +62,10 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     cvtColor(frame, frame, CV_HSV2BGR);
     cvtColor(frame, frame, CV_32F);
 
-    // This normalization is superimportant !!!!
+    // This normalization is super important !!!!
     normalize(frame, frame, 0, 1, NORM_MINMAX, CV_32F);
 
     return frame;
-}
-
-void shift(Mat magI) {
-
-    // crop if it has an odd number of rows or columns
-    magI = magI(Rect(0, 0, magI.cols & -2, magI.rows & -2));
-
-    int cx = magI.cols/2;
-    int cy = magI.rows/2;
-
-    Mat q0(magI, Rect(0, 0, cx, cy));   // Top-Left - Create a ROI per quadrant
-    Mat q1(magI, Rect(cx, 0, cx, cy));  // Top-Right
-    Mat q2(magI, Rect(0, cy, cx, cy));  // Bottom-Left
-    Mat q3(magI, Rect(cx, cy, cx, cy)); // Bottom-Right
-
-    Mat tmp;                            // swap quadrants (Top-Left with Bottom-Right)
-    q0.copyTo(tmp);
-    q3.copyTo(q0);
-    tmp.copyTo(q3);
-    q1.copyTo(tmp);                     // swap quadrant (Top-Right with Bottom-Left)
-    q2.copyTo(q1);
-    tmp.copyTo(q2);
 }
 
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount) {
@@ -110,7 +82,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
     // Prepare freq.
     // Create mask
-    vector <float> maskingCoeffs = coeffsRow(getOptimalDFTSize(video[0].cols), video.size(), fps, fl, fh);
+    Mat mask = maskingCoeffs(video.size(), fps, fl, fh);
 
 
     // Create time stack change
@@ -122,32 +94,28 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
     //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
-    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
+    //    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
     for (int i = 0; i < timeStack[0].size(); i++) {
-        vector <Mat> tmp;
         for (int channel = 0; channel < 3; channel++) {
-            // DFT
-            Mat tmp = computeDFT(timeStack[channel][i]);
+                for (int row = 0; row < timeStack[channel][i].rows; row++) {
 
+                    // FFT
+                    Mat fourierTransform;
+                    dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
-            // Mask here!
-            Mat mask; tmp.copyTo(mask);
-            mask.setTo(1);
-            int radius = (int) tmp.size().width/2;
-            Point center(tmp.size().width/2, tmp.size().height/2);
-            circle(mask, center, radius, 0);
+                    // MASKING
+                    fourierTransform = fourierTransform.mul(mask);
 
-            // mask
-            tmp = tmp.mul(mask);
+                    // IFFT
+                    dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
 
-            // IDFT
-            timeStack[channel][i] = updateResult(tmp);
-            // CLEAR
-            tmp.release();
+                    // RELEASE
+                    fourierTransform.release();
+            }
         }
     }
-
+    mask.release();
     inverseCreateTimeChangeStack(timeStack, filtered);
 
 }
@@ -187,67 +155,58 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 
     for (int i = 0; i < dstCount; i++) {
 
-        Mat frameB(dstHeight, dstWidth, CV_32F);
-        Mat frameG(dstHeight, dstWidth, CV_32F);
-        Mat frameR(dstHeight, dstWidth, CV_32F);
-        vector<Mat> colorArray;
-        Mat colorFrame;
+        // Initialize channels
+        // TODO: Can't be one line??
+        vector<Mat> channels;
+        for (int channel = 0; channel < 3; channel++) {
+            channels.push_back(Mat(dstHeight, dstWidth, CV_32F));
+        }
 
         for (int j = 0; j < dstWidth; j++) {
             for(int k = 0; k < dstHeight; k++) {
-                // from stack incorrect values or 0
-                frameB.at<float>(k, j) = stack[BLUE_CHANNEL][j].at<float>(k,i);
-                frameG.at<float>(k, j)  = stack[GREEN_CHANNEL][j].at<float>(k,i);
-                frameR.at<float>(k, j)  = stack[RED_CHANNEL][j].at<float>(k,i);
+                for (int channel = 0; channel < 3; channel++) {
+                    channels[channel].at<float>(k, j) = stack[channel][j].at<float>(k,i);
+                }
             }
         }
 
-        colorArray.push_back(frameB);
-        colorArray.push_back(frameG);
-        colorArray.push_back(frameR); //32F
+        // Merge channels into colorFrame
+        Mat colorFrame;
+        merge(channels, colorFrame);
 
-        // Merge here
-        merge(colorArray, colorFrame);
+        // Convert to basic CV_8UC3 in range [0,255]
+        colorFrame.convertTo(colorFrame, CV_8UC3, 255);
 
-        cvtColor(colorFrame, colorFrame, CV_RGB2GRAY);
         dst.push_back(colorFrame);
-
-        colorArray.clear();
+        channels.clear();
+        colorFrame.release();
     }
 }
 
 
-vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh) {
+Mat maskingCoeffs(int width, int fps, int fl, int fh) {
+    Mat row(1, width, CV_32FC2);
+
+    // 1st row
+    row.at<float>(0,0) = ((1.0f / 256.0f < fl) || (1.0f / 256.0f > fh)) ? 0 : 1;
+
     // Create row 0.25 - 0.5 ----- 30.0
-    vector<float> row;
     for (int i = 1; i < width; i++) {
-        float value = (i-1)/( (float) videoSize)* (float) fps;
-        // We want to mask freq out of [fl, fh]
-        if (value < fl || value > fh) {
-            value = 0;
-        }
-        row.push_back(value);
+        float value = (i-1)/( (float) width)* (float) fps;
+        value = (value < fl || value > fh) ? 0 : 1;
+        row.at<float>(0, i) = value;
     }
     return row;
 }
 
 
 Mat computeDFT(Mat image) {
-    Mat padded;
-    int m = image.rows;
-    int n = image.cols;
-    // create output image of optimal size
-    copyMakeBorder(image, padded, 0, m - image.rows, 0, n - image.cols, BORDER_CONSTANT, Scalar::all(0));
     // copy the source image, on the border add zero values
-    Mat planes[] = { Mat_< float> (padded), Mat::zeros(padded.size(), CV_32F) };
+    Mat planes[] = { Mat_< float> (image), Mat::zeros(image.size(), CV_32F) };
     // create a complex matrix
     Mat complex;
     merge(planes, 2, complex);
     dft(complex, complex, DFT_COMPLEX_OUTPUT);  // fourier transform
-
-    int channels = complex.channels();
-
-
     return complex;
 }
 

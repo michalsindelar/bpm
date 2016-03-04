@@ -6,17 +6,10 @@
 
 // Constructor
 Bpm::Bpm() {
-
     // Open Video Camera
-    // TODO Merge!
-    try {
-        this->cam = VideoCapture(0);
-    } catch(int e) {
-        cout << "Unable to open Video Camera";
-    };
+    this->cam = VideoCapture(0);
 
-    if(!cam.isOpened())
-        cout << "Unable to open Video Camera";
+    if(!cam.isOpened()) cout << "Unable to open Video Camera";
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
@@ -33,62 +26,67 @@ int Bpm::run() {
         if (frame < CAMERA_INIT) continue;
 
         // Resize captured frame
-        in = resizeImage(in, 700);
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
         // Output
         Mat out = in.clone();
 
-        // Detect face
-        // this->faces = detectFace (out);
+        // Detect face only once
+        if (this->faces.size() == 0) {
+            this->faces = detectFace(out);
+        }
+
         // TODO: pop only cropped frame with face
 
         // Keep maximum BUFFER_FRAMES size
         if (videoBuffer.size() == BUFFER_FRAMES) {
-            videoBuffer.pop_front();
+            // Erase first frame
+            videoBuffer.erase(videoBuffer.begin());
         }
-        videoBuffer.push_back(in.clone());
+
+        // Start cropping frames to face only after init
+        // TODO: Can't run without face!
+        // Or can be choosen center of image
+        if (frame > CAMERA_INIT) {
+            Mat croppedToFace = in(Rect(this->faces[0].x, this->faces[0].y, this->faces[0].width, this->faces[0].height)).clone();
+            videoBuffer.push_back(croppedToFace);
+        }
 
         // Update bpm once bpmWorker ready
-        // Clear current bpmVisualization array
-        // Copy to loop bpmVisualization vid
-        // Clear bpmWorker bpmVisualization array
-        if (this->bpmWorker.isReady()) {
-            this->bpmWorker.setReady(false);
-            this->bpmVisualization.clear();
-
-            for (Mat img : this->bpmWorker.getVisualization()) {
-                this->bpmVisualization.push_back(img.clone());
-            }
-
-            this->bpmWorker.clearVisualization();
+        if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag()) {
+            this->bpmVisualization.clear(); // Clear current bpmVisualization array
+            this->bpmWorker.getVisualization().swap(this->bpmVisualization); // Copy to loop bpmVisualization vid
+            this->bpmWorker.clearVisualization(); // Clear bpmWorker bpmVisualization array
         }
 
         // Start computing when buffer filled
         // TODO: REMOVE DEV ONLY
-        if ((frame + 1) % BUFFER_FRAMES == 0 && frame > CAMERA_INIT + BUFFER_FRAMES) {
+        if (frame > CAMERA_INIT + BUFFER_FRAMES && videoBuffer.size() == BUFFER_FRAMES && !bpmWorker.isWorking()) {
             boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
             boost::thread th(th_bpm);
         }
 
         // Show bpmVisualization video after initialization compute
         if (this->bpmWorker.getInitialFlag()) {
-            imshow("FILTERED", resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), 800));
-            if (waitKey(10) >= 0) break;
+            Mat visual = in.clone();
+            visual.setTo(0);
+            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), this->faces[0].width);
+            tmp.copyTo(visual(cv::Rect(this->faces[0].x,this->faces[0].y, tmp.cols, tmp.rows)));
+            out = out + this->beatVisibilityFactor*visual;
+            normalize(out, out, 0, 255, NORM_MINMAX, CV_8UC3);
         }
 
-        // Adjustemnt of output
-        //        fakeBeating(out, i, FRAME_RATE/10);
-
-
         // Merge original + adjusted
-        hconcat(in, out, window);
+        hconcat(out, in, window);
 
-        //put the image onto a screen
-        imshow("video:", window);
+        // Put the image onto a screen
+        namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
+        imshow( "Display Image", window);
 
         // Free
         in.release();
         out.release();
+
 
         //press anything within the poped-up window to close this program
         if (waitKey(10) >= 0) break;
@@ -96,5 +94,5 @@ int Bpm::run() {
         i += .2;
     }
 
-
+    return 0;
 }

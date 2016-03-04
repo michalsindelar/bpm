@@ -17,31 +17,38 @@ using namespace std;
 
 class AmplificationWorker {
     int bpm;
-    bool ready;
+    bool working;
     bool initialFlag;
 
     vector<Mat> videoBuffer;
     vector<Mat> visualization;
 
+    Rect face;
+    Size origVideoSize;
+
     public:
         AmplificationWorker();
-        void compute(deque<Mat> videoBuffer);
-        void setVideoBuffer(deque<Mat> videoBuffer);
+        void compute(vector<Mat> videoBuffer);
+        void setVideoBuffer(vector<Mat> videoBuffer);
         void clearVisualization();
 
-        bool isReady() {
-            return this->ready;
+        bool isWorking() {
+            return this->working;
         }
         bool getInitialFlag() {
             return initialFlag;
         }
 
-        const vector<Mat> &getVisualization() const {
+        vector<Mat> & getVisualization() {
             return this->visualization;
         }
 
-        void setReady(bool ready) {
-            AmplificationWorker::ready = ready;
+        void setWorking(bool working) {
+            AmplificationWorker::working = working;
+        }
+
+        void setFace(const Rect &face) {
+            AmplificationWorker::face = face;
         }
 };
 

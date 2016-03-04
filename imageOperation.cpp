@@ -63,8 +63,8 @@ void fakeBeating (Mat image, double index, int maxValue) {
     
     // Mask filled
     for( size_t i = 0; i < faces.size(); i++ ) {
-        Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-        ellipse( mask, center, Size( faces[i].width*0.6, faces[i].height*0.7), 0, 0, 360, Scalar( 255, 255, 255 ), -1, 8, 0 );
+        Point center( faces[i].x + int(faces[i].width*0.5f), faces[i].y + int(faces[i].height * 0.5f));
+        ellipse( mask, center, Size( int(faces[i].width*0.6f), int(faces[i].height*0.7f)), 0, 0, 360, Scalar( 255, 255, 255 ), -1, 8, 0 );
     }
     
     // Blur mask

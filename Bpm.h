@@ -22,6 +22,7 @@
 #define BUFFER_FRAMES 40
 #define FRAME_RATE 15
 #define CAMERA_INIT 10
+#define RESIZED_FRAME_WIDTH 1000
 
 
 using namespace cv;
@@ -31,10 +32,13 @@ class Bpm {
     private:
         bool initialWorkerFlag = false;
         int currBpm;
+        float beatVisibilityFactor = 10;
 
         VideoCapture cam;
         // Deque for storing captured frames
-        deque<Mat> videoBuffer;
+        vector<Mat> videoBuffer;
+        // Orig video buffer
+        vector<Mat> origVideoBuffer;
         // Processed mask of blood flow
         vector<Mat> bpmVisualization;
 

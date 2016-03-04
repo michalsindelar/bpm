@@ -19,7 +19,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
 void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
-vector <float> coeffsRow (int width, int videoSize, int fps, int fl, int fh);
+Mat maskingCoeffs(int width, int fps, int fl, int fh);
 
 // FT functions
 void shift(Mat magI);
