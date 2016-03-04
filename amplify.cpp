@@ -105,7 +105,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
                     dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                     // MASKING
-                     fourierTransform = fourierTransform.mul(mask);
+                    fourierTransform = fourierTransform.mul(mask);
 
                     // IFFT
                     dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);

@@ -31,7 +31,7 @@ int Bpm::run() {
         // Output
         Mat out = in.clone();
 
-        // Detect face
+        // Detect face only once
         if (this->faces.size() == 0) {
             this->faces = detectFace(out);
         }

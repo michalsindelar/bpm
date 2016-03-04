@@ -23,6 +23,9 @@ class AmplificationWorker {
     vector<Mat> videoBuffer;
     vector<Mat> visualization;
 
+    Rect face;
+    Size origVideoSize;
+
     public:
         AmplificationWorker();
         void compute(vector<Mat> videoBuffer);
@@ -42,6 +45,10 @@ class AmplificationWorker {
 
         void setWorking(bool working) {
             AmplificationWorker::working = working;
+        }
+
+        void setFace(const Rect &face) {
+            AmplificationWorker::face = face;
         }
 };
 
