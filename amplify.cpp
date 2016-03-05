@@ -74,11 +74,10 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     int width =  video[0].size().width;
 
     // TODO: Connect with main class
+    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
     int fps = 30;
     int fl = 60/60; // Low freq cut-off
     int fh = 200/60; // High freg cut-off
-
-    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
 
     // Prepare freq.
     // Create mask
@@ -170,6 +169,9 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
             }
         }
 
+        // Amplify frame's channels
+        amplifyChannels(channels, 5, 1, 1);
+
         // Merge channels into colorFrame
         Mat colorFrame;
         merge(channels, colorFrame);
@@ -221,6 +223,14 @@ Mat updateResult(Mat complex) {
     normalize(work, work, 0, 1, NORM_MINMAX);
 
     return work;
+}
+
+
+void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
+    channels[RED_CHANNEL] = channels[RED_CHANNEL] * r;
+    channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL] * g;
+    channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL] * b;
+
 }
 
 /**

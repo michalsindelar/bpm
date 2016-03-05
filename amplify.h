@@ -20,6 +20,7 @@ Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
 void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
 Mat maskingCoeffs(int width, int fps, int fl, int fh);
+void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 
 // FT functions
 void shift(Mat magI);
