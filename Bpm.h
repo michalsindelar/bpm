@@ -60,7 +60,8 @@ class Bpm {
         Bpm();
         int run();
         void updateFace(Rect face);
-
+        bool isFaceDetected();
+        bool isBufferFull();
 
 
 };

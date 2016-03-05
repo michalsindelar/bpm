@@ -13,17 +13,6 @@ Bpm::Bpm() {
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
-    this->faceDetector = FaceDetectorWorker();
-}
-
-void Bpm::updateFace(Rect face) {
-    if (!this->face.x) {
-        this->face = face;
-    } else {
-        // Handle face size better
-        this->face.x = face.x;
-        this->face.y = face.y;
-    }
 }
 
 int Bpm::run() {
@@ -53,7 +42,7 @@ int Bpm::run() {
         }
 
         // Keep maximum BUFFER_FRAMES size
-        if (videoBuffer.size() == BUFFER_FRAMES) {
+        if (this->isBufferFull()) {
             // Erase first frame
             videoBuffer.erase(videoBuffer.begin());
         }
@@ -61,21 +50,23 @@ int Bpm::run() {
         // Start cropping frames to face only after init
         // TODO: Can't run without face!
         // Or can be choosen center of image
-        if (frame > CAMERA_INIT) {
+        if (frame > CAMERA_INIT && this->isFaceDetected()) {
             Mat croppedToFace = in(Rect(face.x, face.y, face.width, face.height)).clone();
             videoBuffer.push_back(croppedToFace);
         }
 
         // Update bpm once bpmWorker ready
-        if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag()) {
-            this->bpmVisualization.clear(); // Clear current bpmVisualization array
-            this->bpmWorker.getVisualization().swap(this->bpmVisualization); // Copy to loop bpmVisualization vid
-            this->bpmWorker.clearVisualization(); // Clear bpmWorker bpmVisualization array
+        if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag() && this->isBufferFull() ) {
+            // Clear current bpmVisualization array
+            this->bpmVisualization.clear();
+            // Copy to loop bpmVisualization vid
+            this->bpmWorker.getVisualization().swap(this->bpmVisualization);
+            // Clear bpmWorker bpmVisualization array
+            this->bpmWorker.clearVisualization();
         }
 
         // Start computing when buffer filled
-        // TODO: REMOVE DEV ONLY
-        if (frame > CAMERA_INIT + BUFFER_FRAMES && videoBuffer.size() == BUFFER_FRAMES && !bpmWorker.isWorking()) {
+        if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
             boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
             boost::thread th(th_bpm);
         }
@@ -110,4 +101,22 @@ int Bpm::run() {
     }
 
     return 0;
+}
+
+void Bpm::updateFace(Rect face) {
+    // After initial detection update only position (not size)
+    if (!this->face.x) {
+        this->face = face;
+    } else {
+        this->face.x = face.x;
+        this->face.y = face.y;
+    }
+}
+
+bool Bpm::isFaceDetected() {
+    return !!this->face.x;
+}
+
+bool Bpm::isBufferFull() {
+    return videoBuffer.size() == BUFFER_FRAMES;
 }
