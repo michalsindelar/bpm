@@ -19,6 +19,9 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowL
     // Filtering
     bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
 
+    // Count intensities
+//     countIntensities(out);
+
     // Clear data
     stack.clear();
 }
@@ -231,6 +234,36 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
     channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL] * g;
     channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL] * b;
 
+}
+
+
+int* countIntensities(vector<Mat> &video) {
+    int intensitySum[video.size()];
+    for (int frame = 0; frame < video.size(); frame++) {
+        uint8_t* pixelPtr = (uint8_t*)video[frame].data;
+        int cn = video[frame].channels();
+        Scalar_<uint8_t> bgrPixel;
+        for(int i = 0; i < video[i].rows; i++) {
+            for(int j = 0; j < video[i].cols; j++) {
+                intensitySum[frame] += pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
+            }
+        }
+    }
+    return intensitySum;
+}
+
+
+void saveIntensities(vector<Mat>& video, string filename) {
+    ofstream myfile;
+    myfile.open(filename, ios::out);
+
+    int *intensitySum = countIntensities(video);
+
+    for (int i = 0; i < video.size(); i++) {
+        myfile << intensitySum[i];
+        myfile << "\n";
+    }
+    myfile.close();
 }
 
 /**
