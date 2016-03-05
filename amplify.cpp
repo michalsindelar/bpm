@@ -75,7 +75,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
 
     // TODO: Connect with main class
     // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
-    int fps = 30;
+    int fps = 20;
     int fl = 60/60; // Low freq cut-off
     int fh = 200/60; // High freg cut-off
 

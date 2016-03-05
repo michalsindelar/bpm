@@ -33,7 +33,7 @@ class Bpm {
     private:
         bool initialWorkerFlag = false;
         int currBpm;
-        float beatVisibilityFactor = 10;
+        float beatVisibilityFactor = 1;
         Rect face;
 
         VideoCapture cam;

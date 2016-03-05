@@ -74,12 +74,11 @@ int Bpm::run() {
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
         if (this->bpmWorker.getInitialFlag()) {
-            Mat visual = in.clone();
-            visual.setTo(0);
+            Mat visual = Mat::zeros(in.rows, in.cols, in.type());
+
             Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), face.width);
             tmp.copyTo(visual(cv::Rect(face.x,face.y, tmp.cols, tmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
-            normalize(out, out, 0, 255, NORM_MINMAX, CV_8UC3);
         }
 
         // Merge original + adjusted
