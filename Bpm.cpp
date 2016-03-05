@@ -18,6 +18,9 @@ Bpm::Bpm() {
 int Bpm::run() {
     double i = 0;
 
+    // Application window
+    namedWindow( "App window", CV_WINDOW_AUTOSIZE);
+
     for (int frame = 0; true; frame++) {
         // Grab video frame
         Mat in;
@@ -85,13 +88,11 @@ int Bpm::run() {
         hconcat(out, in, window);
 
         // Put the image onto a screen
-        namedWindow( "Display Image", CV_WINDOW_AUTOSIZE );
-        imshow( "Display Image", window);
+        imshow( "App window", window);
 
         // Free
         in.release();
         out.release();
-
 
         //press anything within the poped-up window to close this program
         if (waitKey(10) >= 0) break;
