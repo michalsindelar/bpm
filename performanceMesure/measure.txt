@@ -1,0 +1,2 @@
+Detect faces using haar
+img[1000x562]	0.2 - 0.3s

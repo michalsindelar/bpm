@@ -16,6 +16,7 @@
 #include "./imageOperation.h"
 #include "./amplify.h"
 #include "./AmplificationWorker.h"
+#include "FaceDetectorWorker.h"
 
 #include "skinDetect.h"
 
@@ -33,6 +34,7 @@ class Bpm {
         bool initialWorkerFlag = false;
         int currBpm;
         float beatVisibilityFactor = 10;
+        Rect face;
 
         VideoCapture cam;
         // Deque for storing captured frames
@@ -51,9 +53,13 @@ class Bpm {
         // Worker for computing
         AmplificationWorker bpmWorker;
 
+        // Worker for computing
+        FaceDetectorWorker faceDetector;
+
     public:
         Bpm();
         int run();
+        void updateFace(Rect face);
 
 
 
