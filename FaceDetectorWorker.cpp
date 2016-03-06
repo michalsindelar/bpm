@@ -23,7 +23,12 @@ void FaceDetectorWorker::detectFace(Mat frame) {
     cvtColor(frame, frame, CV_BGR2GRAY );
 
     // Detect faces
-    faceCascade.detectMultiScale( frame, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE);
+    try {
+        faceCascade.detectMultiScale( frame, faces, 1.3, 2, 0|CV_HAAR_SCALE_IMAGE);
+    } catch (Exception & e) {
+        this->working = false;
+        return;
+    }
 
     this->working = false;
 }
