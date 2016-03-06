@@ -95,7 +95,7 @@ int Bpm::run() {
         out.release();
 
         //press anything within the poped-up window to close this program
-        if (waitKey(10) >= 0) break;
+        if (waitKey(1) >= 0) break;
 
         i += .2;
     }
