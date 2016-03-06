@@ -22,9 +22,13 @@ int Bpm::run() {
     namedWindow( "App window", CV_WINDOW_AUTOSIZE);
 
     for (int frame = 0; true; frame++) {
+
+        // Measuring elapsed time
+        clock_t begin = clock();
+
         // Grab video frame
         Mat in;
-        cam >> in; // type: CV_8U
+        cam >> in; // type: CV_8UC3 (16)
 
         if (frame < CAMERA_INIT) continue;
 
@@ -70,8 +74,7 @@ int Bpm::run() {
 
         // Start computing when buffer filled
         if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
-            boost::function<void()> th_bpm = boost::bind(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
-            boost::thread th(th_bpm);
+            boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
         }
 
         // Show bpmVisualization video after initialization compute
@@ -94,10 +97,20 @@ int Bpm::run() {
         in.release();
         out.release();
 
-        //press anything within the poped-up window to close this program
+        // Update index
+        i += .2;
+
+        // Handling frame rate & time for closing window
         if (waitKey(1) >= 0) break;
 
-        i += .2;
+        // Stop measuring loop time
+        clock_t end = clock();
+
+
+        // TODO: Check if working
+        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
+        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+        usleep(extraWaitMus);
     }
 
     return 0;
