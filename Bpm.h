@@ -12,6 +12,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
+#include <opencv2/imgproc/imgproc_c.h>
 
 #include "./imageOperation.h"
 #include "./amplify.h"
@@ -26,7 +27,6 @@
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FRAME_RATE)
 #define CAMERA_INIT 10
 #define RESIZED_FRAME_WIDTH 600
-
 
 using namespace cv;
 using namespace std;

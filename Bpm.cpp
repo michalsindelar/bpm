@@ -85,9 +85,11 @@ int Bpm::run() {
             Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), face.width);
             tmp.copyTo(visual(cv::Rect(face.x,face.y, tmp.cols, tmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
+        } else {
+            putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         }
 
-        // Merge original + adjusted
+        // Merge original + adjusteds
         hconcat(out, in, window);
 
         // Put the image onto a screen
@@ -105,7 +107,6 @@ int Bpm::run() {
 
         // Stop measuring loop time
         clock_t end = clock();
-
 
         // TODO: Check if working
         double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
