@@ -37,6 +37,7 @@ class Bpm {
         int currBpm;
         float beatVisibilityFactor = 1;
         Rect face;
+        Rect tmpFace;
 
         VideoCapture cam;
         // Deque for storing captured frames
@@ -49,9 +50,6 @@ class Bpm {
         // OS window
         Mat window;
 
-        // Detected face
-        vector<Rect> faces;
-
         // Worker for computing
         AmplificationWorker bpmWorker;
 
@@ -62,6 +60,7 @@ class Bpm {
         Bpm();
         int run();
         void updateFace(Rect face);
+        void mergeFaces();
         bool isFaceDetected();
         bool isBufferFull();
 

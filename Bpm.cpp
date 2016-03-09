@@ -75,6 +75,7 @@ int Bpm::run() {
         // Start computing when buffer filled
         if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
             boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
+            mergeFaces();
         }
 
         // Show bpmVisualization video after initialization compute
@@ -82,7 +83,7 @@ int Bpm::run() {
         if (this->bpmWorker.getInitialFlag()) {
             Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), face.width);
+            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
             tmp.copyTo(visual(cv::Rect(face.x,face.y, tmp.cols, tmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
         } else {
@@ -120,11 +121,18 @@ int Bpm::run() {
 void Bpm::updateFace(Rect face) {
     // After initial detection update only position (not size)
     if (!this->face.x) {
-        this->face = face;
+        this->face = this->tmpFace = face;
     } else {
         this->face.x = face.x;
         this->face.y = face.y;
+
+        this->tmpFace = face;
     }
+}
+
+
+void Bpm::mergeFaces() {
+    this->face = this->tmpFace;
 }
 
 bool Bpm::isFaceDetected() {
