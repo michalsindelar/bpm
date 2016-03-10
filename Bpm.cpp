@@ -85,6 +85,8 @@ int Bpm::run() {
 
             Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
             tmp.copyTo(visual(cv::Rect(face.x,face.y, tmp.cols, tmp.rows)));
+
+            // TODO: Need to check here if inside window!!
             out = out + this->beatVisibilityFactor*visual;
         } else {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);

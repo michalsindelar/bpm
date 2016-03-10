@@ -6,7 +6,7 @@ find_package( OpenCV REQUIRED)
 find_package(Boost COMPONENTS log log_setup thread filesystem system)
 
 # Define current folder
-set(PROJECT_DIR "${CMAKE_BINARY_DIR}")
+set(PROJECT_DIR "${CMAKE_SOURCE_DIR}")
 configure_file(config.h.in ${CMAKE_SOURCE_DIR}/config.h)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})

@@ -182,6 +182,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         // Convert to basic CV_8UC3 in range [0,255]
         colorFrame.convertTo(colorFrame, CV_8UC3, 255);
 
+//        Rect roi(0, 0, colorFrame.cols, colorFrame.rows);
         dst.push_back(colorFrame);
         channels.clear();
         colorFrame.release();

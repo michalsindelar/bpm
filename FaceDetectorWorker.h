@@ -9,6 +9,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include "config.h"
+
 
 using namespace cv;
 using namespace std;
@@ -18,6 +20,9 @@ class FaceDetectorWorker {
     bool working;
     Mat frame;
     CascadeClassifier faceCascade;
+
+    float faceHeightScale = 1.8f; // Increase height
+    float faceYOffset = 0.2f; // Move face up
 
     public:
         FaceDetectorWorker();

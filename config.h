@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // define your version_libinterface
-#define PROJECT_DIR "/Users/michal/Library/Caches/CLion12/cmake/generated/4e465258/4e465258/RelWithDebInfo1"
+#define PROJECT_DIR "/Users/michal/Dev/bpm"
 
 
 #endif // CONFIG_H
