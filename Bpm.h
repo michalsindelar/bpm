@@ -12,18 +12,21 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
+#include <opencv2/imgproc/imgproc_c.h>
 
 #include "./imageOperation.h"
 #include "./amplify.h"
 #include "./AmplificationWorker.h"
+#include "FaceDetectorWorker.h"
 
 #include "skinDetect.h"
 
-#define BUFFER_FRAMES 40
-#define FRAME_RATE 15
+#define BUFFER_FRAMES 50
+#define FRAME_RATE 10
+#define LOOP_WAIT_TIME_MS (1000 / FRAME_RATE)
+#define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FRAME_RATE)
 #define CAMERA_INIT 10
-#define RESIZED_FRAME_WIDTH 1000
-
+#define RESIZED_FRAME_WIDTH 600
 
 using namespace cv;
 using namespace std;
@@ -32,7 +35,9 @@ class Bpm {
     private:
         bool initialWorkerFlag = false;
         int currBpm;
-        float beatVisibilityFactor = 10;
+        float beatVisibilityFactor = 1;
+        Rect face;
+        Rect tmpFace;
 
         VideoCapture cam;
         // Deque for storing captured frames
@@ -45,16 +50,19 @@ class Bpm {
         // OS window
         Mat window;
 
-        // Detected face
-        vector<Rect> faces;
-
         // Worker for computing
         AmplificationWorker bpmWorker;
+
+        // Worker for computing
+        FaceDetectorWorker faceDetector;
 
     public:
         Bpm();
         int run();
-
+        void updateFace(Rect face);
+        void mergeFaces();
+        bool isFaceDetected();
+        bool isBufferFull();
 
 
 };

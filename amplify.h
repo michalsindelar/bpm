@@ -9,6 +9,9 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/core.hpp>
 
+#include <iostream>
+#include <fstream>
+
 using namespace cv;
 using namespace std;
 
@@ -20,10 +23,8 @@ Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
 void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
 Mat maskingCoeffs(int width, int fps, int fl, int fh);
-
-// FT functions
-void shift(Mat magI);
-Mat computeDFT(Mat image);
-Mat updateResult(Mat complex);
+void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
+int* countIntensities(vector<Mat>& video);
+void saveIntensities(vector<Mat>& video, string filename);
 
 #endif //BPM_AMPLIFY_H

@@ -1,11 +1,11 @@
 #include "skinDetect.h"
 
-
 void detectSkin (Mat mask) {
+
 
     // Load face cascade
     CascadeClassifier face_cascade;
-    face_cascade.load("haarcascade_frontalface_alt.xml");
+    face_cascade.load(strcat(PROJECT_DIR,"/haarcascade_frontalface_alt.xml"));
     
     // Create bw mat
     Mat frame_gray;
@@ -22,7 +22,7 @@ void detectSkin (Mat mask) {
         
         Mat faceROI = frame_gray( faces[i] );
         std::vector<Rect> eyes;
-        
+
         
         for( size_t j = 0; j < eyes.size(); j++ )
         {

@@ -19,6 +19,9 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowL
     // Filtering
     bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
 
+    // Count intensities
+//     countIntensities(out);
+
     // Clear data
     stack.clear();
 }
@@ -74,11 +77,10 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     int width =  video[0].size().width;
 
     // TODO: Connect with main class
-    int fps = 30;
+    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
+    int fps = 20;
     int fl = 60/60; // Low freq cut-off
     int fh = 200/60; // High freg cut-off
-
-    // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
 
     // Prepare freq.
     // Create mask
@@ -170,6 +172,9 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
             }
         }
 
+        // Amplify frame's channels
+        amplifyChannels(channels, 5, 1, 1);
+
         // Merge channels into colorFrame
         Mat colorFrame;
         merge(channels, colorFrame);
@@ -177,6 +182,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         // Convert to basic CV_8UC3 in range [0,255]
         colorFrame.convertTo(colorFrame, CV_8UC3, 255);
 
+//        Rect roi(0, 0, colorFrame.cols, colorFrame.rows);
         dst.push_back(colorFrame);
         channels.clear();
         colorFrame.release();
@@ -221,6 +227,44 @@ Mat updateResult(Mat complex) {
     normalize(work, work, 0, 1, NORM_MINMAX);
 
     return work;
+}
+
+
+void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
+    channels[RED_CHANNEL] = channels[RED_CHANNEL] * r;
+    channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL] * g;
+    channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL] * b;
+
+}
+
+
+int* countIntensities(vector<Mat> &video) {
+    int intensitySum[video.size()];
+    for (int frame = 0; frame < video.size(); frame++) {
+        uint8_t* pixelPtr = (uint8_t*)video[frame].data;
+        int cn = video[frame].channels();
+        Scalar_<uint8_t> bgrPixel;
+        for(int i = 0; i < video[i].rows; i++) {
+            for(int j = 0; j < video[i].cols; j++) {
+                intensitySum[frame] += pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
+            }
+        }
+    }
+    return intensitySum;
+}
+
+
+void saveIntensities(vector<Mat>& video, string filename) {
+    ofstream myfile;
+    myfile.open(filename, ios::out);
+
+    int *intensitySum = countIntensities(video);
+
+    for (int i = 0; i < video.size(); i++) {
+        myfile << intensitySum[i];
+        myfile << "\n";
+    }
+    myfile.close();
 }
 
 /**
