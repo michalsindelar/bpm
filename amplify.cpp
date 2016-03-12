@@ -20,7 +20,7 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowL
     bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
 
     // Count intensities
-//     countIntensities(out);
+    computeBpm(countIntensities(out));
 
     // Clear data
     stack.clear();
@@ -85,7 +85,6 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     // Prepare freq.
     // Create mask
     Mat mask = maskingCoeffs(video.size(), fps, fl, fh);
-
 
     // Create time stack change
     vector <vector<Mat> > timeStack(3);
@@ -238,15 +237,17 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
 }
 
 
-int* countIntensities(vector<Mat> &video) {
-    int intensitySum[video.size()];
+vector<int> countIntensities(vector<Mat> &video) {
+    vector <int> intensitySum(BUFFER_FRAMES);
     for (int frame = 0; frame < video.size(); frame++) {
         uint8_t* pixelPtr = (uint8_t*)video[frame].data;
         int cn = video[frame].channels();
         Scalar_<uint8_t> bgrPixel;
         for(int i = 0; i < video[i].rows; i++) {
             for(int j = 0; j < video[i].cols; j++) {
-                intensitySum[frame] += pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
+                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
+                intensitySum.at(frame) += (int)tmp;
+
             }
         }
     }
@@ -258,13 +259,44 @@ void saveIntensities(vector<Mat>& video, string filename) {
     ofstream myfile;
     myfile.open(filename, ios::out);
 
-    int *intensitySum = countIntensities(video);
+    vector<int> intensitySum = countIntensities(video);
 
     for (int i = 0; i < video.size(); i++) {
-        myfile << intensitySum[i];
+        myfile << intensitySum.at(i);
         myfile << "\n";
     }
     myfile.close();
+}
+
+int computeBpm(vector<int> intensitySum) {
+
+    int intensityCount = BUFFER_FRAMES;
+
+    // Normalize intensities
+//    normalize(intensitySum, intensitySum);
+
+    // DFT of intensities
+    Mat fa(intensitySum);
+    fa.convertTo(fa, CV_32FC1);
+    dft(fa, fa, DFT_REAL_OUTPUT);
+
+    // Find max value & locaiton
+    double maxFreq;
+    int maxFreqLoc;
+
+    // We need only positive values
+    for (int i = 0; i < BUFFER_FRAMES; i++) {
+        fa.at<float>(i) = abs(fa.at<float>(i));
+        if (fa.at<float>(i) > maxFreq) {
+            maxFreq = fa.at<float>(i);
+            maxFreqLoc = i;
+        }
+    }
+
+    // Intensities should be already masked
+
+    // return computed bpm
+    return round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
 }
 
 /**

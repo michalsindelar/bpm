@@ -12,6 +12,9 @@
 #include <iostream>
 #include <fstream>
 
+// Configuration
+#include "./config.h"
+
 using namespace cv;
 using namespace std;
 
@@ -24,7 +27,8 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
 void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
 Mat maskingCoeffs(int width, int fps, int fl, int fh);
 void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
-int* countIntensities(vector<Mat>& video);
+vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);
+int computeBpm(vector<int> intensitySum);
 
 #endif //BPM_AMPLIFY_H

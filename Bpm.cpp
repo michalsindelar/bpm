@@ -58,7 +58,12 @@ int Bpm::run() {
         // TODO: Can't run without face!
         // Or can be choosen center of image
         if (frame > CAMERA_INIT && this->isFaceDetected()) {
-            Mat croppedToFace = in(Rect(face.x, face.y, face.width, face.height)).clone();
+
+            face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
+            face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
+            Rect roi(face.x, face.y, face.width, face.height);
+
+            Mat croppedToFace = in(roi).clone();
             videoBuffer.push_back(croppedToFace);
         }
 
@@ -75,7 +80,7 @@ int Bpm::run() {
         // Start computing when buffer filled
         if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
             boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
-            mergeFaces();
+//            mergeFaces();
         }
 
         // Show bpmVisualization video after initialization compute
@@ -112,9 +117,9 @@ int Bpm::run() {
         clock_t end = clock();
 
         // TODO: Check if working
-        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
-        usleep(extraWaitMus);
+//        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
+//        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+//        usleep(extraWaitMus);
     }
 
     return 0;
