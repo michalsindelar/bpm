@@ -80,7 +80,7 @@ int Bpm::run() {
         // Start computing when buffer filled
         if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
             boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
-//            mergeFaces();
+            mergeFaces();
         }
 
         // Show bpmVisualization video after initialization compute
@@ -88,10 +88,10 @@ int Bpm::run() {
         if (this->bpmWorker.getInitialFlag()) {
             Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
-            tmp.copyTo(visual(cv::Rect(face.x,face.y, tmp.cols, tmp.rows)));
+            // TODO: Check image range
 
-            // TODO: Need to check here if inside window!!
+            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
+            tmp.copyTo(visual(cv::Rect(face.x, face.y, tmp.cols, tmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
         } else {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
