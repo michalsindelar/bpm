@@ -17,7 +17,7 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alph
     buildGDownStack(video, stack, framesCount, level);
 
     // Filtering
-    bandpass(stack, out, lowLimit, highLimit, framesCount);
+    bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
     // Count intensities
     bpm = computeBpm(countIntensities(out));
@@ -71,7 +71,7 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     return frame;
 }
 
-void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int framesCount) {
+void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount) {
     // TODO: Describe
     int height =  video[0].size().height;
     int width =  video[0].size().width;
@@ -79,11 +79,11 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     // TODO: Connect with main class
     // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
     int fl = 60/60; // Low freq cut-off
-    int fh = 200/60; // High freg cut-off
+    int fh = 120/60; // High freg cut-off
 
     // Prepare freq.
     // Create mask
-    Mat mask = maskingCoeffs(video.size(), fl, fh);
+
 
     // Create time stack change
     vector <vector<Mat> > timeStack(3);
@@ -96,28 +96,58 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highL
     //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
     //    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
 
+    int bruteBpmSum = 0;
+    int numOfSamples = 0;
+
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
-                for (int row = 0; row < timeStack[channel][i].rows; row++) {
+            for (int row = 0; row < timeStack[channel][i].rows; row++) {
 
-                    // FFT
-                    Mat fourierTransform;
-                    dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
+                // FFT
+                Mat fourierTransform;
+                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
-                    // MASKING
-                    fourierTransform = fourierTransform.mul(mask);
+                // TEST
+                float maxFreq = 0;
+                int maxFreqLoc = 0;
+                int bpm = 0;
+                for (int j = 0; j < timeStack[channel][i].cols; j++) {
+                    bpm = (int) round(60 * FRAME_RATE * j / BUFFER_FRAMES);
 
-                    // IFFT
-                    dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+                    if (bpm < 50) continue; // This is under low frequency
+                    if (bpm > 180) continue; // This is over high frequency
 
-                    // RELEASE
-                    fourierTransform.release();
+                    fourierTransform.at<float>(j) = abs(fourierTransform.at<float>(j));
+                    if (fourierTransform.at<float>(j) > maxFreq) {
+                        maxFreq = fourierTransform.at<float>(j);
+                        maxFreqLoc = j;
+                    }
+                }
+
+                // Strongest frequency in row
+                float rowFreq = 60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES;
+
+                // MASKING via computed freq
+                Mat mask = maskingCoeffs(video.size(),  (rowFreq - 15) / 60.0f, (rowFreq + 15) / 60.0f);
+                fourierTransform = fourierTransform.mul(mask);
+
+                // Aggregate all rows strongest freqs
+                bruteBpmSum += rowFreq;
+
+                // Increment samples counter
+                numOfSamples++;
+
+                // IFFT
+                dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+
+                // RELEASE
+                fourierTransform.release();
             }
         }
     }
-    mask.release();
-    inverseCreateTimeChangeStack(timeStack, filtered);
 
+    bpm = bruteBpmSum / (float)numOfSamples;
+    inverseCreateTimeChangeStack(timeStack, filtered);
 }
 
 // Assume video is single channel
@@ -171,7 +201,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-        amplifyChannels(channels, 5, 1, 1);
+        amplifyChannels(channels, 5, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
@@ -181,8 +211,9 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         outputFrame.convertTo(outputFrame, CV_8UC3, 255);
 
         // TODO: Awful solution!!!
-//        cvtColor(outputFrame,outputFrame, CV_BGR2GRAY );
-//        cvtColor(outputFrame,outputFrame, CV_GRAY2BGR );
+//        cvtColor(outputFrame,outputFrame, CV_BGR2GRAY);
+//        cvtColor(outputFrame,outputFrame, CV_GRAY2BGR);
+//        bitwise_not(outputFrame, outputFrame);
 
 //        Rect roi(0, 0, outputFrame.cols, outputFrame.rows);
         dst.push_back(outputFrame);
@@ -192,7 +223,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 }
 
 
-Mat maskingCoeffs(int width, int fl, int fh) {
+Mat maskingCoeffs(int width, float fl, float fh) {
     Mat row(1, width, CV_32FC2);
 
     // 1st row
@@ -236,7 +267,6 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
     channels[RED_CHANNEL] = channels[RED_CHANNEL] * r;
     channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL] * g;
     channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL] * b;
-
 }
 
 
@@ -292,16 +322,18 @@ int computeBpm(vector<int> intensitySum) {
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
         bpm = (int) round(60 * FRAME_RATE * i / BUFFER_FRAMES);
-        if (bpm < 50) continue; // This is under low frequency
-        if (bpm > 180) continue; // This is over high frequency
 
-        fa.at<float>(i) = abs(fa.at<float>(i));
-        if (fa.at<float>(i) > maxFreq) {
-            maxFreq = fa.at<float>(i);
+        // TODO: This should be connected with bpm!
+        if (bpm < 50) continue; // This is under low frequency
+        if (bpm > 80) continue; // This is over high frequency
+
+        if (abs(fa.at<float>(i)) > maxFreq) {
+            maxFreq = abs(fa.at<float>(i));
             maxFreqLoc = i;
         }
     }
     int returnVal = (int) round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+
     return returnVal;
 }
 
