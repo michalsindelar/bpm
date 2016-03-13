@@ -5,7 +5,7 @@
 #define PROJECT_DIR "/Users/michal/Dev/bpm"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 50
+#define BUFFER_FRAMES 150
 
 // Experimental settings of fps
 #define FRAME_RATE 10

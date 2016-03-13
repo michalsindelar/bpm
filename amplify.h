@@ -18,7 +18,7 @@
 using namespace cv;
 using namespace std;
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level);
+void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level);
 void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level);
 Mat blurDn(Mat frame, int level, Mat kernel);
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount);

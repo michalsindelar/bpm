@@ -8,7 +8,7 @@
 #define GREEN_CHANNEL 1
 #define RED_CHANNEL 2
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
+void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
 
     // Allocate stack
     vector<Mat> stack;
@@ -20,7 +20,7 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, double alpha, int lowL
     bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
 
     // Count intensities
-    computeBpm(countIntensities(out));
+    bpm = computeBpm(countIntensities(out));
 
     // Clear data
     stack.clear();
@@ -239,15 +239,16 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
 
 vector<int> countIntensities(vector<Mat> &video) {
     vector <int> intensitySum(BUFFER_FRAMES);
+    Size videoFrame(video[0].cols, video[0].rows);
+
     for (int frame = 0; frame < video.size(); frame++) {
         uint8_t* pixelPtr = (uint8_t*)video[frame].data;
         int cn = video[frame].channels();
         Scalar_<uint8_t> bgrPixel;
-        for(int i = 0; i < video[i].rows; i++) {
-            for(int j = 0; j < video[i].cols; j++) {
-//                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
-                intensitySum.at(frame) += (int)10;
-
+        for(int i = 0; i < videoFrame.height; i++) {
+            for(int j = 0; j < videoFrame.width; j++) {
+                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
+                intensitySum.at(frame) += (int)tmp;
             }
         }
     }
@@ -281,22 +282,26 @@ int computeBpm(vector<int> intensitySum) {
     dft(fa, fa, DFT_REAL_OUTPUT);
 
     // Find max value & locaiton
-    double maxFreq;
-    int maxFreqLoc;
+    float maxFreq = 0;
+    int maxFreqLoc = 0;
+
+    int lowFreq = (int) BUFFER_FRAMES / (3*FRAME_RATE);
 
     // We need only positive values
-    for (int i = 0; i < BUFFER_FRAMES; i++) {
+    for (int i = 1; i < BUFFER_FRAMES; i++) {
+        // This is under low frequency
+
+        // TODO: How is this computed
+        if (i < lowFreq) continue;
+
         fa.at<float>(i) = abs(fa.at<float>(i));
         if (fa.at<float>(i) > maxFreq) {
             maxFreq = fa.at<float>(i);
             maxFreqLoc = i;
         }
     }
-
-    // Intensities should be already masked
-
-    // return computed bpm
-    return round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+    int returnVal = round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+    return returnVal;
 }
 
 /**

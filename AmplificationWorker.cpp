@@ -19,16 +19,10 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     // At first fill class buffer with copies!
     this->setVideoBuffer(videoBuffer);
 
-    int ret = 100;
-
-    // TODO: Remove -DEV ONLY
-    int fps = 30;
-
     // Amplify
-    amplifySpatial(this->videoBuffer, this->visualization, 50, 50/60, 70/60, 30, int(videoBuffer.size()), 3);
+    amplifySpatial(this->videoBuffer, this->visualization, this->bpm, 50, 50/60, 70/60, 30, int(videoBuffer.size()), 4);
     this->videoBuffer.clear();
 
-    this->bpm = ret;
     this->working = false;
     this->initialFlag = true;
     cout << "Computed bpm in class";
