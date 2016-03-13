@@ -245,8 +245,8 @@ vector<int> countIntensities(vector<Mat> &video) {
         Scalar_<uint8_t> bgrPixel;
         for(int i = 0; i < video[i].rows; i++) {
             for(int j = 0; j < video[i].cols; j++) {
-                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
-                intensitySum.at(frame) += (int)tmp;
+//                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
+                intensitySum.at(frame) += (int)10;
 
             }
         }

@@ -35,6 +35,9 @@ int Bpm::run() {
         // Resize captured frame
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
+        // TODO: Move outside loop
+        Size frameSize(in.cols, in.rows);
+
         // Output
         Mat out = in.clone();
 
@@ -58,10 +61,11 @@ int Bpm::run() {
         // TODO: Can't run without face!
         // Or can be choosen center of image
         if (frame > CAMERA_INIT && this->isFaceDetected()) {
-
             face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
             face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
+
             Rect roi(face.x, face.y, face.width, face.height);
+            controlFacePlacement(roi, frameSize);
 
             Mat croppedToFace = in(roi).clone();
             videoBuffer.push_back(croppedToFace);
@@ -88,10 +92,16 @@ int Bpm::run() {
         if (this->bpmWorker.getInitialFlag()) {
             Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-            // TODO: Check image range
-
             Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
-            tmp.copyTo(visual(cv::Rect(face.x, face.y, tmp.cols, tmp.rows)));
+
+            Rect roi(face.x, face.y, tmp.cols, tmp.rows);
+            controlFacePlacement(roi, frameSize);
+            roi.x = roi.y = 0;
+
+            // if face would be outside frame crop, else keep same
+            Mat controlledTmp = tmp(roi);
+
+            controlledTmp.copyTo(visual(Rect(face.x, face.y, controlledTmp.cols, controlledTmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
         } else {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
@@ -117,9 +127,9 @@ int Bpm::run() {
         clock_t end = clock();
 
         // TODO: Check if working
-//        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-//        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
-//        usleep(extraWaitMus);
+        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
+        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+        usleep(extraWaitMus);
     }
 
     return 0;
