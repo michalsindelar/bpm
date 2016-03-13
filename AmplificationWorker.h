@@ -12,6 +12,9 @@
 
 #include "./amplify.h"
 
+// Configuration
+#include "./config.h"
+
 using namespace cv;
 using namespace std;
 
@@ -49,6 +52,11 @@ class AmplificationWorker {
 
         void setFace(const Rect &face) {
             AmplificationWorker::face = face;
+        }
+
+
+        int getBpm() const {
+            return bpm;
         }
 };
 
