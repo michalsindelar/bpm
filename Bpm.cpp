@@ -103,6 +103,7 @@ int Bpm::run() {
 
             controlledTmp.copyTo(visual(Rect(face.x, face.y, controlledTmp.cols, controlledTmp.rows)));
             out = out + this->beatVisibilityFactor*visual;
+            putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         } else {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         }

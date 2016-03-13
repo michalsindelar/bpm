@@ -18,14 +18,14 @@
 using namespace cv;
 using namespace std;
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level);
+void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
 void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level);
 Mat blurDn(Mat frame, int level, Mat kernel);
-void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount);
+void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int framesCount);
 Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
 void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
-Mat maskingCoeffs(int width, int fps, int fl, int fh);
+Mat maskingCoeffs(int width, int fl, int fh);
 void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);

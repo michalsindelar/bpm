@@ -53,6 +53,11 @@ class AmplificationWorker {
         void setFace(const Rect &face) {
             AmplificationWorker::face = face;
         }
+
+
+        int getBpm() const {
+            return bpm;
+        }
 };
 
 

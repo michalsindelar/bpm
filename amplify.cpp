@@ -8,7 +8,7 @@
 #define GREEN_CHANNEL 1
 #define RED_CHANNEL 2
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int videoRate, int framesCount, int level) {
+void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
 
     // Allocate stack
     vector<Mat> stack;
@@ -17,7 +17,7 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alph
     buildGDownStack(video, stack, framesCount, level);
 
     // Filtering
-    bandpass(stack, out, lowLimit, highLimit, videoRate, framesCount);
+    bandpass(stack, out, lowLimit, highLimit, framesCount);
 
     // Count intensities
     bpm = computeBpm(countIntensities(out));
@@ -71,20 +71,19 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     return frame;
 }
 
-void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int videoRate, int framesCount) {
+void bandpass(vector<Mat>& video, vector<Mat>& filtered, int lowLimit, int highLimit, int framesCount) {
     // TODO: Describe
     int height =  video[0].size().height;
     int width =  video[0].size().width;
 
     // TODO: Connect with main class
     // http://vgg.fiit.stuba.sk/2012-05/frequency-domain-filtration/
-    int fps = 20;
     int fl = 60/60; // Low freq cut-off
     int fh = 200/60; // High freg cut-off
 
     // Prepare freq.
     // Create mask
-    Mat mask = maskingCoeffs(video.size(), fps, fl, fh);
+    Mat mask = maskingCoeffs(video.size(), fl, fh);
 
     // Create time stack change
     vector <vector<Mat> > timeStack(3);
@@ -175,21 +174,25 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         amplifyChannels(channels, 5, 1, 1);
 
         // Merge channels into colorFrame
-        Mat colorFrame;
-        merge(channels, colorFrame);
+        Mat outputFrame;
+        merge(channels, outputFrame);
 
         // Convert to basic CV_8UC3 in range [0,255]
-        colorFrame.convertTo(colorFrame, CV_8UC3, 255);
+        outputFrame.convertTo(outputFrame, CV_8UC3, 255);
 
-//        Rect roi(0, 0, colorFrame.cols, colorFrame.rows);
-        dst.push_back(colorFrame);
+        // TODO: Awful solution!!!
+//        cvtColor(outputFrame,outputFrame, CV_BGR2GRAY );
+//        cvtColor(outputFrame,outputFrame, CV_GRAY2BGR );
+
+//        Rect roi(0, 0, outputFrame.cols, outputFrame.rows);
+        dst.push_back(outputFrame);
         channels.clear();
-        colorFrame.release();
+        outputFrame.release();
     }
 }
 
 
-Mat maskingCoeffs(int width, int fps, int fl, int fh) {
+Mat maskingCoeffs(int width, int fl, int fh) {
     Mat row(1, width, CV_32FC2);
 
     // 1st row
@@ -197,7 +200,7 @@ Mat maskingCoeffs(int width, int fps, int fl, int fh) {
 
     // Create row 0.25 - 0.5 ----- 30.0
     for (int i = 1; i < width; i++) {
-        float value = (i-1)/( (float) width)* (float) fps;
+        float value = (i-1)/( (float) width)* (float) FRAME_RATE;
         value = (value < fl || value > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
@@ -284,15 +287,13 @@ int computeBpm(vector<int> intensitySum) {
     // Find max value & locaiton
     float maxFreq = 0;
     int maxFreqLoc = 0;
-
-    int lowFreq = (int) BUFFER_FRAMES / (3*FRAME_RATE);
+    int bpm = 0;
 
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
-        // This is under low frequency
-
-        // TODO: How is this computed
-        if (i < lowFreq) continue;
+        bpm = (int) round(60 * FRAME_RATE * i / BUFFER_FRAMES);
+        if (bpm < 50) continue; // This is under low frequency
+        if (bpm > 180) continue; // This is over high frequency
 
         fa.at<float>(i) = abs(fa.at<float>(i));
         if (fa.at<float>(i) > maxFreq) {
@@ -300,7 +301,7 @@ int computeBpm(vector<int> intensitySum) {
             maxFreqLoc = i;
         }
     }
-    int returnVal = round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+    int returnVal = (int) round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
     return returnVal;
 }
 

@@ -20,7 +20,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     this->setVideoBuffer(videoBuffer);
 
     // Amplify
-    amplifySpatial(this->videoBuffer, this->visualization, this->bpm, 50, 50/60, 70/60, 30, int(videoBuffer.size()), 4);
+    amplifySpatial(this->videoBuffer, this->visualization, this->bpm, 50, 50/60, 120/60, int(videoBuffer.size()), 4);
     this->videoBuffer.clear();
 
     this->working = false;
