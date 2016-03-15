@@ -19,9 +19,6 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alph
     // Filtering
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
-    // Count intensities
-    bpm = computeBpm(countIntensities(out));
-
     // Clear data
     stack.clear();
 }
@@ -128,16 +125,15 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
     inverseCreateTimeChangeStack(timeStack, filtered);
 }
 
-float findStrongestRowFreq(Mat fourierTransform, int width) {
-    // TEST
+float findStrongestRowFreq(Mat fourierTransform, int width, int fl = 50, int fh = 180) {
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
     for (int j = 0; j < fourierTransform.cols; j++) {
         bpm = (int) round(60 * FRAME_RATE * j / BUFFER_FRAMES);
 
-        if (bpm < 50) continue; // This is under low frequency
-        if (bpm > 180) continue; // This is over high frequency
+        if (bpm < fl) continue; // This is under low frequency
+        if (bpm > fh) continue; // This is over high frequency
 
         fourierTransform.at<float>(j) = abs(fourierTransform.at<float>(j));
         if (fourierTransform.at<float>(j) > maxFreq) {
@@ -236,13 +232,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         // Convert to basic CV_8UC3 in range [0,255]
         outputFrame.convertTo(outputFrame, CV_8UC3, 255);
 
-        // TODO: Awful solution!!!
-//        cvtColor(outputFrame,outputFrame, CV_BGR2GRAY);
-//        cvtColor(outputFrame,outputFrame, CV_GRAY2BGR);
-//        bitwise_not(outputFrame, outputFrame);
-
-//        Rect roi(0, 0, outputFrame.cols, outputFrame.rows);
-        dst.push_back(outputFrame);
+        dst.push_back(cropImageBorder(outputFrame, ERASED_BORDER_WIDTH));
         channels.clear();
         outputFrame.release();
     }

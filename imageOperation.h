@@ -15,5 +15,6 @@ bool compareColorAndBwMatrix(Mat color, Mat bw);
 void adjustOutput (Mat image);
 void fakeBeating (Mat image, double index, int maxValue);
 void controlFacePlacement (Rect & roi, const Size frame);
+Mat cropImageBorder (Mat image, int borderWidth);
 
 #endif

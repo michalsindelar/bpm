@@ -8,7 +8,7 @@
 #define BUFFER_FRAMES 120
 
 // Experimental settings of fps
-#define FRAME_RATE 10
+#define FRAME_RATE 15
 
 // This is fixed time in milliseconds of on cycle of main loop
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FRAME_RATE)
@@ -18,5 +18,8 @@
 
 // Resize input video
 #define RESIZED_FRAME_WIDTH 600
+
+// Erased border width
+#define ERASED_BORDER_WIDTH 10
 
 #endif // CONFIG_H

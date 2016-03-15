@@ -64,7 +64,7 @@ int Bpm::run() {
             face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
             face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
 
-            Rect roi(face.x, face.y, face.width, face.height);
+            Rect roi(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, face.width, face.height);
             controlFacePlacement(roi, frameSize);
 
             Mat croppedToFace = in(roi).clone();

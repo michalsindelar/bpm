@@ -11,9 +11,11 @@
 
 #include <iostream>
 #include <fstream>
+#include "imageOperation.h"
 
 // Configuration
 #include "./config.h"
+
 
 using namespace cv;
 using namespace std;
@@ -30,7 +32,7 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);
 int computeBpm(vector<int> intensitySum);
-float findStrongestRowFreq(Mat fourier, int width);
+float findStrongestRowFreq(Mat fourierTransform, int width, int fl, int fh);
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 
 #endif //BPM_AMPLIFY_H

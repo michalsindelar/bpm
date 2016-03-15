@@ -79,3 +79,8 @@ void controlFacePlacement (Rect & roi, const Size frame) {
                  roi.height - (roi.y + roi.height - frame.height) :
                  roi.height;
 }
+
+Mat cropImageBorder (Mat image, int borderWidth) {
+    Rect roi(borderWidth, borderWidth, image.cols - borderWidth, image.rows - borderWidth);
+    return image(roi);
+}
