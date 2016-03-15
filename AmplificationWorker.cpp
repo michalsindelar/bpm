@@ -24,7 +24,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     amplifySpatial(this->videoBuffer, this->visualization, bpm, 50, 50/60, 120/60, int(videoBuffer.size()), 4);
 
     // Prevent big changes
-    this->bpm = (this->bpm + bpm)/2;
+    this->bpm = this->bpm ? (this->bpm + bpm)/2 : bpm;
 
     this->videoBuffer.clear();
 

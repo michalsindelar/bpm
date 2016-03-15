@@ -30,5 +30,7 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);
 int computeBpm(vector<int> intensitySum);
+float findStrongestRowFreq(Mat fourier, int width);
+float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 
 #endif //BPM_AMPLIFY_H

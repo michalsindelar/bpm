@@ -99,43 +99,22 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
     int bruteBpmSum = 0;
     int numOfSamples = 0;
 
+
+    // First of all we need to find strongest frequency for all
+    float strongestTimeStackFreq = findStrongestTimeStackFreq(timeStack);
+
+    // Create mask based on strongest frequency
+    Mat mask = maskingCoeffs(video.size(),  (strongestTimeStackFreq - 10) / 60.0f, (strongestTimeStackFreq + 10) / 60.0f);
+
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
-
                 // FFT
                 Mat fourierTransform;
                 dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
-                // TEST
-                float maxFreq = 0;
-                int maxFreqLoc = 0;
-                int bpm = 0;
-                for (int j = 0; j < timeStack[channel][i].cols; j++) {
-                    bpm = (int) round(60 * FRAME_RATE * j / BUFFER_FRAMES);
-
-                    if (bpm < 50) continue; // This is under low frequency
-                    if (bpm > 180) continue; // This is over high frequency
-
-                    fourierTransform.at<float>(j) = abs(fourierTransform.at<float>(j));
-                    if (fourierTransform.at<float>(j) > maxFreq) {
-                        maxFreq = fourierTransform.at<float>(j);
-                        maxFreqLoc = j;
-                    }
-                }
-
-                // Strongest frequency in row
-                float rowFreq = 60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES;
-
                 // MASKING via computed freq
-                Mat mask = maskingCoeffs(video.size(),  (rowFreq - 15) / 60.0f, (rowFreq + 15) / 60.0f);
                 fourierTransform = fourierTransform.mul(mask);
-
-                // Aggregate all rows strongest freqs
-                bruteBpmSum += rowFreq;
-
-                // Increment samples counter
-                numOfSamples++;
 
                 // IFFT
                 dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
@@ -145,9 +124,56 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
             }
         }
     }
-
-    bpm = bruteBpmSum / (float)numOfSamples;
+    bpm = round(strongestTimeStackFreq);
     inverseCreateTimeChangeStack(timeStack, filtered);
+}
+
+float findStrongestRowFreq(Mat fourierTransform, int width) {
+    // TEST
+    float maxFreq = 0;
+    int maxFreqLoc = 0;
+    int bpm = 0;
+    for (int j = 0; j < fourierTransform.cols; j++) {
+        bpm = (int) round(60 * FRAME_RATE * j / BUFFER_FRAMES);
+
+        if (bpm < 50) continue; // This is under low frequency
+        if (bpm > 180) continue; // This is over high frequency
+
+        fourierTransform.at<float>(j) = abs(fourierTransform.at<float>(j));
+        if (fourierTransform.at<float>(j) > maxFreq) {
+            maxFreq = fourierTransform.at<float>(j);
+            maxFreqLoc = j;
+        }
+    }
+
+    return  60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES;
+}
+
+float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
+    int bruteBpmSum = 0;
+    int numOfSamples = 0;
+
+    for (int i = 0; i < timeStack[0].size(); i++) {
+        for (int channel = 0; channel < 3; channel++) {
+            for (int row = 0; row < timeStack[channel][i].rows; row++) {
+
+                // FFT
+                Mat fourierTransform;
+                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
+
+                // Strongest frequency in row
+                float rowFreq = findStrongestRowFreq(fourierTransform, timeStack[channel][i].cols);
+
+                // Aggregate all rows strongest freqs
+                bruteBpmSum += rowFreq;
+
+                // Increment samples counter
+                numOfSamples++;
+
+            }
+        }
+    }
+    return bruteBpmSum / (float)numOfSamples;
 }
 
 // Assume video is single channel
