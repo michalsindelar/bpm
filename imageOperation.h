@@ -13,7 +13,7 @@ using namespace std;
 Mat resizeImage (Mat image, const double width);
 bool compareColorAndBwMatrix(Mat color, Mat bw);
 void adjustOutput (Mat image);
-void fakeBeating (Mat image, double index, int maxValue);
+void fakeBeating (Mat image, double index, int maxValue, Rect face);
 void controlFacePlacement (Rect & roi, const Size frame);
 Mat cropImageBorder (Mat image, int borderWidth);
 
