@@ -48,6 +48,9 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     if (level == 1) return frame;
     if (level > 1) frame = blurDn(frame, level-1, kernel);
 
+    // Condition, but anyway this shouldn't happen at all
+    if (frame.cols < 10 || frame.rows < 10) return frame;
+
     // resize 1/2
     resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
 
@@ -230,7 +233,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-//        amplifyChannels(channels, 5, 0, 0);
+//        amplifyChannels(channels, 2, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
