@@ -33,14 +33,19 @@ using namespace std;
 
 class Bpm {
     private:
+        // CAMERA_SOURCE_MODE / VIDEO_SOURCE_MODE
+        int sourceMode;
+
+        // FOURIER_MASK_MODE / FAKE_BEATING_MODE
+        int maskMode;
         bool initialWorkerFlag = false;
         int currBpm;
-        int mode = FOURIER_MASK_MODE;
-        float beatVisibilityFactor = 1.5f;
+        float beatVisibilityFactor;
+        int frameRate;
         Rect face;
         Rect tmpFace;
 
-        VideoCapture cam;
+        VideoCapture input;
         // Deque for storing captured frames
         vector<Mat> videoBuffer;
         // Orig video buffer
@@ -58,7 +63,7 @@ class Bpm {
         FaceDetectorWorker faceDetector;
 
     public:
-        Bpm();
+        Bpm(int mode, int maskMode, float beatVisibilityFactor);
         int run();
         void updateFace(Rect face);
         void updateTmpFace(Rect face, float variation);
@@ -67,7 +72,7 @@ class Bpm {
         bool isBufferFull();
 
         void setMode(int mode) {
-            Bpm::mode = mode;
+            Bpm::maskMode = mode;
         }
 };
 

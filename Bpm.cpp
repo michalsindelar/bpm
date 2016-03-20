@@ -5,12 +5,24 @@
 #include "Bpm.h"
 
 // Constructor
-Bpm::Bpm() {
-    // Open Video Camera
-    this->cam = VideoCapture((string) PROJECT_DIR+"/data/reference.mp4");
+Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
+    this->sourceMode = sourceMode;
+    this->maskMode = maskMode;
+    this->beatVisibilityFactor = 1.5f;
 
-    if(!cam.isOpened()) cout << "Unable to open Video Camera";
-    int frameRate = this->cam.get(CV_CAP_PROP_FPS);
+    if (this->sourceMode == CAMERA_SOURCE_MODE) {
+        // Open Video Camera
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
+        if(!input.isOpened()) cout << "Unable to open Video File";
+        this->frameRate = round(this->input.get(CV_CAP_PROP_FPS));
+    }
+
+    else if (this->sourceMode == VIDEO_SOURCE_MODE) {
+        // Open Video Camera
+        this->input = VideoCapture(0);
+        if(!input.isOpened()) cout << "Unable to open Video Camera";
+        this->frameRate = FRAME_RATE;
+    }
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
@@ -30,7 +42,7 @@ int Bpm::run() {
 
         // Grab video frame
         Mat in;
-        cam >> in; // type: CV_8UC3 (16)
+        input >> in; // type: CV_8UC3 (16)
 
         if (frame < CAMERA_INIT) continue;
 
@@ -93,7 +105,7 @@ int Bpm::run() {
         // TODO: Check if this is performance ok
         if (this->bpmWorker.getInitialFlag()) {
             // AMPLIFICATION FOURIER MODE
-            if (this->mode == FOURIER_MASK_MODE) {
+            if (this->maskMode == FOURIER_MASK_MODE) {
                 Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
                 // As we crop mask in own thread while amplification
@@ -112,7 +124,7 @@ int Bpm::run() {
                 out = out + this->beatVisibilityFactor*visual;
             }
             // AMPLIFICATION FAKE BEATING MODE
-            else if (this->mode == FAKE_BEATING_MODE) {
+            else if (this->maskMode == FAKE_BEATING_MODE) {
                 fakeBeating(out, i, 30, this->tmpFace);
             }
             putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
@@ -138,7 +150,7 @@ int Bpm::run() {
 
         // TODO: Check if working
 //        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-//        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+//        int extraWaitMus = (elapsedMus > (CLOCKS_PER_SEC / this->frameRate)) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
 //        usleep(extraWaitMus);
     }
 
