@@ -97,19 +97,16 @@ int Bpm::run() {
                 Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
                 // Prepare face mask frame
-                Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
-
+                Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
                 // In this step only cols & rows can be changed
                 // We use it in safe crop roi
                 Rect roi(face.x, face.y, tmp.cols, tmp.rows);
                 controlFacePlacement(roi, frameSize);
-
-                // Prepare cropping roi
-                Rect safeRoi(ERASED_BORDER_WIDTH, ERASED_BORDER_WIDTH, roi.width - 2*ERASED_BORDER_WIDTH, roi.height - 2*ERASED_BORDER_WIDTH);
+                roi.x = roi.y = 0;
 
                 // Resize & crop
-                tmp = tmp(safeRoi);
+                tmp = tmp(roi);
 
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
                 out = out + this->beatVisibilityFactor*visual;

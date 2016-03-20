@@ -365,7 +365,7 @@ int computeBpm(vector<int> intensitySum) {
 void resizeCropVideo(vector<Mat> &video, int width) {
     for (int i = 0; i < BUFFER_FRAMES; i++) {
         video[i] = resizeImage(video[i], width);
-//        video[i] = (cropImageBorder(video[i], ERASED_BORDER_WIDTH));
+        video[i] = cropImageBorder(video[i], ERASED_BORDER_WIDTH);
     }
 }
 
