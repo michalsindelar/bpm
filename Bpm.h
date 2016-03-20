@@ -35,6 +35,7 @@ class Bpm {
     private:
         bool initialWorkerFlag = false;
         int currBpm;
+        int mode = FOURIER_MASK_MODE;
         float beatVisibilityFactor = 1;
         Rect face;
         Rect tmpFace;
@@ -64,7 +65,9 @@ class Bpm {
         bool isFaceDetected();
         bool isBufferFull();
 
-
+        void setMode(int mode) {
+            Bpm::mode = mode;
+        }
 };
 
 

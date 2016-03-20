@@ -7,9 +7,10 @@
 // Constructor
 Bpm::Bpm() {
     // Open Video Camera
-    this->cam = VideoCapture(0);
+    this->cam = VideoCapture((string) PROJECT_DIR+"/data/reference.mp4");
 
     if(!cam.isOpened()) cout << "Unable to open Video Camera";
+    int frameRate = this->cam.get(CV_CAP_PROP_FPS);
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
@@ -24,6 +25,7 @@ int Bpm::run() {
     for (int frame = 0; true; frame++) {
 
         // Measuring elapsed time
+        // TODO: clock_gettime() -- this one!, (gettimeofday())
         clock_t begin = clock();
 
         // Grab video frame
@@ -64,7 +66,7 @@ int Bpm::run() {
             face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
             face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
 
-            Rect roi(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, face.width, face.height);
+            Rect roi(face.x, face.y, face.width, face.height);
             controlFacePlacement(roi, frameSize);
 
             Mat croppedToFace = in(roi).clone();
@@ -90,33 +92,37 @@ int Bpm::run() {
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
         if (this->bpmWorker.getInitialFlag()) {
-            Mat visual = Mat::zeros(in.rows, in.cols, in.type());
+            // AMPLIFICATION FOURIER MODE
+            if (this->mode == FOURIER_MASK_MODE) {
+                Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
+                Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
 
-            Rect roi(face.x, face.y, tmp.cols, tmp.rows);
-            controlFacePlacement(roi, frameSize);
-            roi.x = roi.y = 0;
+//                Rect roi(face.x, face.y, tmp.cols, tmp.rows);
+//                controlFacePlacement(roi, frameSize);
+//                roi.x = roi.y = 0;
+//
+//                // if face would be outside frame crop, else keep same
+//                Mat controlledTmp = tmp(roi);
 
-            // if face would be outside frame crop, else keep same
-            Mat controlledTmp = tmp(roi);
-
-            controlledTmp.copyTo(visual(Rect(face.x, face.y, controlledTmp.cols, controlledTmp.rows)));
-            out = out + this->beatVisibilityFactor*visual;
+                tmp.copyTo(visual(Rect(face.x, face.y, tmp.cols, tmp.rows)));
+                out = out + this->beatVisibilityFactor*visual;
+            }
+            // AMPLIFICATION FAKE BEATING MODE
+            else if (this->mode == FAKE_BEATING_MODE) {
+                fakeBeating(out, i, 30, this->tmpFace);
+            }
             putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+
         } else {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         }
 
-        // Merge original + adjusteds
+        // Merge original + adjusted
         hconcat(out, in, window);
 
         // Put the image onto a screen
         imshow( "App window", window);
-
-        // Free
-        in.release();
-        out.release();
 
         // Update index
         i += .2;
@@ -128,9 +134,9 @@ int Bpm::run() {
         clock_t end = clock();
 
         // TODO: Check if working
-        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
-        usleep(extraWaitMus);
+//        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
+//        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+//        usleep(extraWaitMus);
     }
 
     return 0;
@@ -140,11 +146,6 @@ void Bpm::updateFace(Rect face) {
     // After initial detection update only position (not size)
     if (!this->face.x) {
         this->face = this->tmpFace = face;
-    } else {
-        this->face.x = face.x;
-        this->face.y = face.y;
-
-        this->tmpFace = face;
     }
 }
 
