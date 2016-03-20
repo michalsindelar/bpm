@@ -34,5 +34,7 @@ void saveIntensities(vector<Mat>& video, string filename);
 int computeBpm(vector<int> intensitySum);
 float findStrongestRowFreq(Mat fourierTransform, int width, int fl, int fh);
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
+Mat computeDFT(Mat image);
+Mat updateResult(Mat complex);
 
 #endif //BPM_AMPLIFY_H

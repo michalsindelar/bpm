@@ -50,7 +50,7 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     // resize 1/2
     resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
 
-    // FLoat at first
+    // Float at first
     cvtColor(frame, frame, CV_32F);
     // Convert to hsv (similar as ntsc)
     cvtColor(frame, frame, CV_BGR2HSV);
@@ -90,12 +90,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
     createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
     createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
-    //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
-    //    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
-
     int bruteBpmSum = 0;
     int numOfSamples = 0;
-
 
     // First of all we need to find strongest frequency for all
     float strongestTimeStackFreq = findStrongestTimeStackFreq(timeStack);
@@ -107,17 +103,17 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
                 // FFT
-                Mat fourierTransform;
-                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
+//                Mat fourierTransform;
+//                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING via computed freq
-                fourierTransform = fourierTransform.mul(mask);
+//                fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
-                dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+//                timeStack[channel][i].row(row) = updateResult(fourierTransform);
 
                 // RELEASE
-                fourierTransform.release();
+//                fourierTransform.release();
             }
         }
     }
@@ -149,6 +145,9 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
     int bruteBpmSum = 0;
     int numOfSamples = 0;
 
+    vector <int> histogram(timeStack[0].size() * 3 * timeStack[0][0].rows);
+    fill(histogram.begin(), histogram.end(), 0);
+
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
@@ -159,6 +158,7 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
 
                 // Strongest frequency in row
                 float rowFreq = findStrongestRowFreq(fourierTransform, timeStack[channel][i].cols);
+                histogram.at((int)rowFreq) = histogram.at((int)rowFreq) + 1;
 
                 // Aggregate all rows strongest freqs
                 bruteBpmSum += rowFreq;
@@ -169,6 +169,12 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
             }
         }
     }
+
+    // Prepared for finding most used freq
+    std::vector<int>::iterator result;
+    result = max_element(histogram.begin(), histogram.end());
+    auto frequency = distance(histogram.begin(), result);
+
     return bruteBpmSum / (float)numOfSamples;
 }
 
@@ -223,7 +229,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-        amplifyChannels(channels, 5, 0, 0);
+//        amplifyChannels(channels, 5, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
@@ -239,6 +245,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
 }
 
 
+// Checked - same behavior as in matlab
 Mat maskingCoeffs(int width, float fl, float fh) {
     Mat row(1, width, CV_32FC2);
 
@@ -251,6 +258,7 @@ Mat maskingCoeffs(int width, float fl, float fh) {
         value = (value < fl || value > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
+
     return row;
 }
 
