@@ -33,10 +33,17 @@ void FaceDetectorWorker::detectFace(Mat frame) {
 
     // Increase height of detected face
     // TODO: If someday support for mor faces
-//    for (int i = 0; i < 1; i++) {
-//        this->faces[i].y -= this->faces[i].height*faceYOffset;
-//        this->faces[i].height *= faceHeightScale;
-//    }
+    for (int i = 0; i < 1; i++) {
+        this->faces[i].y -= this->faces[i].height*faceYOffset;
+        this->faces[i].height *= faceHeightScale;
+
+        // Control range
+        this->faces[i].y = (this->faces[i].y < 0) ? 0 : this->faces[i].y;
+        this->faces[i].height = ((this->faces[i].y + this->faces[i].height) > frame.rows) ?
+            this->faces[i].height - this->faces[i].y :
+            this->faces[i].height;
+
+    }
 
     this->working = false;
 }
