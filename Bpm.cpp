@@ -96,16 +96,16 @@ int Bpm::run() {
             if (this->mode == FOURIER_MASK_MODE) {
                 Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-                // Prepare face mask frame
+                // As we crop mask in own thread while amplification
+                // These steps are appli only if detected face positon has significantly changed
                 Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
-                // In this step only cols & rows can be changed
-                // We use it in safe crop roi
+                // Important range check
                 Rect roi(face.x, face.y, tmp.cols, tmp.rows);
                 controlFacePlacement(roi, frameSize);
                 roi.x = roi.y = 0;
 
-                // Resize & crop
+                // Crop in case mask would be outside frame
                 tmp = tmp(roi);
 
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
