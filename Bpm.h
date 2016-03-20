@@ -36,7 +36,7 @@ class Bpm {
         bool initialWorkerFlag = false;
         int currBpm;
         int mode = FOURIER_MASK_MODE;
-        float beatVisibilityFactor = 1;
+        float beatVisibilityFactor = 1.5f;
         Rect face;
         Rect tmpFace;
 
@@ -52,6 +52,7 @@ class Bpm {
         Mat window;
 
         // Worker for computing
+
         AmplificationWorker bpmWorker;
 
         // Worker for computing

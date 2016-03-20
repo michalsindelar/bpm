@@ -8,6 +8,7 @@
 #define GREEN_CHANNEL 1
 #define RED_CHANNEL 2
 
+
 void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
 
     // Allocate stack
@@ -56,7 +57,7 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     cvtColor(frame, frame, CV_BGR2HSV);
 
     // blur via binomial filter
-    filter2D(frame, frame, -1, kernel);
+//    filter2D(frame, frame, -1, kernel);
 
     // Convert back
     cvtColor(frame, frame, CV_HSV2BGR);
@@ -238,7 +239,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         // Convert to basic CV_8UC3 in range [0,255]
         outputFrame.convertTo(outputFrame, CV_8UC3, 255);
 
-        dst.push_back(cropImageBorder(outputFrame, ERASED_BORDER_WIDTH));
+        dst.push_back(outputFrame);
         channels.clear();
         outputFrame.release();
     }
@@ -361,7 +362,15 @@ int computeBpm(vector<int> intensitySum) {
     return returnVal;
 }
 
+void resizeCropVideo(vector<Mat> &video, int width) {
+    for (int i = 0; i < BUFFER_FRAMES; i++) {
+        video[i] = resizeImage(video[i], width);
+//        video[i] = (cropImageBorder(video[i], ERASED_BORDER_WIDTH));
+    }
+}
+
 /**
+* TODO: Move outside!!!
 * BINOMIAL 5 - kernel
 * 1 4 6 4 1
 * 4 16 24 16 4

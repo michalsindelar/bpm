@@ -55,8 +55,6 @@ void fakeBeating (Mat image, double index, int maxValue, Rect face) {
 
 
 void controlFacePlacement (Rect & roi, const Size frame) {
-    roi.y = roi.y < 0 ? 0 : roi.y;
-
     roi.width = ((roi.x + roi.width) > frame.width) ?
                 roi.width - (roi.x + roi.width - frame.width) :
                 roi.width;

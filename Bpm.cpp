@@ -96,16 +96,22 @@ int Bpm::run() {
             if (this->mode == FOURIER_MASK_MODE) {
                 Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
+                // Prepare face mask frame
                 Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
 
-//                Rect roi(face.x, face.y, tmp.cols, tmp.rows);
-//                controlFacePlacement(roi, frameSize);
-//                roi.x = roi.y = 0;
-//
-//                // if face would be outside frame crop, else keep same
-//                Mat controlledTmp = tmp(roi);
 
-                tmp.copyTo(visual(Rect(face.x, face.y, tmp.cols, tmp.rows)));
+                // In this step only cols & rows can be changed
+                // We use it in safe crop roi
+                Rect roi(face.x, face.y, tmp.cols, tmp.rows);
+                controlFacePlacement(roi, frameSize);
+
+                // Prepare cropping roi
+                Rect safeRoi(ERASED_BORDER_WIDTH, ERASED_BORDER_WIDTH, roi.width - 2*ERASED_BORDER_WIDTH, roi.height - 2*ERASED_BORDER_WIDTH);
+
+                // Resize & crop
+                tmp = tmp(safeRoi);
+
+                tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
                 out = out + this->beatVisibilityFactor*visual;
             }
             // AMPLIFICATION FAKE BEATING MODE

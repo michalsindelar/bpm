@@ -36,5 +36,6 @@ float findStrongestRowFreq(Mat fourierTransform, int width, int fl, int fh);
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 Mat computeDFT(Mat image);
 Mat updateResult(Mat complex);
+void resizeCropVideo(vector<Mat>& video, int width);
 
 #endif //BPM_AMPLIFY_H

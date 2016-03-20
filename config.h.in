@@ -5,7 +5,7 @@
 #define PROJECT_DIR "@PROJECT_DIR@"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 200
+#define BUFFER_FRAMES 20
 
 // Experimental settings of fps
 #define FRAME_RATE 30
@@ -20,6 +20,7 @@
 #define RESIZED_FRAME_WIDTH 600
 
 // Erased border width
+// TODO: Should by dynamic according to frame dimension!
 #define ERASED_BORDER_WIDTH 10
 
 // MASIKG MODES
