@@ -34,5 +34,8 @@
 #define CAMERA_SOURCE_MODE 110
 #define VIDEO_SOURCE_MODE 120
 
+// CONVERSION
+#define CV2_RGB2YIQ 1
+#define CV2_YIQ2RGB 2
 
 #endif // CONFIG_H
