@@ -23,7 +23,10 @@
 // TODO: Should by dynamic according to frame dimension!
 #define ERASED_BORDER_WIDTH 10
 
-// MASIKG MODES
+// Variation between faces needed for upda
+#define FACE_UPDATE_VARIATION 0.2
+
+// MASKING MODES
 #define FOURIER_MASK_MODE 10
 #define FAKE_BEATING_MODE 20
 

@@ -52,7 +52,6 @@ class Bpm {
         Mat window;
 
         // Worker for computing
-
         AmplificationWorker bpmWorker;
 
         // Worker for computing
@@ -62,6 +61,7 @@ class Bpm {
         Bpm();
         int run();
         void updateFace(Rect face);
+        void updateTmpFace(Rect face, float variation);
         void mergeFaces();
         bool isFaceDetected();
         bool isBufferFull();

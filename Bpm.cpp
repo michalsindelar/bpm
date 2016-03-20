@@ -149,9 +149,25 @@ void Bpm::updateFace(Rect face) {
     // After initial detection update only position (not size)
     if (!this->face.x) {
         this->face = this->tmpFace = face;
+    } else {
+        this->updateTmpFace(face, FACE_UPDATE_VARIATION);
     }
 }
 
+void Bpm::updateTmpFace(Rect face, float variation) {
+    if (abs(this->tmpFace.x - face.x) > this->tmpFace.x * variation) {
+        this->tmpFace.x = face.x;
+    }
+    if (abs(this->tmpFace.y - face.y) > this->tmpFace.y * variation) {
+        this->tmpFace.y = face.y;
+    }
+    if (abs(this->tmpFace.width - face.width) > this->tmpFace.width * variation) {
+        this->tmpFace.width = face.width;
+    }
+    if (abs(this->tmpFace.height - face.height) > this->tmpFace.height * variation) {
+        this->tmpFace.height = face.height;
+    }
+}
 
 void Bpm::mergeFaces() {
     this->face = this->tmpFace;

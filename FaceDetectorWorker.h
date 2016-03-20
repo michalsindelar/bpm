@@ -27,6 +27,7 @@ class FaceDetectorWorker {
     public:
         FaceDetectorWorker();
         void detectFace(Mat frame);
+        void adjustFacesSize();
 
         const vector<Rect> &getFaces() const {
             return faces;
@@ -39,7 +40,6 @@ class FaceDetectorWorker {
         void setWorking(bool working) {
             FaceDetectorWorker::working = working;
         }
-
 
         bool isWorking() const {
             return working;
