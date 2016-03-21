@@ -20,8 +20,8 @@
 using namespace cv;
 using namespace std;
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
-void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level);
+void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
+void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCount, int level);
 Mat blurDn(Mat frame, int level, Mat kernel);
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount);
 Mat binom5Kernel();

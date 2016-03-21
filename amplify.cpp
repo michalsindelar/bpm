@@ -9,7 +9,7 @@
 #define RED_CHANNEL 2
 
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
+void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
 
     // Allocate stack
     vector<Mat> stack;
@@ -17,8 +17,13 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alph
     // Create gdown stack
     buildGDownStack(video, stack, framesCount, level);
 
+    for (int i = 0; i < stack.size(); i++ ) {
+        out.push_back(stack[i]);
+        stack[i].release();
+    }
+
     // Filtering
-    bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
+//    bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
     // Clear data
     stack.clear();
@@ -26,13 +31,20 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alph
 
 // Based on https://github.com/diego898/matlab-utils/blob/master/toolbox/EVM_Matlab/build_GDown_stack.m
 // TODO: Check wheter rgb separate channels needed
-void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level) {
+void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCount, int level) {
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
-        // Result image push to stack
-        Mat tmp = blurDn(video[i], level, kernel);
-        stack.push_back(tmp.clone());
-        tmp.release();
+        Mat out = video[i].clone();
+
+        // Try in float
+        cvtColor2(out, out, CV2_BGR2YIQ);
+
+        out = blurDn(out, level, kernel);
+
+//        cvtColor2(out, out, CV2_YIQ2BGR);
+        cvtColor(out, out, CV_32F);
+        stack.push_back(out);
+        out.release();
     }
     kernel.release();
 }
@@ -54,20 +66,8 @@ Mat blurDn(Mat frame, int level, Mat kernel) {
     // resize 1/2
     resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
 
-    // Float at first
-    cvtColor(frame, frame, CV_32F);
-    // Convert to hsv (similar as ntsc)
-    cvtColor(frame, frame, CV_BGR2HSV);
-
     // blur via binomial filter
-//    filter2D(frame, frame, -1, kernel);
-
-    // Convert back
-    cvtColor(frame, frame, CV_HSV2BGR);
-    cvtColor(frame, frame, CV_32F);
-
-    // This normalization is super important !!!!
-    normalize(frame, frame, 0, 1, NORM_MINMAX, CV_32F);
+    filter2D(frame, frame, -1, kernel);
 
     return frame;
 }

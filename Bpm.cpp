@@ -120,8 +120,10 @@ int Bpm::run() {
                 // Crop in case mask would be outside frame
                 tmp = tmp(roi);
 
+                int type = tmp.type();
+
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = out + this->beatVisibilityFactor*visual;
+                out = visual;
             }
             // AMPLIFICATION FAKE BEATING MODE
             else if (this->maskMode == FAKE_BEATING_MODE) {

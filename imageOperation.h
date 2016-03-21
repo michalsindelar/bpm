@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <ctime>
+#include <stdio.h>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -10,6 +11,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 #include "config.h"
+#include <math.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 using namespace cv;
 using namespace std;
