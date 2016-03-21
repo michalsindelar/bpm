@@ -1,6 +1,6 @@
 #include "imageOperation.h"
 
-Mat resizeImage (Mat image, const double width) {
+Mat resizeImage (Mat image, const double width, int interpolation) {
     // Check if image has size
     if (image.rows == 0) {
         return image;
@@ -16,11 +16,15 @@ Mat resizeImage (Mat image, const double width) {
     double height = width / aspect;
 
     // Resize
-    resize(image, image, Size(width, height), 0, 0, INTER_LINEAR);
+    resize(image, image, Size(width, height), 0, 0, interpolation);
 
     return image;
 }
 
+
+Mat resizeImage(Mat image, const double width) {
+    return resizeImage(image, width, INTER_LINEAR);
+}
 
 void fakeBeating (Mat image, double index, int maxValue, Rect face) {
 

@@ -25,4 +25,6 @@ void fakeBeating (Mat image, double index, int maxValue, Rect face);
 void controlFacePlacement (Rect & roi, const Size frame);
 Mat cropImageBorder (Mat image, int borderWidth);
 void cvtColor2(Mat src, Mat & dst, int code);
+Mat resizeImage (Mat image, const double width, int interpolation);
+Mat resizeImage (Mat image, const double width);
 #endif

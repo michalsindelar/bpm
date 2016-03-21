@@ -36,15 +36,19 @@ void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCoun
     for (int i = 0; i < framesCount; i++) {
         Mat out = video[i].clone();
 
-        // Try in float
-        cvtColor2(out, out, CV2_BGR2YIQ);
+        // TODO: Try in float
 
-        out = blurDn(out, level, kernel);
+        cvtColor2(out, out, CV2_BGR2YIQ); // returns CV_8UC3
+        out.convertTo(out, CV_32FC3);
 
-//        cvtColor2(out, out, CV2_YIQ2BGR);
-        cvtColor(out, out, CV_32F);
+        blurDn(out, level, kernel);
+
+        out.convertTo(out, CV_8UC3);
+//        normalize(out, out, 0, 255, NORM_MINMAX);
+
+        cvtColor2(out, out, CV2_YIQ2BGR); // returns CV_8UC3
         stack.push_back(out);
-        out.release();
+
     }
     kernel.release();
 }
@@ -56,20 +60,19 @@ void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCoun
 
  * Each chanel separate
  */
-Mat blurDn(Mat frame, int level, Mat kernel) {
-    if (level == 1) return frame;
-    if (level > 1) frame = blurDn(frame, level-1, kernel);
+void blurDn(Mat & frame, int level, Mat kernel) {
+    if (level == 1) return;
+    if (level > 1) blurDn(frame, level-1, kernel);
 
     // Condition, but anyway this shouldn't happen at all
-    if (frame.cols < 10 || frame.rows < 10) return frame;
+    if (frame.cols < 10 || frame.rows < 10) return;
 
     // resize 1/2
-    resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
+    resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_NEAREST);
 
     // blur via binomial filter
     filter2D(frame, frame, -1, kernel);
 
-    return frame;
 }
 
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount) {
@@ -367,7 +370,7 @@ int computeBpm(vector<int> intensitySum) {
 
 void resizeCropVideo(vector<Mat> &video, int width) {
     for (int i = 0; i < BUFFER_FRAMES; i++) {
-        video[i] = resizeImage(video[i], width);
+        video[i] = resizeImage(video[i], width, INTER_LINEAR);
         video[i] = cropImageBorder(video[i], ERASED_BORDER_WIDTH);
     }
 }
