@@ -21,7 +21,7 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
     // Analyze intensities
-    bpm = findStrongestRowFreq(countIntensities(out));
+//    bpm = findStrongestRowFreq(countIntensities(out));
 
     // Save
     saveIntensities(stack, "intensitities.txt");
@@ -116,6 +116,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
                 dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING via computed freq
+                // TODO: Some interpolation!
                 fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
@@ -161,13 +162,10 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
 
-                // FFT
-                Mat fourierTransform;
-                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
-
-                int type = fourierTransform.type();
                 // Strongest frequency in row
-                float rowFreq = findStrongestRowFreq(fourierTransform, timeStack[channel][i].cols);
+                float rowFreq = findStrongestRowFreq(timeStack[channel][i].row(row));
+
+                // Store in histogram
                 histogram.at((int)rowFreq) = histogram.at((int)rowFreq) + 1;
 
                 // Aggregate all rows strongest freqs
@@ -244,7 +242,7 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-        amplifyChannels(channels, 2, 0, 0);
+//        amplifyChannels(channels, 2, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
@@ -360,7 +358,7 @@ float findStrongestRowFreq(Mat row) {
     row.convertTo(row, CV_32FC1);
 
     // Compute dft
-    Mat planes[] = {Mat_<float>(row), Mat::zeros(row.size(), CV_32F)};
+    Mat planes[] = {Mat_<float>(row), Mat::zeros(row.size(), CV_32FC1)};
     Mat complexI;
 
     // Add to the expanded another plane with zeros

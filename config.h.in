@@ -5,7 +5,7 @@
 #define PROJECT_DIR "@PROJECT_DIR@"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 200
+#define BUFFER_FRAMES 400
 
 // Experimental settings of fps
 #define FRAME_RATE 30
