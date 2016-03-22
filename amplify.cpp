@@ -8,7 +8,8 @@
 #define GREEN_CHANNEL 1
 #define RED_CHANNEL 2
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
+
+void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
 
     // Allocate stack
     vector<Mat> stack;
@@ -19,19 +20,37 @@ void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alph
     // Filtering
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
+    // Analyze intensities
+//    bpm = findStrongestRowFreq(countIntensities(out));
+
+    // Save
+    saveIntensities(stack, "intensitities.txt");
+
     // Clear data
     stack.clear();
 }
 
 // Based on https://github.com/diego898/matlab-utils/blob/master/toolbox/EVM_Matlab/build_GDown_stack.m
 // TODO: Check wheter rgb separate channels needed
-void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level) {
+void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCount, int level) {
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
-        // Result image push to stack
-        Mat tmp = blurDn(video[i], level, kernel);
-        stack.push_back(tmp.clone());
-        tmp.release();
+        Mat out = video[i].clone();
+
+        // TODO: REWRITE ctColor2 to float
+        cvtColor2(out, out, CV2_BGR2YIQ); // returns CV_8UC3
+
+        // TODO: This solves rounding to int at first and than back to float
+        out.convertTo(out, CV_32FC3);
+
+        blurDn(out, level, kernel);
+
+        out.convertTo(out, CV_8UC3);
+
+        cvtColor2(out, out, CV2_YIQ2BGR); // returns CV_8UC3
+
+        stack.push_back(out);
+
     }
     kernel.release();
 }
@@ -43,29 +62,19 @@ void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, in
 
  * Each chanel separate
  */
-Mat blurDn(Mat frame, int level, Mat kernel) {
-    if (level == 1) return frame;
-    if (level > 1) frame = blurDn(frame, level-1, kernel);
+void blurDn(Mat & frame, int level, Mat kernel) {
+    if (level == 1) return;
+    if (level > 1) blurDn(frame, level-1, kernel);
+
+    // Condition, but anyway this shouldn't happen at all
+    if (frame.cols < 10 || frame.rows < 10) return;
 
     // resize 1/2
-    resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_LINEAR);
-
-    // FLoat at first
-    cvtColor(frame, frame, CV_32F);
-    // Convert to hsv (similar as ntsc)
-    cvtColor(frame, frame, CV_BGR2HSV);
+    resize(frame, frame, Size(frame.size().width / 2, frame.size().height / 2), 0, 0, INTER_NEAREST);
 
     // blur via binomial filter
     filter2D(frame, frame, -1, kernel);
 
-    // Convert back
-    cvtColor(frame, frame, CV_HSV2BGR);
-    cvtColor(frame, frame, CV_32F);
-
-    // This normalization is super important !!!!
-    normalize(frame, frame, 0, 1, NORM_MINMAX, CV_32F);
-
-    return frame;
 }
 
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount) {
@@ -90,12 +99,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
     createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
     createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
 
-    //    Mat kernelSpec = maskKernel( getOptimalDFTSize(video[0].cols), getOptimalDFTSize(video[0].rows), video.size(), fps, fl, fh);
-    //    float amplCoeffs[] = {50*0.2f, 50*0.2f, 50};
-
     int bruteBpmSum = 0;
     int numOfSamples = 0;
-
 
     // First of all we need to find strongest frequency for all
     float strongestTimeStackFreq = findStrongestTimeStackFreq(timeStack);
@@ -111,6 +116,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
                 dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING via computed freq
+                // TODO: Some interpolation!
                 fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
@@ -149,16 +155,18 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
     int bruteBpmSum = 0;
     int numOfSamples = 0;
 
+    vector <int> histogram(timeStack[0].size() * 3 * timeStack[0][0].rows);
+    fill(histogram.begin(), histogram.end(), 0);
+
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
 
-                // FFT
-                Mat fourierTransform;
-                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
-
                 // Strongest frequency in row
-                float rowFreq = findStrongestRowFreq(fourierTransform, timeStack[channel][i].cols);
+                float rowFreq = findStrongestRowFreq(timeStack[channel][i].row(row));
+
+                // Store in histogram
+                histogram.at((int)rowFreq) = histogram.at((int)rowFreq) + 1;
 
                 // Aggregate all rows strongest freqs
                 bruteBpmSum += rowFreq;
@@ -169,7 +177,16 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
             }
         }
     }
-    return bruteBpmSum / (float)numOfSamples;
+
+    // Prepared for finding most used freq
+    std::vector<int>::iterator result;
+    result = max_element(histogram.begin(), histogram.end());
+    auto frequency = distance(histogram.begin(), result);
+
+    // Average frequency
+    float averageFreq = bruteBpmSum / (float)numOfSamples;
+
+    return averageFreq;
 }
 
 // Assume video is single channel
@@ -188,6 +205,8 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
         Mat frame(dstVectorHeight, dstVectorWidth, CV_32F);
         for (int j = 0; j < dstVectorWidth; j++) {
             vector<Mat> channels;
+            video[j].convertTo(video[j], CV_32FC3);
+
             split(video[j],channels);
 
             for(int k = 0; k < dstVectorHeight; k++) {
@@ -223,34 +242,38 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-        amplifyChannels(channels, 5, 0, 0);
+//        amplifyChannels(channels, 2, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
         merge(channels, outputFrame);
 
-        // Convert to basic CV_8UC3 in range [0,255]
-        outputFrame.convertTo(outputFrame, CV_8UC3, 255);
+        // Convert to basic CV_8UC3
+        outputFrame.convertTo(outputFrame, CV_8UC3);
+        // in range [0,255]
+        normalize(outputFrame, outputFrame, 0, 255, NORM_MINMAX );
 
-        dst.push_back(cropImageBorder(outputFrame, ERASED_BORDER_WIDTH));
+        dst.push_back(outputFrame);
         channels.clear();
         outputFrame.release();
     }
 }
 
 
+// Checked - same behavior as in matlab
 Mat maskingCoeffs(int width, float fl, float fh) {
     Mat row(1, width, CV_32FC2);
 
     // 1st row
     row.at<float>(0,0) = ((1.0f / 256.0f < fl) || (1.0f / 256.0f > fh)) ? 0 : 1;
 
-    // Create row 0.25 - 0.5 ----- 30.0
+    // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 1; i < width; i++) {
         float value = (i-1)/( (float) width)* (float) FRAME_RATE;
         value = (value < fl || value > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
+
     return row;
 }
 
@@ -305,9 +328,9 @@ vector<int> countIntensities(vector<Mat> &video) {
 }
 
 
-void saveIntensities(vector<Mat>& video, string filename) {
+void  saveIntensities(vector<Mat>& video, string filename) {
     ofstream myfile;
-    myfile.open(filename, ios::out);
+    myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
 
     vector<int> intensitySum = countIntensities(video);
 
@@ -318,42 +341,62 @@ void saveIntensities(vector<Mat>& video, string filename) {
     myfile.close();
 }
 
-int computeBpm(vector<int> intensitySum) {
+float findStrongestRowFreq(vector<int> row) {
+    // Create matrix from intensitySum
+    Mat rowMat = Mat(1,row.size(),CV_8UC1,(int*)row.data());
+    return findStrongestRowFreq(rowMat);
+}
 
-    int intensityCount = BUFFER_FRAMES;
 
-    // Normalize intensities
-//    normalize(intensitySum, intensitySum);
-
+float findStrongestRowFreq(Mat row) {
     // DFT of intensities
-    Mat fa(intensitySum);
-    fa.convertTo(fa, CV_32FC1);
-    dft(fa, fa, DFT_REAL_OUTPUT);
-
     // Find max value & locaiton
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
+
+    row.convertTo(row, CV_32FC1);
+
+    // Compute dft
+    Mat planes[] = {Mat_<float>(row), Mat::zeros(row.size(), CV_32FC1)};
+    Mat complexI;
+
+    // Add to the expanded another plane with zeros
+    merge(planes, 2, complexI);
+
+    // Compute dft
+    dft(complexI, complexI);
+
+    split(complexI, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+    magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
+    Mat magI = planes[0];
 
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
         bpm = (int) round(60 * FRAME_RATE * i / BUFFER_FRAMES);
 
         // TODO: This should be connected with bpm!
+        // TODO: Define cut-off freq to constants
         if (bpm < 50) continue; // This is under low frequency
-        if (bpm > 80) continue; // This is over high frequency
+        if (bpm > 180) continue; // This is over high frequency
 
-        if (abs(fa.at<float>(i)) > maxFreq) {
-            maxFreq = abs(fa.at<float>(i));
+        if (magI.at<float>(i) > maxFreq) {
+            maxFreq = magI.at<float>(i);
             maxFreqLoc = i;
         }
     }
-    int returnVal = (int) round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+    return (60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+}
 
-    return returnVal;
+void resizeCropVideo(vector<Mat> &video, int width) {
+    for (int i = 0; i < BUFFER_FRAMES; i++) {
+        video[i] = resizeImage(video[i], width, INTER_LINEAR);
+        video[i] = cropImageBorder(video[i], ERASED_BORDER_WIDTH);
+    }
 }
 
 /**
+* TODO: Move outside!!!
 * BINOMIAL 5 - kernel
 * 1 4 6 4 1
 * 4 16 24 16 4

@@ -20,9 +20,9 @@
 using namespace cv;
 using namespace std;
 
-void amplifySpatial(vector<Mat>& video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
-void buildGDownStack(vector<Mat>& video, vector<Mat>& stack, int framesCount, int level);
-Mat blurDn(Mat frame, int level, Mat kernel);
+void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
+void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCount, int level);
+void blurDn(Mat & frame, int level, Mat kernel);
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount);
 Mat binom5Kernel();
 void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
@@ -33,6 +33,14 @@ vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);
 int computeBpm(vector<int> intensitySum);
 float findStrongestRowFreq(Mat fourierTransform, int width, int fl, int fh);
+
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
+Mat computeDFT(Mat image);
+
+float findStrongestRowFreq(Mat row);
+float findStrongestRowFreq(vector<int> row);
+
+Mat updateResult(Mat complex);
+void resizeCropVideo(vector<Mat>& video, int width);
 
 #endif //BPM_AMPLIFY_H

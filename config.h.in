@@ -5,10 +5,10 @@
 #define PROJECT_DIR "@PROJECT_DIR@"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 120
+#define BUFFER_FRAMES 400
 
 // Experimental settings of fps
-#define FRAME_RATE 15
+#define FRAME_RATE 30
 
 // This is fixed time in milliseconds of on cycle of main loop
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FRAME_RATE)
@@ -20,6 +20,22 @@
 #define RESIZED_FRAME_WIDTH 600
 
 // Erased border width
+// TODO: Should by dynamic according to frame dimension!
 #define ERASED_BORDER_WIDTH 10
+
+// Variation between faces needed for upda
+#define FACE_UPDATE_VARIATION 0.2
+
+// MASKING MODES
+#define FOURIER_MASK_MODE 10
+#define FAKE_BEATING_MODE 20
+
+// SOURCE MODES
+#define CAMERA_SOURCE_MODE 110
+#define VIDEO_SOURCE_MODE 120
+
+// CONVERSION
+#define CV2_BGR2YIQ 1
+#define CV2_YIQ2BGR 2
 
 #endif // CONFIG_H

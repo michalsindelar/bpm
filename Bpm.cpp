@@ -5,11 +5,24 @@
 #include "Bpm.h"
 
 // Constructor
-Bpm::Bpm() {
-    // Open Video Camera
-    this->cam = VideoCapture(0);
+Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
+    this->sourceMode = sourceMode;
+    this->maskMode = maskMode;
+    this->beatVisibilityFactor = 1.5f;
 
-    if(!cam.isOpened()) cout << "Unable to open Video Camera";
+    if (this->sourceMode == CAMERA_SOURCE_MODE) {
+        // Open Video Camera
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
+        if(!input.isOpened()) cout << "Unable to open Video File";
+        this->frameRate = round(this->input.get(CV_CAP_PROP_FPS));
+    }
+
+    else if (this->sourceMode == VIDEO_SOURCE_MODE) {
+        // Open Video Camera
+        this->input = VideoCapture(0);
+        if(!input.isOpened()) cout << "Unable to open Video Camera";
+        this->frameRate = FRAME_RATE;
+    }
 
     this->initialWorkerFlag = false;
     this->bpmWorker = AmplificationWorker();
@@ -24,11 +37,12 @@ int Bpm::run() {
     for (int frame = 0; true; frame++) {
 
         // Measuring elapsed time
+        // TODO: clock_gettime() -- this one!, (gettimeofday())
         clock_t begin = clock();
 
         // Grab video frame
         Mat in;
-        cam >> in; // type: CV_8UC3 (16)
+        input >> in; // type: CV_8UC3 (16)
 
         if (frame < CAMERA_INIT) continue;
 
@@ -64,7 +78,7 @@ int Bpm::run() {
             face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
             face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
 
-            Rect roi(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, face.width, face.height);
+            Rect roi(face.x, face.y, face.width, face.height);
             controlFacePlacement(roi, frameSize);
 
             Mat croppedToFace = in(roi).clone();
@@ -90,33 +104,42 @@ int Bpm::run() {
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
         if (this->bpmWorker.getInitialFlag()) {
-            Mat visual = Mat::zeros(in.rows, in.cols, in.type());
+            // AMPLIFICATION FOURIER MODE
+            if (this->maskMode == FOURIER_MASK_MODE) {
+                Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-            Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width);
+                // As we crop mask in own thread while amplification
+                // These steps are appli only if detected face positon has significantly changed
+                Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
-            Rect roi(face.x, face.y, tmp.cols, tmp.rows);
-            controlFacePlacement(roi, frameSize);
-            roi.x = roi.y = 0;
+                // Important range check
+                Rect roi(face.x, face.y, tmp.cols, tmp.rows);
+                controlFacePlacement(roi, frameSize);
+                roi.x = roi.y = 0;
 
-            // if face would be outside frame crop, else keep same
-            Mat controlledTmp = tmp(roi);
+                // Crop in case mask would be outside frame
+                tmp = tmp(roi);
 
-            controlledTmp.copyTo(visual(Rect(face.x, face.y, controlledTmp.cols, controlledTmp.rows)));
-            out = out + this->beatVisibilityFactor*visual;
+                int type = tmp.type();
+
+                tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
+                out = this->beatVisibilityFactor*visual;
+            }
+            // AMPLIFICATION FAKE BEATING MODE
+            else if (this->maskMode == FAKE_BEATING_MODE) {
+                fakeBeating(out, i, 30, this->tmpFace);
+            }
             putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+
         } else {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         }
 
-        // Merge original + adjusteds
+        // Merge original + adjusted
         hconcat(out, in, window);
 
         // Put the image onto a screen
         imshow( "App window", window);
-
-        // Free
-        in.release();
-        out.release();
 
         // Update index
         i += .2;
@@ -128,9 +151,9 @@ int Bpm::run() {
         clock_t end = clock();
 
         // TODO: Check if working
-        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-        int extraWaitMus = (elapsedMus > LOOP_WAIT_TIME_MUS) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
-        usleep(extraWaitMus);
+//        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
+//        int extraWaitMus = (elapsedMus > (CLOCKS_PER_SEC / this->frameRate)) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+//        usleep(extraWaitMus);
     }
 
     return 0;
@@ -141,13 +164,24 @@ void Bpm::updateFace(Rect face) {
     if (!this->face.x) {
         this->face = this->tmpFace = face;
     } else {
-        this->face.x = face.x;
-        this->face.y = face.y;
-
-        this->tmpFace = face;
+        this->updateTmpFace(face, FACE_UPDATE_VARIATION);
     }
 }
 
+void Bpm::updateTmpFace(Rect face, float variation) {
+    if (abs(this->tmpFace.x - face.x) > this->tmpFace.x * variation) {
+        this->tmpFace.x = face.x;
+    }
+    if (abs(this->tmpFace.y - face.y) > this->tmpFace.y * variation) {
+        this->tmpFace.y = face.y;
+    }
+    if (abs(this->tmpFace.width - face.width) > this->tmpFace.width * variation) {
+        this->tmpFace.width = face.width;
+    }
+    if (abs(this->tmpFace.height - face.height) > this->tmpFace.height * variation) {
+        this->tmpFace.height = face.height;
+    }
+}
 
 void Bpm::mergeFaces() {
     this->face = this->tmpFace;

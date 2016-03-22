@@ -8,9 +8,8 @@ FaceDetectorWorker::FaceDetectorWorker() {
     this->working = false;
 
     this->faceCascade = CascadeClassifier();
-    // TODO: Relative path!!
-    string path = PROJECT_DIR;
-    this->faceCascade.load(path+"/haarcascade_frontalface_alt.xml");
+
+    this->faceCascade.load((string) PROJECT_DIR+"/haarcascade_frontalface_alt.xml");
 }
 
 void FaceDetectorWorker::detectFace(Mat frame) {
@@ -32,12 +31,20 @@ void FaceDetectorWorker::detectFace(Mat frame) {
         return;
     }
 
-    // Increase height of detected face
-    // TODO: If someday support for mor faces
+    this->adjustFacesSize();
+    this->working = false;
+}
+
+// Increase height of detected face
+void FaceDetectorWorker::adjustFacesSize() {
     for (int i = 0; i < 1; i++) {
         this->faces[i].y -= this->faces[i].height*faceYOffset;
         this->faces[i].height *= faceHeightScale;
-    }
 
-    this->working = false;
+        // Control range
+        this->faces[i].y = (this->faces[i].y < 0) ? 0 : this->faces[i].y;
+        this->faces[i].height = ((this->faces[i].y + this->faces[i].height) > frame.rows) ?
+            this->faces[i].height - this->faces[i].y :
+            this->faces[i].height;
+    }
 }
