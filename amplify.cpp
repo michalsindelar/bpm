@@ -21,7 +21,7 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
     // Analyze intensities
-    computeBpm(countIntensities(out));
+    bpm = findStrongestRowFreq(countIntensities(out));
 
     // Save
     saveIntensities(stack, "intensitities.txt");
@@ -343,24 +343,24 @@ void  saveIntensities(vector<Mat>& video, string filename) {
     myfile.close();
 }
 
-int computeBpm(vector<int> intensitySum) {
+float findStrongestRowFreq(vector<int> row) {
+    // Create matrix from intensitySum
+    Mat rowMat = Mat(1,row.size(),CV_8UC1,(int*)row.data());
+    return findStrongestRowFreq(rowMat);
+}
+
+
+float findStrongestRowFreq(Mat row) {
     // DFT of intensities
-
-
-
     // Find max value & locaiton
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
 
-    int buffer_frames = intensitySum.size();
-
-    // Create matrix from intensitySum
-    Mat intensitySumMat = Mat(1,intensitySum.size(),CV_8UC1,(int*)intensitySum.data());
-    intensitySumMat.convertTo(intensitySumMat, CV_32FC1);
+    row.convertTo(row, CV_32FC1);
 
     // Compute dft
-    Mat planes[] = {Mat_<float>(intensitySumMat), Mat::zeros(intensitySumMat.size(), CV_32F)};
+    Mat planes[] = {Mat_<float>(row), Mat::zeros(row.size(), CV_32F)};
     Mat complexI;
 
     // Add to the expanded another plane with zeros
@@ -373,28 +373,21 @@ int computeBpm(vector<int> intensitySum) {
     magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
     Mat magI = planes[0];
 
-
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
         bpm = (int) round(60 * FRAME_RATE * i / BUFFER_FRAMES);
-
 
         // TODO: This should be connected with bpm!
         // TODO: Define cut-off freq to constants
         if (bpm < 50) continue; // This is under low frequency
         if (bpm > 180) continue; // This is over high frequency
 
-        float val1 = magI.at<float>(i);
-        float val2 = magI.at<float>(0,i);
-
         if (magI.at<float>(i) > maxFreq) {
             maxFreq = magI.at<float>(i);
             maxFreqLoc = i;
         }
     }
-    int returnVal = (int) round(60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
-
-    return returnVal;
+    return (60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
 }
 
 void resizeCropVideo(vector<Mat> &video, int width) {

@@ -33,8 +33,13 @@ vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);
 int computeBpm(vector<int> intensitySum);
 float findStrongestRowFreq(Mat fourierTransform, int width, int fl, int fh);
+
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 Mat computeDFT(Mat image);
+
+float findStrongestRowFreq(Mat row);
+float findStrongestRowFreq(vector<int> row);
+
 Mat updateResult(Mat complex);
 void resizeCropVideo(vector<Mat>& video, int width);
 
