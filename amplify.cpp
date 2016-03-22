@@ -17,13 +17,8 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
     // Create gdown stack
     buildGDownStack(video, stack, framesCount, level);
 
-    for (int i = 0; i < stack.size(); i++ ) {
-        out.push_back(stack[i]);
-        stack[i].release();
-    }
-
     // Filtering
-//    bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
+    bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
     // Clear data
     stack.clear();
@@ -36,17 +31,18 @@ void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCoun
     for (int i = 0; i < framesCount; i++) {
         Mat out = video[i].clone();
 
-        // TODO: Try in float
-
+        // TODO: REWRITE ctColor2 to float
         cvtColor2(out, out, CV2_BGR2YIQ); // returns CV_8UC3
+
+        // TODO: This solves rounding to int at first and than back to float
         out.convertTo(out, CV_32FC3);
 
         blurDn(out, level, kernel);
 
         out.convertTo(out, CV_8UC3);
-//        normalize(out, out, 0, 255, NORM_MINMAX);
 
         cvtColor2(out, out, CV2_YIQ2BGR); // returns CV_8UC3
+
         stack.push_back(out);
 
     }
@@ -110,17 +106,17 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
                 // FFT
-//                Mat fourierTransform;
-//                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
+                Mat fourierTransform;
+                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING via computed freq
 //                fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
-//                timeStack[channel][i].row(row) = updateResult(fourierTransform);
+                dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
 
                 // RELEASE
-//                fourierTransform.release();
+                fourierTransform.release();
             }
         }
     }
@@ -163,6 +159,7 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
                 Mat fourierTransform;
                 dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
+                int type = fourierTransform.type();
                 // Strongest frequency in row
                 float rowFreq = findStrongestRowFreq(fourierTransform, timeStack[channel][i].cols);
                 histogram.at((int)rowFreq) = histogram.at((int)rowFreq) + 1;
@@ -201,6 +198,8 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
         Mat frame(dstVectorHeight, dstVectorWidth, CV_32F);
         for (int j = 0; j < dstVectorWidth; j++) {
             vector<Mat> channels;
+            video[j].convertTo(video[j], CV_32FC3);
+
             split(video[j],channels);
 
             for(int k = 0; k < dstVectorHeight; k++) {
@@ -236,14 +235,14 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-//        amplifyChannels(channels, 2, 0, 0);
+        //amplifyChannels(channels, 2, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
         merge(channels, outputFrame);
 
         // Convert to basic CV_8UC3 in range [0,255]
-        outputFrame.convertTo(outputFrame, CV_8UC3, 255);
+        outputFrame.convertTo(outputFrame, CV_8UC3);
 
         dst.push_back(outputFrame);
         channels.clear();

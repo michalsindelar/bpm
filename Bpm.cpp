@@ -123,7 +123,7 @@ int Bpm::run() {
                 int type = tmp.type();
 
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = visual;
+                out = this->beatVisibilityFactor*visual;
             }
             // AMPLIFICATION FAKE BEATING MODE
             else if (this->maskMode == FAKE_BEATING_MODE) {
