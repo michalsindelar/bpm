@@ -20,6 +20,12 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
     // Filtering
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
+    // Analyze intensities
+    computeBpm(countIntensities(out));
+
+    // Save
+    saveIntensities(stack, "intensitities.txt");
+
     // Clear data
     stack.clear();
 }
@@ -110,7 +116,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
                 dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING via computed freq
-//                fourierTransform = fourierTransform.mul(mask);
+                fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
                 dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
@@ -179,7 +185,10 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
     result = max_element(histogram.begin(), histogram.end());
     auto frequency = distance(histogram.begin(), result);
 
-    return bruteBpmSum / (float)numOfSamples;
+    // Average frequency
+    float averageFreq = bruteBpmSum / (float)numOfSamples;
+
+    return averageFreq;
 }
 
 // Assume video is single channel
@@ -235,14 +244,16 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
         }
 
         // Amplify frame's channels
-        //amplifyChannels(channels, 2, 0, 0);
+        amplifyChannels(channels, 2, 0, 0);
 
         // Merge channels into colorFrame
         Mat outputFrame;
         merge(channels, outputFrame);
 
-        // Convert to basic CV_8UC3 in range [0,255]
+        // Convert to basic CV_8UC3
         outputFrame.convertTo(outputFrame, CV_8UC3);
+        // in range [0,255]
+        normalize(outputFrame, outputFrame, 0, 255, NORM_MINMAX );
 
         dst.push_back(outputFrame);
         channels.clear();
@@ -258,7 +269,7 @@ Mat maskingCoeffs(int width, float fl, float fh) {
     // 1st row
     row.at<float>(0,0) = ((1.0f / 256.0f < fl) || (1.0f / 256.0f > fh)) ? 0 : 1;
 
-    // Create row 0.25 - 0.5 ----- 30.0
+    // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 1; i < width; i++) {
         float value = (i-1)/( (float) width)* (float) FRAME_RATE;
         value = (value < fl || value > fh) ? 0 : 1;
@@ -319,9 +330,9 @@ vector<int> countIntensities(vector<Mat> &video) {
 }
 
 
-void saveIntensities(vector<Mat>& video, string filename) {
+void  saveIntensities(vector<Mat>& video, string filename) {
     ofstream myfile;
-    myfile.open(filename, ios::out);
+    myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
 
     vector<int> intensitySum = countIntensities(video);
 
@@ -333,32 +344,51 @@ void saveIntensities(vector<Mat>& video, string filename) {
 }
 
 int computeBpm(vector<int> intensitySum) {
-
-    int intensityCount = BUFFER_FRAMES;
-
-    // Normalize intensities
-//    normalize(intensitySum, intensitySum);
-
     // DFT of intensities
-    Mat fa(intensitySum);
-    fa.convertTo(fa, CV_32FC1);
-    dft(fa, fa, DFT_REAL_OUTPUT);
+
+
 
     // Find max value & locaiton
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
 
+    int buffer_frames = intensitySum.size();
+
+    // Create matrix from intensitySum
+    Mat intensitySumMat = Mat(1,intensitySum.size(),CV_8UC1,(int*)intensitySum.data());
+    intensitySumMat.convertTo(intensitySumMat, CV_32FC1);
+
+    // Compute dft
+    Mat planes[] = {Mat_<float>(intensitySumMat), Mat::zeros(intensitySumMat.size(), CV_32F)};
+    Mat complexI;
+
+    // Add to the expanded another plane with zeros
+    merge(planes, 2, complexI);
+
+    // Compute dft
+    dft(complexI, complexI);
+
+    split(complexI, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+    magnitude(planes[0], planes[1], planes[0]);// planes[0] = magnitude
+    Mat magI = planes[0];
+
+
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
         bpm = (int) round(60 * FRAME_RATE * i / BUFFER_FRAMES);
 
-        // TODO: This should be connected with bpm!
-        if (bpm < 50) continue; // This is under low frequency
-        if (bpm > 80) continue; // This is over high frequency
 
-        if (abs(fa.at<float>(i)) > maxFreq) {
-            maxFreq = abs(fa.at<float>(i));
+        // TODO: This should be connected with bpm!
+        // TODO: Define cut-off freq to constants
+        if (bpm < 50) continue; // This is under low frequency
+        if (bpm > 180) continue; // This is over high frequency
+
+        float val1 = magI.at<float>(i);
+        float val2 = magI.at<float>(0,i);
+
+        if (magI.at<float>(i) > maxFreq) {
+            maxFreq = magI.at<float>(i);
             maxFreqLoc = i;
         }
     }
