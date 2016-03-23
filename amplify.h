@@ -20,27 +20,37 @@
 using namespace cv;
 using namespace std;
 
+// CORE
 void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
 void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCount, int level);
 void blurDn(Mat & frame, int level, Mat kernel);
 void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount);
-Mat binom5Kernel();
-void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel);
-void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst);
-Mat maskingCoeffs(int width, float fl, float fh);
-void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
+
+// DATA
 vector<int> countIntensities(vector<Mat>& video);
 void saveIntensities(vector<Mat>& video, string filename);
-int computeBpm(vector<int> intensitySum);
-float findStrongestRowFreq(Mat fourierTransform, int width, int fl, int fh);
 
-float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
+// TEMPORAL SPATIAL
+void createTemporalSpatial(vector<Mat> &video, vector<vector<Mat> > &dst, int channel);
+void inverseTemporalSpatial(vector<vector<Mat> > &stack, vector<Mat> &dst);
+
+// KERNELS / MASKS
+Mat binom5Kernel();
+Mat maskingCoeffs(int width, float fl, float fh);
+
+// FOURIER
 Mat computeDFT(Mat image);
+Mat updateResult(Mat complex);
+
+// FREQUENCY
+float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 
 float findStrongestRowFreq(Mat row);
 float findStrongestRowFreq(vector<int> row);
+int computeBpm(vector<int> intensitySum);
 
-Mat updateResult(Mat complex);
+// IMAGE OPERATION
 void resizeCropVideo(vector<Mat>& video, int width);
+void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 
 #endif //BPM_AMPLIFY_H
