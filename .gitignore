@@ -2,6 +2,4 @@ build/
 .idea/
 config.h
 intensitities.txt
-data/92.mov
-data/reference.mp4
-data/try.mov
+data/

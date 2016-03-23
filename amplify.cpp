@@ -24,7 +24,7 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
 //    bpm = findStrongestRowFreq(countIntensities(out));
 
     // Save
-    saveIntensities(stack, "intensitities.txt");
+    // saveIntensities(stack, "intensitities.txt");
 
     // Clear data
     stack.clear();
@@ -79,7 +79,7 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 
 }
 
-void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount) {
+void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int highLimit, int framesCount) {
     // TODO: Describe
     int height =  video[0].size().height;
     int width =  video[0].size().width;
@@ -94,35 +94,38 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
 
 
     // Create time stack change
-    vector <vector<Mat> > timeStack(3);
+    vector <vector<Mat> > temporalSpatialStack(3);
 
     // Must be in color channels
-    createTimeChangeStack(video, timeStack, RED_CHANNEL);
-    createTimeChangeStack(video, timeStack, GREEN_CHANNEL);
-    createTimeChangeStack(video, timeStack, BLUE_CHANNEL);
+    // TODO: Merge
+    createTemporalSpatial(video, temporalSpatialStack, RED_CHANNEL);
+    createTemporalSpatial(video, temporalSpatialStack, GREEN_CHANNEL);
+    createTemporalSpatial(video, temporalSpatialStack, BLUE_CHANNEL);
 
     int bruteBpmSum = 0;
     int numOfSamples = 0;
 
     // First of all we need to find strongest frequency for all
-    float strongestTimeStackFreq = findStrongestTimeStackFreq(timeStack);
+    float strongestTimeStackFreq = findStrongestTimeStackFreq(temporalSpatialStack);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(video.size(),  (strongestTimeStackFreq - 20) / 60.0f, (strongestTimeStackFreq + 20) / 60.0f);
+    Mat mask = maskingCoeffs(video.size(),  (strongestTimeStackFreq - 10) / 60.0f, (strongestTimeStackFreq + 10) / 60.0f);
 
-    for (int i = 0; i < timeStack[0].size(); i++) {
+    for (int i = 0; i < temporalSpatialStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
-            for (int row = 0; row < timeStack[channel][i].rows; row++) {
+            for (int row = 0; row < temporalSpatialStack[channel][i].rows; row++) {
                 // FFT
                 Mat fourierTransform;
-                dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
+                dft(temporalSpatialStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
 
-                // MASKING via computed freq
-                // TODO: Masking not working
-                // fourierTransform = fourierTransform.mul(mask);
+                // MASKING
+                fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
-                dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+                dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+
+                // COPY BACK
+                fourierTransform.copyTo(temporalSpatialStack[channel][i].row(row));
 
                 // RELEASE
                 fourierTransform.release();
@@ -130,7 +133,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
         }
     }
     bpm = round(strongestTimeStackFreq);
-    inverseCreateTimeChangeStack(timeStack, filtered);
+    inverseTemporalSpatial(temporalSpatialStack, out);
 }
 
 float findStrongestRowFreq(Mat fourierTransform, int width, int fl = 50, int fh = 180) {
@@ -192,7 +195,7 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
 }
 
 // Assume video is single channel
-void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int channel) {
+void createTemporalSpatial(vector<Mat> &video, vector<vector<Mat> > &dst, int channel) {
 
     // DST vector
     // video[0].size().width - vectors count
@@ -220,7 +223,7 @@ void createTimeChangeStack(vector<Mat>& video, vector <vector<Mat> >& dst, int c
     }
 }
 
-void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst) {
+void inverseTemporalSpatial(vector<vector<Mat> > &stack, vector<Mat> &dst) {
 
     int dstCount = stack[0][0].size().width;
     int dstWidth = (int) stack[0].size();
@@ -243,15 +246,16 @@ void inverseCreateTimeChangeStack(vector <vector<Mat> >& stack, vector<Mat>& dst
             }
         }
 
-        // Amplify frame's channels
-//        amplifyChannels(channels, 2, 0, 0);
-
         // Merge channels into colorFrame
         Mat outputFrame;
         merge(channels, outputFrame);
 
         // Convert to basic CV_8UC3
         outputFrame.convertTo(outputFrame, CV_8UC3);
+
+        // Amplify frame's channels
+        amplifyChannels(channels, 2, 0, 0);
+
         // in range [0,255]
         normalize(outputFrame, outputFrame, 0, 255, NORM_MINMAX );
 
@@ -267,12 +271,12 @@ Mat maskingCoeffs(int width, float fl, float fh) {
     Mat row(1, width, CV_32FC2);
 
     // 1st row
-    row.at<float>(0,0) = ((1.0f / 256.0f * FRAME_RATE < fl) || (1.0f / 256.0f * FRAME_RATE > fh)) ? 0 : 1;
+    row.at<float>(0,0) = ((1.0f / 256.0f * FRAME_RATE < fl) || (1.0f / 256.0f * FRAME_RATE > fh)) ? 1 : 0;
 
     // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 1; i < width; i++) {
         float value = (i-1)/( (float) width)* (float) FRAME_RATE;
-        value = (value < fl || value > fh) ? 0 : 1;
+        value = (value < fl || value > fh) ? 1 : 0;
         row.at<float>(0, i) = value;
     }
 
@@ -287,6 +291,7 @@ Mat computeDFT(Mat image) {
     Mat complex;
     merge(planes, 2, complex);
     dft(complex, complex, DFT_COMPLEX_OUTPUT);  // fourier transform
+
     return complex;
 }
 
@@ -302,7 +307,6 @@ Mat updateResult(Mat complex) {
 
     return work;
 }
-
 
 void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
     channels[RED_CHANNEL] = channels[RED_CHANNEL] * r;
@@ -330,7 +334,7 @@ vector<int> countIntensities(vector<Mat> &video) {
 }
 
 
-void  saveIntensities(vector<Mat>& video, string filename) {
+void saveIntensities(vector<Mat>& video, string filename) {
     ofstream myfile;
     myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
 

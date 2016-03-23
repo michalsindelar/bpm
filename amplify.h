@@ -24,7 +24,7 @@ using namespace std;
 void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level);
 void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCount, int level);
 void blurDn(Mat & frame, int level, Mat kernel);
-void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit, int highLimit, int framesCount);
+void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int highLimit, int framesCount);
 
 // DATA
 vector<int> countIntensities(vector<Mat>& video);
@@ -41,13 +41,13 @@ Mat maskingCoeffs(int width, float fl, float fh);
 // FOURIER
 Mat computeDFT(Mat image);
 Mat updateResult(Mat complex);
+void updateMag(Mat complex );
 
 // FREQUENCY
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 
 float findStrongestRowFreq(Mat row);
 float findStrongestRowFreq(vector<int> row);
-int computeBpm(vector<int> intensitySum);
 
 // IMAGE OPERATION
 void resizeCropVideo(vector<Mat>& video, int width);
