@@ -49,6 +49,8 @@ void buildGDownStack(const vector<Mat> video, vector<Mat>& stack, int framesCoun
 
         cvtColor2(out, out, CV2_YIQ2BGR); // returns CV_8UC3
 
+        out.convertTo(out, CV_32FC3);
+
         stack.push_back(out);
 
     }
@@ -106,7 +108,7 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
     float strongestTimeStackFreq = findStrongestTimeStackFreq(timeStack);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(video.size(),  (strongestTimeStackFreq - 10) / 60.0f, (strongestTimeStackFreq + 10) / 60.0f);
+    Mat mask = maskingCoeffs(video.size(),  (strongestTimeStackFreq - 20) / 60.0f, (strongestTimeStackFreq + 20) / 60.0f);
 
     for (int i = 0; i < timeStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
@@ -116,8 +118,8 @@ void bandpass(vector<Mat>& video, vector<Mat>& filtered, int & bpm, int lowLimit
                 dft(timeStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE|cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING via computed freq
-                // TODO: Some interpolation!
-                fourierTransform = fourierTransform.mul(mask);
+                // TODO: Masking not working
+                // fourierTransform = fourierTransform.mul(mask);
 
                 // IFFT
                 dft(fourierTransform, timeStack[channel][i].row(row), cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
@@ -163,7 +165,7 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
             for (int row = 0; row < timeStack[channel][i].rows; row++) {
 
                 // Strongest frequency in row
-                float rowFreq = findStrongestRowFreq(timeStack[channel][i].row(row));
+                float rowFreq = findStrongestRowFreq(timeStack[channel][i].row(row).clone());
 
                 // Store in histogram
                 histogram.at((int)rowFreq) = histogram.at((int)rowFreq) + 1;
@@ -265,7 +267,7 @@ Mat maskingCoeffs(int width, float fl, float fh) {
     Mat row(1, width, CV_32FC2);
 
     // 1st row
-    row.at<float>(0,0) = ((1.0f / 256.0f < fl) || (1.0f / 256.0f > fh)) ? 0 : 1;
+    row.at<float>(0,0) = ((1.0f / 256.0f * FRAME_RATE < fl) || (1.0f / 256.0f * FRAME_RATE > fh)) ? 0 : 1;
 
     // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 1; i < width; i++) {
