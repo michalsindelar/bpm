@@ -109,7 +109,7 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
     float strongestTimeStackFreq = findStrongestTimeStackFreq(temporalSpatialStack);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(video.size(),  (strongestTimeStackFreq - 10) / 60.0f, (strongestTimeStackFreq + 10) / 60.0f);
+    Mat mask = maskingCoeffs(video.size(),  0, 1);
 
     for (int i = 0; i < temporalSpatialStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
@@ -119,13 +119,27 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
                 dft(temporalSpatialStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
 
                 // MASKING
-                fourierTransform = fourierTransform.mul(mask);
+                Mat planes[] = {Mat::zeros(fourierTransform.size(), CV_32F), Mat::zeros(fourierTransform.size(), CV_32F)};
+
+                // Real & imag part
+                split(fourierTransform, planes);
+
+                // Masking parts
+                planes[0] = planes[0].mul(mask);
+                planes[1] = planes[1].mul(mask);
+
+                // Stretch
+                normalize(planes[0], planes[0], 0, 255);
+
+                // Merge back
+                merge(planes, 2, fourierTransform);
 
                 // IFFT
                 dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
 
                 // COPY BACK
                 fourierTransform.copyTo(temporalSpatialStack[channel][i].row(row));
+
 
                 // RELEASE
                 fourierTransform.release();
@@ -268,15 +282,15 @@ void inverseTemporalSpatial(vector<vector<Mat> > &stack, vector<Mat> &dst) {
 
 // Checked - same behavior as in matlab
 Mat maskingCoeffs(int width, float fl, float fh) {
-    Mat row(1, width, CV_32FC2);
+    Mat row(1, width, CV_32FC1);
 
     // 1st row
-    row.at<float>(0,0) = ((1.0f / 256.0f * FRAME_RATE < fl) || (1.0f / 256.0f * FRAME_RATE > fh)) ? 1 : 0;
+    row.at<float>(0,0) = ((1.0f / 256.0f * FRAME_RATE < fl) || (1.0f / 256.0f * FRAME_RATE > fh)) ? 0  : 1;
 
     // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 1; i < width; i++) {
         float value = (i-1)/( (float) width)* (float) FRAME_RATE;
-        value = (value < fl || value > fh) ? 1 : 0;
+        value = (value < fl || value > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
 

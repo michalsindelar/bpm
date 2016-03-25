@@ -42,6 +42,7 @@ Mat maskingCoeffs(int width, float fl, float fh);
 Mat computeDFT(Mat image);
 Mat updateResult(Mat complex);
 void updateMag(Mat complex );
+void shift(Mat magI);
 
 // FREQUENCY
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);

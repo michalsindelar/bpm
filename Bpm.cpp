@@ -12,7 +12,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/92.mov");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->frameRate = round(this->input.get(CV_CAP_PROP_FPS));
     }
@@ -123,7 +123,7 @@ int Bpm::run() {
                 int type = tmp.type();
 
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = this->beatVisibilityFactor*visual;
+                out = out + this->beatVisibilityFactor*visual;
             }
             // AMPLIFICATION FAKE BEATING MODE
             else if (this->maskMode == FAKE_BEATING_MODE) {
