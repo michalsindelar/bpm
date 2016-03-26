@@ -89,9 +89,6 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
     int fl = 60/60; // Low freq cut-off
     int fh = 120/60; // High freg cut-off
 
-    // Prepare freq.
-    // Create mask
-
 
     // Create time stack change
     vector <vector<Mat> > temporalSpatialStack(3);
@@ -106,10 +103,10 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
     int numOfSamples = 0;
 
     // First of all we need to find strongest frequency for all
-    float strongestTimeStackFreq = findStrongestTimeStackFreq(temporalSpatialStack);
+    float strongestTimeStackFreq = findStrongestRowFreq(countIntensities(video));
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(video.size(),  60, 180);
+    Mat mask = maskingCoeffs(video.size(),  strongestTimeStackFreq-15, strongestTimeStackFreq+15);
 
     for (int i = 0; i < temporalSpatialStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
@@ -341,8 +338,19 @@ void saveIntensities(vector<Mat>& video, string filename) {
 
 float findStrongestRowFreq(vector<int> row) {
     // Create matrix from intensitySum
-    Mat rowMat = Mat(1,row.size(),CV_8UC1,(int*)row.data());
-    cout << rowMat;
+
+    // TODO: Function for normalize
+    // Mat rowMat = stdNormalize(row);
+    float maxValue = 0;
+    for (int i = 0; i < row.size(); i++) {
+        maxValue = (row[i] > maxValue) ? row[i] : maxValue;
+    }
+
+    Mat rowMat = Mat::zeros(1, row.size(), CV_32F);
+    for (int i = 0; i < row.size(); i++) {
+        rowMat.at<float>(i) = row[i] / maxValue;
+    }
+
     return findStrongestRowFreq(rowMat);
 }
 
@@ -353,8 +361,6 @@ float findStrongestRowFreq(Mat row) {
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
-
-    row.convertTo(row, CV_32FC1);
 
     // Compute dft
     Mat planes[] = {Mat_<float>(row), Mat::zeros(row.size(), CV_32FC1)};
