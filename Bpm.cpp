@@ -12,7 +12,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/92.mov");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/dad.mov");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->frameRate = round(this->input.get(CV_CAP_PROP_FPS));
     }

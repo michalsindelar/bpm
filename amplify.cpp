@@ -21,10 +21,10 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
     // Analyze intensities
-//    bpm = findStrongestRowFreq(countIntensities(out));
+    bpm = findStrongestRowFreq(countIntensities(out));
 
     // Save
-    // saveIntensities(stack, "intensitities.txt");
+    // saveIntensities(stack, "int.txt");
 
     // Clear data
     stack.clear();
@@ -125,11 +125,11 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
                 split(fourierTransform, planes);
 
                 // Masking parts
-                planes[0] = planes[0].mul(mask);
-                planes[1] = planes[1].mul(mask);
+//                planes[0] = planes[0].mul(mask);
+//                planes[1] = planes[1].mul(mask);
 
                 // Stretch
-                normalize(planes[0], planes[0], 0, 255);
+//                normalize(planes[0], planes[0], 0, 255);
 
                 // Merge back
                 merge(planes, 2, fourierTransform);
@@ -150,25 +150,6 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
     inverseTemporalSpatial(temporalSpatialStack, out);
 }
 
-float findStrongestRowFreq(Mat fourierTransform, int width, int fl = 50, int fh = 180) {
-    float maxFreq = 0;
-    int maxFreqLoc = 0;
-    int bpm = 0;
-    for (int j = 0; j < fourierTransform.cols; j++) {
-        bpm = (int) round(60 * FRAME_RATE * j / BUFFER_FRAMES);
-
-        if (bpm < fl) continue; // This is under low frequency
-        if (bpm > fh) continue; // This is over high frequency
-
-        fourierTransform.at<float>(j) = abs(fourierTransform.at<float>(j));
-        if (fourierTransform.at<float>(j) > maxFreq) {
-            maxFreq = fourierTransform.at<float>(j);
-            maxFreqLoc = j;
-        }
-    }
-
-    return  60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES;
-}
 
 float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack) {
     int bruteBpmSum = 0;
@@ -364,6 +345,7 @@ void saveIntensities(vector<Mat>& video, string filename) {
 float findStrongestRowFreq(vector<int> row) {
     // Create matrix from intensitySum
     Mat rowMat = Mat(1,row.size(),CV_8UC1,(int*)row.data());
+    cout << rowMat;
     return findStrongestRowFreq(rowMat);
 }
 
@@ -393,7 +375,7 @@ float findStrongestRowFreq(Mat row) {
 
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
-        bpm = (int) round(60 * FRAME_RATE * i / BUFFER_FRAMES);
+        bpm = freqToBpmMapper(FRAME_RATE, BUFFER_FRAMES, i);
 
         // TODO: This should be connected with bpm!
         // TODO: Define cut-off freq to constants
@@ -405,7 +387,12 @@ float findStrongestRowFreq(Mat row) {
             maxFreqLoc = i;
         }
     }
-    return (60 * FRAME_RATE * maxFreqLoc / BUFFER_FRAMES);
+    return freqToBpmMapper(FRAME_RATE, BUFFER_FRAMES, maxFreqLoc);
+}
+
+
+float freqToBpmMapper(int fps, int framesCount, int index) {
+    return (int) (round(SECONDS_IN_MINUTE * fps * (index+1)) / framesCount);
 }
 
 void resizeCropVideo(vector<Mat> &video, int width) {

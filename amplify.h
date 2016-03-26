@@ -49,6 +49,8 @@ float findStrongestTimeStackFreq(vector <vector<Mat> > timeStack);
 
 float findStrongestRowFreq(Mat row);
 float findStrongestRowFreq(vector<int> row);
+float freqToBpmMapper(int fps, int framesCount, int index);
+
 
 // IMAGE OPERATION
 void resizeCropVideo(vector<Mat>& video, int width);
