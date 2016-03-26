@@ -11,6 +11,7 @@
 #include <highgui.h>
 
 #include "./amplify.h"
+#include "./BpmVideoProcessor.h"
 
 // Configuration
 #include "./config.h"
@@ -22,6 +23,7 @@ class AmplificationWorker {
     int bpm;
     bool working;
     bool initialFlag;
+    int fps;
 
     vector<Mat> videoBuffer;
     vector<Mat> visualization;
@@ -54,9 +56,12 @@ class AmplificationWorker {
             AmplificationWorker::face = face;
         }
 
-
         int getBpm() const {
             return bpm;
+        }
+
+        void setFps(int fps) {
+            AmplificationWorker::fps = fps;
         }
 };
 

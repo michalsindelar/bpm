@@ -41,7 +41,7 @@ class Bpm {
         bool initialWorkerFlag = false;
         int currBpm;
         float beatVisibilityFactor;
-        int frameRate;
+        int fps;
         Rect face;
         Rect tmpFace;
 

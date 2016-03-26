@@ -12,20 +12,23 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     if (this->sourceMode == VIDEO_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/dad.mov");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/4.mov");
         if(!input.isOpened()) cout << "Unable to open Video File";
-        this->frameRate = round(this->input.get(CV_CAP_PROP_FPS));
+        this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
     }
 
     else if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
         this->input = VideoCapture(0);
         if(!input.isOpened()) cout << "Unable to open Video Camera";
-        this->frameRate = FRAME_RATE;
+        this->fps = FRAME_RATE;
     }
 
     this->initialWorkerFlag = false;
+
+    // Initialize middleware
     this->bpmWorker = AmplificationWorker();
+    bpmWorker.setFps(fps);
 }
 
 int Bpm::run() {
@@ -101,7 +104,7 @@ int Bpm::run() {
             this->bpmVisualization.clear();
             // Copy to loop bpmVisualization vid
             this->bpmWorker.getVisualization().swap(this->bpmVisualization);
-            // Clear bpmWorker bpmVisualization array
+            // Clear bpmWorker bpmVisualsubization array
             this->bpmWorker.clearVisualization();
         }
 
@@ -194,7 +197,7 @@ void Bpm::updateTmpFace(Rect face, float variation) {
 }
 
 void Bpm::mergeFaces() {
-    this->face = this->tmpFace;
+//    this->face = this->tmpFace;
 }
 
 bool Bpm::isFaceDetected() {

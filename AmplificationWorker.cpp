@@ -5,6 +5,9 @@
 #include "AmplificationWorker.h"
 
 AmplificationWorker::AmplificationWorker() {
+    // Default fps
+    this->fps = FRAME_RATE;
+
     this->initialFlag = false;
     this->working = false;
 };
@@ -27,7 +30,11 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
 
 
     // Resizing must be computed according to face SIZE !!
-    amplifySpatial(this->videoBuffer, this->visualization, bpm, 50, 50/60, 120/60, int(videoBuffer.size()),5);
+    BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, FL, FH, 5, fps, BUFFER_FRAMES);
+    bpmVideoProcessor.compute();
+    this->visualization = bpmVideoProcessor.getOut();
+
+//    amplifySpatial(this->videoBuffer, this->visualization, bpm, 50, 50/60, 120/60, int(videoBuffer.size()),5);
     resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
 
     // Prevent big changes

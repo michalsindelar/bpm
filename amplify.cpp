@@ -20,11 +20,11 @@ void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double
     // Filtering
     bandpass(stack, out, bpm, lowLimit, highLimit, framesCount);
 
-    // Analyze intensities
-    bpm = findStrongestRowFreq(countIntensities(out));
-
     // Save
     // saveIntensities(stack, "int.txt");
+
+    // Analyze intensities
+    bpm = findStrongestRowFreq(countIntensities(out));
 
     // Clear data
     stack.clear();
@@ -125,6 +125,7 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
 //                planes[0] = planes[0].mul(mask);
 //                planes[1] = planes[1].mul(mask);
 
+
                 // Stretch
 //                normalize(planes[0], planes[0], 0, 255);
 
@@ -199,11 +200,10 @@ void createTemporalSpatial(vector<Mat> &video, vector<vector<Mat> > &dst, int ch
 
     for (int i = 0; i < dstVectorCount; i++) {
         // One frame
-        Mat frame(dstVectorHeight, dstVectorWidth, CV_32F);
+        Mat frame(dstVectorHeight, dstVectorWidth, CV_32FC1);
         for (int j = 0; j < dstVectorWidth; j++) {
             vector<Mat> channels;
             video[j].convertTo(video[j], CV_32FC3);
-
             split(video[j],channels);
 
             for(int k = 0; k < dstVectorHeight; k++) {
@@ -361,6 +361,8 @@ float findStrongestRowFreq(Mat row) {
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
+
+    row.convertTo(row, CV_32FC1);
 
     // Compute dft
     Mat planes[] = {Mat_<float>(row), Mat::zeros(row.size(), CV_32FC1)};

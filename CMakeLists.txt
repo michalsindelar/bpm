@@ -27,7 +27,7 @@ set(SOURCE_FILES
     AmplificationWorker.h
     FaceDetectorWorker.cpp
     FaceDetectorWorker.h
-)
+        BpmVideoProcessor.cpp BpmVideoProcessor.h)
 
 
 add_executable(bpm ${SOURCE_FILES})
