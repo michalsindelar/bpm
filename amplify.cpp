@@ -109,7 +109,7 @@ void bandpass(vector<Mat>& video, vector<Mat>&out, int & bpm, int lowLimit, int 
     float strongestTimeStackFreq = findStrongestTimeStackFreq(temporalSpatialStack);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(video.size(),  0, 1);
+    Mat mask = maskingCoeffs(video.size(),  60, 180);
 
     for (int i = 0; i < temporalSpatialStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
@@ -265,13 +265,10 @@ void inverseTemporalSpatial(vector<vector<Mat> > &stack, vector<Mat> &dst) {
 Mat maskingCoeffs(int width, float fl, float fh) {
     Mat row(1, width, CV_32FC1);
 
-    // 1st row
-    row.at<float>(0,0) = ((1.0f / 256.0f * FRAME_RATE < fl) || (1.0f / 256.0f * FRAME_RATE > fh)) ? 0  : 1;
-
     // Create row 0.25 - 0.5 ----- FRAME RATE
-    for (int i = 1; i < width; i++) {
-        float value = (i-1)/( (float) width)* (float) FRAME_RATE;
-        value = (value < fl || value > fh) ? 0 : 1;
+    for (int i = 0; i < width; i++) {
+        int bpm = freqToBpmMapper(FRAME_RATE, BUFFER_FRAMES, i);
+        float value = (bpm < fl || bpm > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
 

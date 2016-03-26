@@ -10,14 +10,14 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->maskMode = maskMode;
     this->beatVisibilityFactor = 1.5f;
 
-    if (this->sourceMode == CAMERA_SOURCE_MODE) {
+    if (this->sourceMode == VIDEO_SOURCE_MODE) {
         // Open Video Camera
         this->input = VideoCapture((string) PROJECT_DIR + "/data/dad.mov");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->frameRate = round(this->input.get(CV_CAP_PROP_FPS));
     }
 
-    else if (this->sourceMode == VIDEO_SOURCE_MODE) {
+    else if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
         this->input = VideoCapture(0);
         if(!input.isOpened()) cout << "Unable to open Video Camera";
@@ -43,6 +43,16 @@ int Bpm::run() {
         // Grab video frame
         Mat in;
         input >> in; // type: CV_8UC3 (16)
+
+        // Handle ending video
+        if (!in.data) {
+            if (this->sourceMode == VIDEO_SOURCE_MODE) {
+                input.set(CV_CAP_PROP_POS_MSEC, 0);
+                input >> in;
+            } else if (this->sourceMode == CAMERA_SOURCE_MODE) {
+                // TODO:
+            }
+        }
 
         if (frame < CAMERA_INIT) continue;
 
@@ -123,7 +133,7 @@ int Bpm::run() {
                 int type = tmp.type();
 
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = out + this->beatVisibilityFactor*visual;
+                out = visual;
             }
             // AMPLIFICATION FAKE BEATING MODE
             else if (this->maskMode == FAKE_BEATING_MODE) {
