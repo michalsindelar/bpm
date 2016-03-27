@@ -12,17 +12,17 @@
 #include <iostream>
 #include <fstream>
 #include "imageOperation.h"
-#include "amplify.h"
 
 // Configuration
 #include "./config.h"
 
 class BpmVideoProcessor {
-    // Input face video
+    // Input face video - should be const
     vector<Mat> video;
 
     // Processed temporal spatial mask
     vector<Mat> out;
+    vector<Mat> blurred;
     vector<Mat> temporalSpatialMask;
 
     // Computed bpm
@@ -46,8 +46,10 @@ class BpmVideoProcessor {
 
         void buildGDownStack();
         void bandpass();
-        void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack);
-        void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, int channel);
+        void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, vector<Mat> source);
+        void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, vector<Mat> source, int channel);
+        void inverseTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack);
+
 
         const vector<Mat> &getOut() const {
             return out;
@@ -55,6 +57,10 @@ class BpmVideoProcessor {
 
         const vector<Mat> &getTemporalSpatialMask() const {
             return temporalSpatialMask;
+        }
+
+        int getBpm() const {
+            return bpm;
         }
 };
 

@@ -23,7 +23,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     this->setVideoBuffer(videoBuffer);
 
     // Amplify
-    int bpm = 0;
+    int currBpm = 0;
 
     // CRATE AMPLIFICATION CLASS
     //
@@ -33,15 +33,15 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, FL, FH, 5, fps, BUFFER_FRAMES);
     bpmVideoProcessor.compute();
     this->visualization = bpmVideoProcessor.getOut();
-
-//    amplifySpatial(this->videoBuffer, this->visualization, bpm, 50, 50/60, 120/60, int(videoBuffer.size()),5);
-    resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
+    currBpm = bpmVideoProcessor.getBpm();
 
     // Prevent big changes
-    this->bpm = this->bpm ? (this->bpm + bpm)/2 : bpm;
+    this->bpm = this->bpm ? (this->bpm + currBpm) / 2 : currBpm;
+
+    resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
+
 
     this->videoBuffer.clear();
-
     this->working = false;
     this->initialFlag = true;
     cout << "Computed bpm in class";

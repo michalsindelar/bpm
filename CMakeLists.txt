@@ -19,8 +19,6 @@ set(SOURCE_FILES
     imageOperation.h
     skinDetect.cpp
     skinDetect.h
-    amplify.cpp
-    amplify.h
     Bpm.cpp
     Bpm.h
     AmplificationWorker.cpp

@@ -20,7 +20,6 @@
 
 // Functions
 #include "./imageOperation.h"
-#include "./amplify.h"
 
 // Configuration
 #include "./config.h"

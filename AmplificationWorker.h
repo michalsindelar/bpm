@@ -10,14 +10,13 @@
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
 
-#include "./amplify.h"
 #include "./BpmVideoProcessor.h"
 
 // Configuration
 #include "./config.h"
 
 using namespace cv;
-using namespace std;
+using namespace std
 
 class AmplificationWorker {
     int bpm;
