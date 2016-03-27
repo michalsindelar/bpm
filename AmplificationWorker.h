@@ -16,7 +16,7 @@
 #include "./config.h"
 
 using namespace cv;
-using namespace std
+using namespace std;
 
 class AmplificationWorker {
     int bpm;
