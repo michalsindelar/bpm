@@ -6,7 +6,7 @@
 
 AmplificationWorker::AmplificationWorker() {
     // Default fps
-    this->fps = FRAME_RATE;
+    this->fps = FPS;
 
     this->initialFlag = false;
     this->working = false;

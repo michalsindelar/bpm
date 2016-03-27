@@ -65,6 +65,7 @@ void BpmVideoProcessor::bandpass() {
     for (int i = 0; i < temporalSpatialStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {
             for (int row = 0; row < temporalSpatialStack[channel][i].rows; row++) {
+
                 // FFT
                 Mat fourierTransform;
                 dft(temporalSpatialStack[channel][i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
@@ -89,9 +90,10 @@ void BpmVideoProcessor::bandpass() {
                 // IFFT
                 dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
 
+                normalize(fourierTransform, fourierTransform, 0, 1, NORM_MINMAX);
+
                 // COPY BACK
                 fourierTransform.copyTo(temporalSpatialStack[channel][i].row(row));
-
 
                 // RELEASE
                 fourierTransform.release();
@@ -100,6 +102,12 @@ void BpmVideoProcessor::bandpass() {
     }
     bpm = round(strongestTimeStackFreq);
     inverseTemporalSpatial(temporalSpatialStack, out);
+}
+
+void BpmVideoProcessor::createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack) {
+    createTemporalSpatial(temporalSpatialStack, RED_CHANNEL);
+    createTemporalSpatial(temporalSpatialStack, GREEN_CHANNEL);
+    createTemporalSpatial(temporalSpatialStack, BLUE_CHANNEL);
 }
 
 void BpmVideoProcessor::createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, int channel) {
@@ -127,10 +135,4 @@ void BpmVideoProcessor::createTemporalSpatial(vector <vector<Mat> > & temporalSp
         temporalSpatialStack[channel].push_back(frame);
         frame.release();
     }
-}
-
-void BpmVideoProcessor::createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack) {
-    createTemporalSpatial(temporalSpatialStack, RED_CHANNEL);
-    createTemporalSpatial(temporalSpatialStack, GREEN_CHANNEL);
-    createTemporalSpatial(temporalSpatialStack, BLUE_CHANNEL);
 }

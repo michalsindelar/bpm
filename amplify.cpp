@@ -4,11 +4,6 @@
 
 #include "amplify.h"
 
-#define BLUE_CHANNEL 0
-#define GREEN_CHANNEL 1
-#define RED_CHANNEL 2
-
-
 void amplifySpatial(const vector<Mat> video, vector<Mat>& out, int & bpm, double alpha, int lowLimit, int highLimit, int framesCount, int level) {
 
     // Allocate stack
@@ -238,6 +233,9 @@ void inverseTemporalSpatial(vector<vector<Mat> > &stack, vector<Mat> &dst) {
             }
         }
 
+        // Amplify frame's channels
+//        amplifyChannels(channels, 2, 0, 0);
+
         // Merge channels into colorFrame
         Mat outputFrame;
         merge(channels, outputFrame);
@@ -245,8 +243,8 @@ void inverseTemporalSpatial(vector<vector<Mat> > &stack, vector<Mat> &dst) {
         // Convert to basic CV_8UC3
         outputFrame.convertTo(outputFrame, CV_8UC3);
 
-        // Amplify frame's channels
-        amplifyChannels(channels, 2, 0, 0);
+        outputFrame.convertTo(outputFrame, CV_BGR2GRAY);
+        outputFrame.convertTo(outputFrame, CV_GRAY2BGR);
 
         // in range [0,255]
         normalize(outputFrame, outputFrame, 0, 255, NORM_MINMAX );
@@ -264,7 +262,7 @@ Mat maskingCoeffs(int width, float fl, float fh) {
 
     // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 0; i < width; i++) {
-        int bpm = freqToBpmMapper(FRAME_RATE, BUFFER_FRAMES, i);
+        int bpm = freqToBpmMapper(FPS, BUFFER_FRAMES, i);
         float value = (bpm < fl || bpm > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
@@ -338,15 +336,14 @@ void saveIntensities(vector<Mat>& video, string filename) {
 
 float findStrongestRowFreq(vector<int> row) {
     // Create matrix from intensitySum
-
-    // TODO: Function for normalize
-    // Mat rowMat = stdNormalize(row);
     float maxValue = 0;
     for (int i = 0; i < row.size(); i++) {
         maxValue = (row[i] > maxValue) ? row[i] : maxValue;
     }
 
     Mat rowMat = Mat::zeros(1, row.size(), CV_32F);
+
+    // Normalization
     for (int i = 0; i < row.size(); i++) {
         rowMat.at<float>(i) = row[i] / maxValue;
     }
@@ -357,7 +354,6 @@ float findStrongestRowFreq(vector<int> row) {
 
 float findStrongestRowFreq(Mat row) {
     // DFT of intensities
-    // Find max value & locaiton
     float maxFreq = 0;
     int maxFreqLoc = 0;
     int bpm = 0;
@@ -380,7 +376,7 @@ float findStrongestRowFreq(Mat row) {
 
     // We need only positive values
     for (int i = 1; i < BUFFER_FRAMES; i++) {
-        bpm = freqToBpmMapper(FRAME_RATE, BUFFER_FRAMES, i);
+        bpm = freqToBpmMapper(FPS, BUFFER_FRAMES, i);
 
         // TODO: This should be connected with bpm!
         // TODO: Define cut-off freq to constants
@@ -392,7 +388,7 @@ float findStrongestRowFreq(Mat row) {
             maxFreqLoc = i;
         }
     }
-    return freqToBpmMapper(FRAME_RATE, BUFFER_FRAMES, maxFreqLoc);
+    return freqToBpmMapper(FPS, BUFFER_FRAMES, maxFreqLoc);
 }
 
 
@@ -417,43 +413,50 @@ void resizeCropVideo(vector<Mat> &video, int width) {
 * 1 4 6 4 1
 */
 Mat binom5Kernel() {
-    Mat kernel(5, 5, CV_32F);
+    Mat kernel(5, 5, CV_32FC1);
 
     // 1st row
-    kernel.at<float>(0,0) = 1.0f / 256.0f;
-    kernel.at<float>(1,0) = 4.0f / 256.0f;
-    kernel.at<float>(2,0) = 6.0f / 256.0f;
-    kernel.at<float>(3,0) = 4.0f / 256.0f;
-    kernel.at<float>(4,0) = 1.0f / 256.0f;
+    kernel.at<float>(0,0) = 1.0f;
+    kernel.at<float>(1,0) = 4.0f;
+    kernel.at<float>(2,0) = 6.0f;
+    kernel.at<float>(3,0) = 4.0f;
+    kernel.at<float>(4,0) = 1.0f;
 
     // 2nd row
-    kernel.at<float>(0,1) = 4.0f / 256.0f;
-    kernel.at<float>(1,1) = 16.0f / 256.0f;
-    kernel.at<float>(2,1) = 24.0f / 256.0f;
-    kernel.at<float>(3,1) = 16.0f / 256.0f;
-    kernel.at<float>(4,1) = 4.0f / 256.0f;
+    kernel.at<float>(0,1) = 4.0f;
+    kernel.at<float>(1,1) = 16.0f;
+    kernel.at<float>(2,1) = 24.0f;
+    kernel.at<float>(3,1) = 16.0f;
+    kernel.at<float>(4,1) = 4.0f;
 
     // 3rd row
-    kernel.at<float>(0,2) = 6.0f / 256.0f;
-    kernel.at<float>(1,2) = 24.0f / 256.0f;
-    kernel.at<float>(2,2) = 36.0f / 256.0f;
-    kernel.at<float>(3,2) = 24.0f / 256.0f;
-    kernel.at<float>(4,2) = 6.0f / 256.0f;
-
+    kernel.at<float>(0,2) = 6.0f;
+    kernel.at<float>(1,2) = 24.0f;
+    kernel.at<float>(2,2) = 36.0f;
+    kernel.at<float>(3,2) = 24.0f;
+    kernel.at<float>(4,2) = 6.0f;
 
     // 4th row
-    kernel.at<float>(0,3) = 4.0f / 256.0f;
-    kernel.at<float>(1,3) = 16.0f / 256.0f;
-    kernel.at<float>(2,3) = 24.0f / 256.0f;
-    kernel.at<float>(3,3) = 16.0f / 256.0f;
-    kernel.at<float>(4,3) = 4.0f / 256.0f;
+    kernel.at<float>(0,3) = 4.0f;
+    kernel.at<float>(1,3) = 16.0f;
+    kernel.at<float>(2,3) = 24.0f;
+    kernel.at<float>(3,3) = 16.0f;
+    kernel.at<float>(4,3) = 4.0f;
 
     // 5th row
-    kernel.at<float>(0,4) = 1.0f / 256.0f;
-    kernel.at<float>(1,4) = 4.0f / 256.0f;
-    kernel.at<float>(2,4) = 6.0f / 256.0f;
-    kernel.at<float>(3,4) = 4.0f / 256.0f;
-    kernel.at<float>(4,4) = 1.0f / 256.0f;
+    kernel.at<float>(0,4) = 1.0f;
+    kernel.at<float>(1,4) = 4.0f;
+    kernel.at<float>(2,4) = 6.0f;
+    kernel.at<float>(3,4) = 4.0f;
+    kernel.at<float>(4,4) = 1.0f;
+
+    kernel = kernel/256.0f;
+
+    cout << kernel.row(0); cout << "/n";
+    cout << kernel.row(0); cout << "/n";
+    cout << kernel.row(0); cout << "/n";
+    cout << kernel.row(0); cout << "/n";
+    cout << kernel.row(0); cout << "/n";
 
     return kernel;
 }

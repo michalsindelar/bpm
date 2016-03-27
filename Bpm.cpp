@@ -21,7 +21,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
         // Open Video Camera
         this->input = VideoCapture(0);
         if(!input.isOpened()) cout << "Unable to open Video Camera";
-        this->fps = FRAME_RATE;
+        this->fps = FPS;
     }
 
     this->initialWorkerFlag = false;
