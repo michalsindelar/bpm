@@ -14,17 +14,43 @@
 #include <math.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <fstream>
 
 using namespace cv;
 using namespace std;
 
+// TODO: clean!!
+// Resizing
 Mat resizeImage (Mat image, const double width);
+Mat resizeImage (Mat image, const double width, int interpolation);
+Mat resizeImage (Mat image, const double width);
+void resizeCropVideo(vector<Mat>& video, int width);
+Mat cropImageBorder (Mat image, int borderWidth);
+
+// Range control
+void controlFacePlacement (Rect & roi, const Size frame);
+
 bool compareColorAndBwMatrix(Mat color, Mat bw);
 void adjustOutput (Mat image);
 void fakeBeating (Mat image, double index, int maxValue, Rect face);
-void controlFacePlacement (Rect & roi, const Size frame);
-Mat cropImageBorder (Mat image, int borderWidth);
+
+// Colors handling
 void cvtColor2(Mat src, Mat & dst, int code);
-Mat resizeImage (Mat image, const double width, int interpolation);
-Mat resizeImage (Mat image, const double width);
+void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
+
+// Frequency tools helpers
+float freqToBpmMapper(int fps, int framesCount, int index);
+float findStrongestRowFreq(vector<int> row, int framesCount, int fps);
+float findStrongestRowFreq(Mat row, int framesCount, int fps);
+Mat maskingCoeffs(int width, float fl, float fh);
+
+// TODO: Extract to blur file?
+// Blurring
+Mat binom5Kernel();
+void blurDn(Mat & frame, int level, Mat kernel);
+
+// Intensities compute
+vector<int> countIntensities(vector<Mat> &video);
+void saveIntensities(vector<Mat>& video, string filename);
+
 #endif

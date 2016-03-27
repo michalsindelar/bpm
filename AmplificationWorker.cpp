@@ -5,6 +5,9 @@
 #include "AmplificationWorker.h"
 
 AmplificationWorker::AmplificationWorker() {
+    // Default fps
+    this->fps = FPS;
+
     this->initialFlag = false;
     this->working = false;
 };
@@ -20,15 +23,25 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     this->setVideoBuffer(videoBuffer);
 
     // Amplify
-    int bpm = 0;
-    amplifySpatial(this->videoBuffer, this->visualization, bpm, 50, 50/60, 120/60, int(videoBuffer.size()), 5);
-    resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
+    int currBpm = 0;
+
+    // CRATE AMPLIFICATION CLASS
+    //
+
+
+    // Resizing must be computed according to face SIZE !!
+    BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, FL, FH, 5, fps, BUFFER_FRAMES);
+    bpmVideoProcessor.compute();
+    this->visualization = bpmVideoProcessor.getOut();
+    currBpm = bpmVideoProcessor.getBpm();
 
     // Prevent big changes
-    this->bpm = this->bpm ? (this->bpm + bpm)/2 : bpm;
+    this->bpm = this->bpm ? (this->bpm + currBpm) / 2 : currBpm;
+
+    resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
+
 
     this->videoBuffer.clear();
-
     this->working = false;
     this->initialFlag = true;
     cout << "Computed bpm in class";

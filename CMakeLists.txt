@@ -19,15 +19,13 @@ set(SOURCE_FILES
     imageOperation.h
     skinDetect.cpp
     skinDetect.h
-    amplify.cpp
-    amplify.h
     Bpm.cpp
     Bpm.h
     AmplificationWorker.cpp
     AmplificationWorker.h
     FaceDetectorWorker.cpp
     FaceDetectorWorker.h
-)
+        BpmVideoProcessor.cpp BpmVideoProcessor.h)
 
 
 add_executable(bpm ${SOURCE_FILES})

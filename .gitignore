@@ -1,2 +1,5 @@
 build/
 .idea/
+config.h
+intensitities.txt
+data/
