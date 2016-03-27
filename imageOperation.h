@@ -42,7 +42,7 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 float freqToBpmMapper(int fps, int framesCount, int index);
 float findStrongestRowFreq(vector<int> row, int framesCount, int fps);
 float findStrongestRowFreq(Mat row, int framesCount, int fps);
-Mat maskingCoeffs(int width, float fl, float fh);
+Mat maskingCoeffs(int width, float fl, float fh, int fps);
 
 // TODO: Extract to blur file?
 // Blurring
@@ -52,5 +52,6 @@ void blurDn(Mat & frame, int level, Mat kernel);
 // Intensities compute
 vector<int> countIntensities(vector<Mat> &video);
 void saveIntensities(vector<Mat>& video, string filename);
+void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
 
 #endif

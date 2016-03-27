@@ -63,7 +63,7 @@ void BpmVideoProcessor::bandpass() {
     float strongestTimeStackFreq = findStrongestRowFreq(countIntensities(blurred), framesCount, fps);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(blurred.size(),  strongestTimeStackFreq-15, strongestTimeStackFreq+15);
+    Mat mask = maskingCoeffs(framesCount,  strongestTimeStackFreq-15, strongestTimeStackFreq+15, fps);
 
     for (int i = 0; i < temporalSpatialStack[0].size(); i++) {
         for (int channel = 0; channel < 3; channel++) {

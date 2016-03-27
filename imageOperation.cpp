@@ -224,12 +224,12 @@ float findStrongestRowFreq(Mat row, int framesCount, int fps) {
     return freqToBpmMapper(fps, framesCount, maxFreqLoc);
 }
 
-Mat maskingCoeffs(int width, float fl, float fh) {
+Mat maskingCoeffs(int width, float fl, float fh, int fps) {
     Mat row(1, width, CV_32FC1);
 
     // Create row 0.25 - 0.5 ----- FRAME RATE
     for (int i = 0; i < width; i++) {
-        int bpm = freqToBpmMapper(FPS, BUFFER_FRAMES, i);
+        int bpm = freqToBpmMapper(fps, width, i);
         float value = (bpm < fl || bpm > fh) ? 0 : 1;
         row.at<float>(0, i) = value;
     }
@@ -330,4 +330,20 @@ void saveIntensities(vector<Mat>& video, string filename) {
         myfile << "\n";
     }
     myfile.close();
+}
+
+void generateTemporalSpatialImages(vector<vector<Mat> > temporalSpatialStack) {
+    for(int i = 0; i < 14; i++) {
+        Mat img;
+
+        vector<Mat> channels;
+        for (int channel = 0; channel < 3; channel++) {
+            Mat tmp;
+            temporalSpatialStack[channel][i].convertTo(tmp, CV_8UC1);
+            channels.push_back(tmp);
+        }
+        merge(channels, img);
+
+        imwrite( (string) PROJECT_DIR+"/images/temporalSpatial/"+to_string(i)+".jpg", img );
+    }
 }
