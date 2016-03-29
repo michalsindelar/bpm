@@ -22,11 +22,12 @@ void BpmVideoProcessor::compute() {
 
     // Amplify blurred buffer's red channel
     amplifyVideoChannels(blurredForMask, 50,  0.1, 0.1);
+    amplifyVideoChannels(blurred, 50,  0.1, 0.1);
 
     createTemporalSpatial(); // Create temporal spatial video
     bandpass(); // Bandpass temporal video
     inverseTemporalSpatial();
-    
+
     // Here will be probably second iteration
 }
 
