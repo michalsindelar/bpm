@@ -8,7 +8,7 @@
 Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->sourceMode = sourceMode;
     this->maskMode = maskMode;
-    this->beatVisibilityFactor = 1.5f;
+    this->beatVisibilityFactor = 0.8f;
 
     if (this->sourceMode == VIDEO_SOURCE_MODE) {
         // Open Video Camera
@@ -134,7 +134,7 @@ int Bpm::run() {
                 tmp = tmp(roi);
 
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = visual;
+                out = in + this->beatVisibilityFactor * visual;
             }
             // AMPLIFICATION FAKE BEATING MODE
             else if (this->maskMode == FAKE_BEATING_MODE) {

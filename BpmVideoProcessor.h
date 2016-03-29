@@ -20,10 +20,11 @@ class BpmVideoProcessor {
     // Input face video - should be const
     vector<Mat> video;
 
-    // Processed temporal spatial mask
-    vector<Mat> out;
-    vector<Mat> blurred;
-    vector<Mat> temporalSpatialMask;
+
+    vector<Mat> out; // Blood circulation visualization
+    vector<Mat> blurred; // Blurred video in set level
+    vector<Mat> blurredForMask; // Blurred video in set level
+    vector<Mat> temporalSpatial; // Temporal spatial
 
     // Computed bpm
     int bpm;
@@ -40,6 +41,12 @@ class BpmVideoProcessor {
     // Level of double decreasing size of each frame
     int level;
 
+    // Level of double decreasing size of each frame
+    // For mask computation
+    int levelForMask;
+
+
+
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
         void compute();
@@ -47,17 +54,16 @@ class BpmVideoProcessor {
         void buildGDownStack();
         void bandpass();
         void createTemporalSpatial();
-        void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, vector<Mat> source);
-        void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, vector<Mat> source, int channel);
-        void inverseTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack);
         void inverseTemporalSpatial();
+
+        static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
 
         const vector<Mat> &getOut() const {
             return out;
         }
 
         const vector<Mat> &getTemporalSpatialMask() const {
-            return temporalSpatialMask;
+            return temporalSpatial;
         }
 
         int getBpm() const {

@@ -25,9 +25,6 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     // Amplify
     int currBpm = 0;
 
-    // CRATE AMPLIFICATION CLASS
-    //
-
 
     // Resizing must be computed according to face SIZE !!
     BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, FL, FH, 5, fps, BUFFER_FRAMES);
@@ -39,8 +36,6 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     this->bpm = this->bpm ? (this->bpm + currBpm) / 2 : currBpm;
 
     resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
-//    resizeCropVideo();
-
 
     this->videoBuffer.clear();
     this->working = false;

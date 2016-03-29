@@ -11,6 +11,7 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->fh = fh;
     // TODO: Level will be dynamic
     this->level = level;
+    this->levelForMask = 3;
     this->fps = fps;
     this->framesCount = framesCount;
 }
@@ -18,8 +19,12 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 void BpmVideoProcessor::compute() {
     buildGDownStack();
     this->bpm = (int) round(findStrongestRowFreq(countIntensities(blurred), framesCount, fps));
+
+    // Amplify blurred buffer's red channel
+    amplifyVideoChannels(blurredForMask, 50,  0.1, 0.1);
+
     createTemporalSpatial(); // Create temporal spatial video
-    bandpass();
+    bandpass(); // Bandpass temporal video
     inverseTemporalSpatial();
     
     // Here will be probably second iteration
@@ -36,7 +41,14 @@ void BpmVideoProcessor::buildGDownStack() {
         // TODO: This solves rounding to int at first and than back to float
         frame.convertTo(frame, CV_32FC3);
 
-        blurDn(frame, level, kernel);
+        // Blurring in level for mask at first
+        blurDn(frame, levelForMask, kernel);
+
+        // Push into buffer for blurring
+        this->blurredForMask.push_back(frame);
+
+        // Than rest of levels
+        blurDn(frame, level-levelForMask, kernel);
 
         frame.convertTo(frame, CV_8UC3);
 
@@ -52,26 +64,24 @@ void BpmVideoProcessor::buildGDownStack() {
 
 void BpmVideoProcessor::bandpass() {
     // TODO: Describe
-    int height =  blurred[0].size().height;
-    int width =  blurred[0].size().width;
+    int height =  blurredForMask[0].size().height;
+    int width =  blurredForMask[0].size().width;
 
-
-    
 
     // First of all we need to find strongest frequency for all
     // TODO: This is only initial compute of strongest freq
     float strongestTimeStackFreq = findStrongestRowFreq(countIntensities(blurred), framesCount, fps);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(framesCount,  strongestTimeStackFreq-15, strongestTimeStackFreq+15, fps);
+    Mat mask = maskingCoeffs(framesCount,  strongestTimeStackFreq-10, strongestTimeStackFreq+10, fps);
 
-    for (int i = 0; i < temporalSpatialMask.size(); i++) {
+    for (int i = 0; i < temporalSpatial.size(); i++) {
         
-        for (int row = 0; row < temporalSpatialMask[i].rows; row++) {
+        for (int row = 0; row < temporalSpatial[i].rows; row++) {
 
             // FFT
             Mat fourierTransform;
-            dft(temporalSpatialMask[i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+            dft(temporalSpatial[i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
 
             // MASKING
             Mat planes[] = {Mat::zeros(fourierTransform.size(), CV_32F), Mat::zeros(fourierTransform.size(), CV_32F)};
@@ -80,9 +90,8 @@ void BpmVideoProcessor::bandpass() {
             split(fourierTransform, planes);
 
             // Masking parts
-//                planes[0] = planes[0].mul(mask);
-//                planes[1] = planes[1].mul(mask);
-
+            planes[0] = planes[0].mul(mask);
+            planes[1] = planes[1].mul(mask);
 
             // Stretch
 //                normalize(planes[0], planes[0], 0, 255);
@@ -96,7 +105,7 @@ void BpmVideoProcessor::bandpass() {
 //                normalize(fourierTransform, fourierTransform, 0, 1, NORM_MINMAX);
 
             // COPY BACK
-            fourierTransform.copyTo(temporalSpatialMask[i].row(row));
+            fourierTransform.copyTo(temporalSpatial[i].row(row));
 
             // RELEASE
             fourierTransform.release();
@@ -107,54 +116,66 @@ void BpmVideoProcessor::bandpass() {
 }
 
 void BpmVideoProcessor::createTemporalSpatial() {
-    int dstVectorCount = blurred[0].size().width;
-    int dstVectorWidth = (int) blurred.size();
-    int dstVectorHeight = blurred[0].size().height;
+    int dstVectorCount = blurredForMask[0].size().width;
+    int dstVectorWidth = (int) blurredForMask.size();
+    int dstVectorHeight = blurredForMask[0].size().height;
 
     for (int i = 0; i < dstVectorCount; i++) {
         // One frame
         Mat frame(dstVectorHeight, dstVectorWidth, CV_32FC1);
         for (int j = 0; j < dstVectorWidth; j++) {
-            Mat tmp;
-            cvtColor(blurred[j], tmp, CV_BGR2GRAY);
+            Mat tmp = blurredForMask[j].clone();
+            cvtColor(tmp, tmp, CV_BGR2GRAY);
             tmp.convertTo(tmp, CV_32F);
 
             for(int k = 0; k < dstVectorHeight; k++) {
                 frame.at<float>(k,j) = tmp.at<float>(k,i);
             }
         }
-        temporalSpatialMask.push_back(frame.clone());
+        temporalSpatial.push_back(frame.clone());
         frame.release();
     }
 }
 
 void BpmVideoProcessor::inverseTemporalSpatial() {
-    int dstCount = temporalSpatialMask[0].cols;
-    int dstWidth = (int) temporalSpatialMask.size();
-    int dstHeight = temporalSpatialMask[0].rows;
+    int dstCount = temporalSpatial[0].cols;
+    int dstWidth = (int) temporalSpatial.size();
+    int dstHeight = temporalSpatial[0].rows;
 
     for (int i = 0; i < dstCount; i++) {
         Mat outputFrame = Mat(dstHeight, dstWidth, CV_32FC1);
 
         for (int j = 0; j < dstWidth; j++) {
             for(int k = 0; k < dstHeight; k++) {
-                    outputFrame.at<float>(k, j) = temporalSpatialMask[j].at<float>(k,i);
+                    outputFrame.at<float>(k, j) = temporalSpatial[j].at<float>(k, i);
             }
         }
 
-        // Amplify frame's channels
-//        amplifyChannels(channels, 2, 1, 1);
-
-        // Convert to basic CV_8UC3
-//        cvtColor(outputFrame, outputFrame, );
         cvtColor(outputFrame, outputFrame, CV_GRAY2BGR);
         outputFrame.convertTo(outputFrame, CV_8U);
 
+        // Keep only red channel
+        vector <Mat> channels;
+        split(outputFrame, channels);
+        channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL]*0.1f;
+        channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL]*0.3f;
+        merge(channels, outputFrame);
+
         // in range [0,255]
-        normalize(outputFrame, outputFrame, 0, 255, NORM_MINMAX );
+        normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
 
         this->out.push_back(outputFrame.clone());
         outputFrame.release();
     }
 }
 
+void BpmVideoProcessor::amplifyVideoChannels(vector<Mat> &video, float r, float g, float b) {
+    for (int i = 0; i < video.size(); i++) {
+        // MASKING
+        vector<Mat> channels;
+        // Real & imag part
+        split(video[i], channels);
+        amplifyChannels(channels, r, g, b);
+        merge(channels, video[i]);
+    }
+}
