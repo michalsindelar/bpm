@@ -46,10 +46,11 @@ class BpmVideoProcessor {
 
         void buildGDownStack();
         void bandpass();
+        void createTemporalSpatial();
         void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, vector<Mat> source);
         void createTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack, vector<Mat> source, int channel);
         void inverseTemporalSpatial(vector <vector<Mat> > & temporalSpatialStack);
-
+        void inverseTemporalSpatial();
 
         const vector<Mat> &getOut() const {
             return out;

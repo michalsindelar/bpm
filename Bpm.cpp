@@ -66,7 +66,7 @@ int Bpm::run() {
         Size frameSize(in.cols, in.rows);
 
         // Output
-        Mat out = in.clone();
+        Mat out = Mat(in.rows, in.cols, in.type());
 
         // Detect face in own thread
         if (!faceDetector.isWorking()) {
@@ -133,8 +133,6 @@ int Bpm::run() {
                 // Crop in case mask would be outside frame
                 tmp = tmp(roi);
 
-                int type = tmp.type();
-
                 tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
                 out = visual;
             }
@@ -145,6 +143,7 @@ int Bpm::run() {
             putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
 
         } else {
+            out = in.clone();
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         }
 
