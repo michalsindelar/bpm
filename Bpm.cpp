@@ -9,6 +9,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->sourceMode = sourceMode;
     this->maskMode = maskMode;
     this->beatVisibilityFactor = 0.8f;
+    this->saveOutput = false;
 
     if (this->sourceMode == VIDEO_SOURCE_MODE) {
         // Open Video Camera
@@ -36,6 +37,15 @@ int Bpm::run() {
 
     // Application window
     namedWindow( "App window", CV_WINDOW_AUTOSIZE);
+
+    int ex = static_cast<int>(input.get(CV_CAP_PROP_FOURCC));
+
+    if (saveOutput) {
+        VideoWriter output;
+        output.open((string) PROJECT_DIR+"/output/out.avi",CV_FOURCC('m', 'p', '4', 'v'),this->fps, Size(600,400),true);
+        if ( !output.isOpened() ) {
+        }
+    }
 
     for (int frame = 0; true; frame++) {
 
@@ -147,6 +157,10 @@ int Bpm::run() {
             putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
         }
 
+        if (saveOutput) {
+            output.write(out);
+        }
+
         // Merge original + adjusted
         hconcat(out, in, window);
 
@@ -161,6 +175,7 @@ int Bpm::run() {
 
         // Stop measuring loop time
         clock_t end = clock();
+
 
         // TODO: Check if working
 //        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;

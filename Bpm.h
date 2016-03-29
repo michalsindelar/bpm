@@ -37,6 +37,10 @@ class Bpm {
 
         // FOURIER_MASK_MODE / FAKE_BEATING_MODE
         int maskMode;
+
+        // Bool save output
+        bool saveOutput;
+
         bool initialWorkerFlag = false;
         int currBpm;
         float beatVisibilityFactor;
