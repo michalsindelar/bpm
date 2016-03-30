@@ -13,7 +13,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     if (this->sourceMode == VIDEO_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/quick.mov");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
     }
@@ -41,10 +41,7 @@ int Bpm::run() {
     int ex = static_cast<int>(input.get(CV_CAP_PROP_FOURCC));
 
     if (saveOutput) {
-        VideoWriter output;
         output.open((string) PROJECT_DIR+"/output/out.avi",CV_FOURCC('m', 'p', '4', 'v'),this->fps, Size(600,400),true);
-        if ( !output.isOpened() ) {
-        }
     }
 
     for (int frame = 0; true; frame++) {
@@ -178,9 +175,11 @@ int Bpm::run() {
 
 
         // TODO: Check if working
-//        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-//        int extraWaitMus = (elapsedMus > (CLOCKS_PER_SEC / this->frameRate)) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
-//        usleep(extraWaitMus);
+        if (this->sourceMode == CAMERA_SOURCE_MODE) {
+            double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
+            int extraWaitMus = (elapsedMus > (CLOCKS_PER_SEC / this->fps)) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
+            usleep(extraWaitMus);
+        }
     }
 
     return 0;

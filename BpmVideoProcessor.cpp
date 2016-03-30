@@ -94,8 +94,6 @@ void BpmVideoProcessor::bandpass() {
             planes[0] = planes[0].mul(mask);
             planes[1] = planes[1].mul(mask);
 
-            // Stretch
-//                normalize(planes[0], planes[0], 0, 255);
 
             // Merge back
             merge(planes, 2, fourierTransform);
@@ -103,7 +101,6 @@ void BpmVideoProcessor::bandpass() {
             // IFFT
             dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
 
-//                normalize(fourierTransform, fourierTransform, 0, 1, NORM_MINMAX);
 
             // COPY BACK
             fourierTransform.copyTo(temporalSpatial[i].row(row));

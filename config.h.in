@@ -8,7 +8,7 @@
 #define BUFFER_FRAMES 400
 
 // Experimental settings of fps
-#define FPS 0
+#define FPS 20
 
 // This is fixed time in milliseconds of on cycle of main loop
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FPS)

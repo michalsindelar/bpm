@@ -48,7 +48,10 @@ class Bpm {
         Rect face;
         Rect tmpFace;
 
+        // Video objects
         VideoCapture input;
+        VideoWriter output;
+
         // Deque for storing captured frames
         vector<Mat> videoBuffer;
         // Orig video buffer
