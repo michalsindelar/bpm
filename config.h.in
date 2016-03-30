@@ -26,7 +26,7 @@
 #define ERASED_BORDER_WIDTH 10
 
 // Variation between faces needed for upda
-#define FACE_UPDATE_VARIATION 0.2
+#define FACE_UPDATE_VARIATION 0.01
 
 // MASKING MODES
 #define FOURIER_MASK_MODE 10

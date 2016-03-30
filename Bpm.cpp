@@ -130,14 +130,14 @@ int Bpm::runVideoMode() {
                 Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
                 // Important range check
-                Rect roi(face.x, face.y, tmp.cols, tmp.rows);
+                Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
                 controlFacePlacement(roi, frameSize);
                 roi.x = roi.y = 0;
 
                 // Crop in case mask would be outside frame
                 tmp = tmp(roi);
 
-                tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
+                tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
                 out = in + this->beatVisibilityFactor * visual;
             }
                 // AMPLIFICATION FAKE BEATING MODE
@@ -253,14 +253,14 @@ int Bpm::runCameraMode() {
                 Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
                 // Important range check
-                Rect roi(face.x, face.y, tmp.cols, tmp.rows);
+                Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
                 controlFacePlacement(roi, frameSize);
                 roi.x = roi.y = 0;
 
                 // Crop in case mask would be outside frame
                 tmp = tmp(roi);
 
-                tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
+                tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
                 out = in + this->beatVisibilityFactor * visual;
             }
             putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
