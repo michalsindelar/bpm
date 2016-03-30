@@ -45,8 +45,12 @@ class Bpm {
         int currBpm;
         float beatVisibilityFactor;
         int fps;
+
         Rect face;
         Rect tmpFace;
+
+        // Size of resized input
+        Size frameSize;
 
         // Video objects
         VideoCapture input;
@@ -61,6 +65,7 @@ class Bpm {
 
         // OS window
         Mat window;
+        string OSWindowName;
 
         // Worker for computing
         AmplificationWorker bpmWorker;
@@ -70,7 +75,12 @@ class Bpm {
 
     public:
         Bpm(int mode, int maskMode, float beatVisibilityFactor);
+
+        // Runt modes
         int run();
+        int runCameraMode();
+        int runVideoMode();
+
         void updateFace(Rect face);
         void updateTmpFace(Rect face, float variation);
         void mergeFaces();

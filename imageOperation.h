@@ -24,6 +24,7 @@ using namespace std;
 Mat resizeImage (Mat image, const double width);
 Mat resizeImage (Mat image, const double width, int interpolation);
 Mat resizeImage (Mat image, const double width);
+Size getResizedSize(Size origSize, const double width);
 void resizeCropVideo(vector<Mat>& video, int width);
 Mat cropImageBorder (Mat image, int borderWidth);
 

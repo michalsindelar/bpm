@@ -6,19 +6,16 @@ Mat resizeImage (Mat image, const double width, int interpolation) {
         return image;
     }
 
-    // Resize in
-    Size origSize = image.size();
-
-    // Keep aspect ratio
-    double aspect = (double) origSize.width / origSize.height;
-
-    // Compute height
-    double height = width / aspect;
-
     // Resize
-    resize(image, image, Size(width, height), 0, 0, interpolation);
+    resize(image, image, getResizedSize(image.size(), width), 0, 0, interpolation);
 
     return image;
+}
+
+Size getResizedSize(Size origSize, const double width) {
+    // Keep aspect ratio
+    double aspect = (double) origSize.width / origSize.height;
+    return Size(width, width / aspect);
 }
 
 Mat resizeImage(Mat image, const double width) {
