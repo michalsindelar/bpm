@@ -87,6 +87,12 @@ class Bpm {
         bool isFaceDetected();
         bool isBufferFull();
 
+        void pushInputToBuffer(Mat frame, int index);
+        void controlMiddleWare();
+        void compute(int index);
+        void visualize(Mat in, Mat & out, int index);
+
+
         void setMode(int mode) {
             Bpm::maskMode = mode;
         }

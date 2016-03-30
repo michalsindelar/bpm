@@ -54,14 +54,10 @@ int Bpm::runVideoMode() {
         Mat in;
         input >> in; // type: CV_8UC3 (16)
 
-        // Handle ending video
+        // Reset video
         if (!in.data) {
-            if (this->sourceMode == VIDEO_SOURCE_MODE) {
-                input.set(CV_CAP_PROP_POS_MSEC, 0);
-                input >> in;
-            } else if (this->sourceMode == CAMERA_SOURCE_MODE) {
-                // TODO:
-            }
+            input.set(CV_CAP_PROP_POS_MSEC, 0);
+            input >> in;
         }
 
         if (frame < CAMERA_INIT) continue;
@@ -90,63 +86,17 @@ int Bpm::runVideoMode() {
 
         // Start cropping frames to face only after init
         // TODO: Can't run without face!
-        // Or can be choosen center of image
-        if (frame > CAMERA_INIT && this->isFaceDetected()) {
-            face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
-            face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
-
-            Rect roi(face.x, face.y, face.width, face.height);
-            controlFacePlacement(roi, frameSize);
-
-            Mat croppedToFace = in(roi).clone();
-            videoBuffer.push_back(croppedToFace);
-        }
+        pushInputToBuffer(in, frame);
 
         // Update bpm once bpmWorker ready
-        if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag() && this->isBufferFull() ) {
-            // Clear current bpmVisualization array
-            this->bpmVisualization.clear();
-            // Copy to loop bpmVisualization vid
-            this->bpmWorker.getVisualization().swap(this->bpmVisualization);
-            // Clear bpmWorker bpmVisualsubization array
-            this->bpmWorker.clearVisualization();
-        }
+        controlMiddleWare();
 
         // Start computing when buffer filled
-        if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
-            boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
-            mergeFaces();
-        }
+        compute(frame);
 
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
-        if (this->bpmWorker.getInitialFlag()) {
-            // AMPLIFICATION FOURIER MODE
-            if (this->maskMode == FOURIER_MASK_MODE) {
-                Mat visual = Mat::zeros(in.rows, in.cols, in.type());
-
-                // As we crop mask in own thread while amplification
-                // These steps are appli only if detected face positon has significantly changed
-                Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
-
-                // Important range check
-                Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
-                controlFacePlacement(roi, frameSize);
-                roi.x = roi.y = 0;
-
-                // Crop in case mask would be outside frame
-                tmp = tmp(roi);
-
-                tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = in + this->beatVisibilityFactor * visual;
-            }
-                // AMPLIFICATION FAKE BEATING MODE
-            putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
-
-        } else {
-            out = in.clone();
-            putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
-        }
+        visualize(in, out, frame);
 
         if (saveOutput) {
             output.write(out);
@@ -179,12 +129,7 @@ int Bpm::runCameraMode() {
 
         // Handle ending video
         if (!in.data) {
-            if (this->sourceMode == VIDEO_SOURCE_MODE) {
-                input.set(CV_CAP_PROP_POS_MSEC, 0);
-                input >> in;
-            } else if (this->sourceMode == CAMERA_SOURCE_MODE) {
-                // TODO:
-            }
+            return 1;
         }
 
         if (frame < CAMERA_INIT) continue;
@@ -214,61 +159,17 @@ int Bpm::runCameraMode() {
         // Start cropping frames to face only after init
         // TODO: Can't run without face!
         // Or can be choosen center of image
-        if (frame > CAMERA_INIT && this->isFaceDetected()) {
-            face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
-            face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
-
-            Rect roi(face.x, face.y, face.width, face.height);
-            controlFacePlacement(roi, frameSize);
-
-            Mat croppedToFace = in(roi).clone();
-            videoBuffer.push_back(croppedToFace);
-        }
+        pushInputToBuffer(in, frame);
 
         // Update bpm once bpmWorker ready
-        if (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag() && this->isBufferFull() ) {
-            // Clear current bpmVisualization array
-            this->bpmVisualization.clear();
-            // Copy to loop bpmVisualization vid
-            this->bpmWorker.getVisualization().swap(this->bpmVisualization);
-            // Clear bpmWorker bpmVisualsubization array
-            this->bpmWorker.clearVisualization();
-        }
+        controlMiddleWare();
 
         // Start computing when buffer filled
-        if (frame > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking()) {
-            boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
-            mergeFaces();
-        }
+        compute(frame);
 
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
-        if (this->bpmWorker.getInitialFlag()) {
-            // AMPLIFICATION FOURIER MODE
-            if (this->maskMode == FOURIER_MASK_MODE) {
-                Mat visual = Mat::zeros(in.rows, in.cols, in.type());
-
-                // As we crop mask in own thread while amplification
-                // These steps are appli only if detected face positon has significantly changed
-                Mat tmp = resizeImage(this->bpmVisualization.at(frame % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
-
-                // Important range check
-                Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
-                controlFacePlacement(roi, frameSize);
-                roi.x = roi.y = 0;
-
-                // Crop in case mask would be outside frame
-                tmp = tmp(roi);
-
-                tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-                out = in + this->beatVisibilityFactor * visual;
-            }
-            putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
-
-        } else {
-            out = in.clone();
-            putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
-        }
+        visualize(in, out, frame);
 
         if (saveOutput) {
             output.write(out);
@@ -294,6 +195,69 @@ int Bpm::runCameraMode() {
     }
 
     return 0;
+}
+
+
+void Bpm::pushInputToBuffer(Mat in, int index) {
+    if (index > CAMERA_INIT && this->isFaceDetected()) {
+        face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
+        face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
+
+        Rect roi(face.x, face.y, face.width, face.height);
+        controlFacePlacement(roi, frameSize);
+
+        Mat croppedToFace = in(roi).clone();
+        videoBuffer.push_back(croppedToFace);
+    }
+}
+
+void Bpm::controlMiddleWare() {
+    bool shouldUpdateMiddleWare = (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag() && this->isBufferFull());
+    if (shouldUpdateMiddleWare) {
+        // Clear current bpmVisualization array
+        this->bpmVisualization.clear();
+        // Copy to loop bpmVisualization vid
+        this->bpmWorker.getVisualization().swap(this->bpmVisualization);
+        // Clear bpmWorker bpmVisualsubization array
+        this->bpmWorker.clearVisualization();
+    }
+}
+
+void Bpm::compute(int index) {
+    bool shouldCompute = (index > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking());
+    if (shouldCompute) {
+        boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
+        mergeFaces();
+    }
+}
+
+
+void Bpm::visualize(Mat in, Mat & out, int index) {
+    if (this->bpmWorker.getInitialFlag()) {
+        // AMPLIFICATION FOURIER MODE
+        Mat visual = Mat::zeros(in.rows, in.cols, in.type());
+
+        // As we crop mask in own thread while amplification
+        // These steps are appli only if detected face positon has significantly changed
+        Mat tmp = resizeImage(this->bpmVisualization.at(index % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
+
+        // Important range check
+        Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
+        controlFacePlacement(roi, frameSize);
+        roi.x = roi.y = 0;
+
+        // Crop in case mask would be outside frame
+        tmp = tmp(roi);
+
+        tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
+        out = in + this->beatVisibilityFactor * visual;
+
+        putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+
+    } else {
+        out = in.clone();
+        putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+    }
 }
 
 void Bpm::updateFace(Rect face) {
