@@ -23,6 +23,7 @@ class AmplificationWorker {
     bool working;
     bool initialFlag;
     int fps;
+    int bufferFrames;
 
     vector<Mat> videoBuffer;
     vector<Mat> visualization;
@@ -61,6 +62,11 @@ class AmplificationWorker {
 
         void setFps(int fps) {
             AmplificationWorker::fps = fps;
+        }
+
+
+        void setBufferFrames(int bufferFrames) {
+            AmplificationWorker::bufferFrames = bufferFrames;
         }
 };
 

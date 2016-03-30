@@ -300,7 +300,7 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 }
 
 vector<int> countIntensities(vector<Mat> &video) {
-    vector <int> intensitySum(BUFFER_FRAMES);
+    vector <int> intensitySum(video.size());
     Size videoFrame(video[0].cols, video[0].rows);
 
     for (int frame = 0; frame < video.size(); frame++) {

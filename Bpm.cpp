@@ -14,9 +14,11 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     if (this->sourceMode == VIDEO_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/try.mov");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
+//        this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
+        this->bufferFrames = 300;
     }
 
     else if (this->sourceMode == CAMERA_SOURCE_MODE) {
@@ -24,6 +26,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
         this->input = VideoCapture(0);
         if(!input.isOpened()) cout << "Unable to open Video Camera";
         this->fps = FPS;
+        this->bufferFrames = BUFFER_FRAMES;
     }
 
     this->frameSize = getResizedSize(Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)), RESIZED_FRAME_WIDTH);;
@@ -32,6 +35,8 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     // Initialize middleware
     this->bpmWorker = AmplificationWorker();
     bpmWorker.setFps(fps);
+    bpmWorker.setBufferFrames(bufferFrames);
+
 
     if (saveOutput) {
         output.open((string) PROJECT_DIR+"/output/out.avi",CV_FOURCC('m', 'p', '4', 'v'),this->fps, Size(600,400),true);
@@ -224,7 +229,7 @@ void Bpm::controlMiddleWare() {
 }
 
 void Bpm::compute(int index) {
-    bool shouldCompute = (index > CAMERA_INIT + BUFFER_FRAMES && this->isBufferFull() && !bpmWorker.isWorking());
+    bool shouldCompute = (index > CAMERA_INIT + this->bufferFrames && this->isBufferFull() && !bpmWorker.isWorking());
     if (shouldCompute) {
         boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
         mergeFaces();
@@ -239,7 +244,7 @@ void Bpm::visualize(Mat in, Mat & out, int index) {
 
         // As we crop mask in own thread while amplification
         // These steps are appli only if detected face positon has significantly changed
-        Mat tmp = resizeImage(this->bpmVisualization.at(index % BUFFER_FRAMES), tmpFace.width - 2*ERASED_BORDER_WIDTH);
+        Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bufferFrames), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
         // Important range check
         Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
@@ -293,5 +298,5 @@ bool Bpm::isFaceDetected() {
 }
 
 bool Bpm::isBufferFull() {
-    return videoBuffer.size() == BUFFER_FRAMES;
+    return videoBuffer.size() == this->bufferFrames;
 }
