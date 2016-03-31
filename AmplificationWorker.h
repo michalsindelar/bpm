@@ -34,8 +34,6 @@ class AmplificationWorker {
     public:
         AmplificationWorker();
         void compute(vector<Mat> videoBuffer);
-        void setVideoBuffer(vector<Mat> videoBuffer);
-        void clearVisualization();
 
         bool isWorking() {
             return this->working;
@@ -64,9 +62,16 @@ class AmplificationWorker {
             AmplificationWorker::fps = fps;
         }
 
-
         void setBufferFrames(int bufferFrames) {
             AmplificationWorker::bufferFrames = bufferFrames;
+        }
+
+        void setVideoBuffer(vector<Mat> videoBuffer) {
+            this->videoBuffer.swap(videoBuffer);
+        }
+
+        void clearVisualization() {
+            this->visualization.clear();
         }
 };
 

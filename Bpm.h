@@ -32,7 +32,7 @@ using namespace std;
 
 class Bpm {
     private:
-        // CAMERA_SOURCE_MODE / VIDEO_SOURCE_MODE
+        // CAMERA_REAL_SOURCE_MODE / VIDEO_SOURCE_MODE
         int sourceMode;
 
         // FOURIER_MASK_MODE / FAKE_BEATING_MODE
@@ -81,7 +81,8 @@ class Bpm {
         // Runt modes
         int run();
         int runCameraMode();
-        int runVideoMode();
+        int runRealVideoMode();
+        int runStaticVideoMode();
 
         void updateFace(Rect face);
         void updateTmpFace(Rect face, float variation);
@@ -90,8 +91,10 @@ class Bpm {
         bool isBufferFull();
 
         void pushInputToBuffer(Mat frame, int index);
+        void pushInputToBuffer(Mat in);
         void controlMiddleWare();
         void compute(int index);
+        void compute();
         void visualize(Mat in, Mat & out, int index);
 
 

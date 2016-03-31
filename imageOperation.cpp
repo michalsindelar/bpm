@@ -5,10 +5,8 @@ Mat resizeImage (Mat image, const double width, int interpolation) {
     if (image.rows == 0) {
         return image;
     }
-
     // Resize
     resize(image, image, getResizedSize(image.size(), width), 0, 0, interpolation);
-
     return image;
 }
 
@@ -23,7 +21,7 @@ Mat resizeImage(Mat image, const double width) {
 }
 
 void resizeCropVideo(vector<Mat> &video, int width) {
-    for (int i = 0; i < BUFFER_FRAMES; i++) {
+    for (int i = 0; i < video.size(); i++) {
         video[i] = resizeImage(video[i], width, INTER_LINEAR);
         video[i] = cropImageBorder(video[i], ERASED_BORDER_WIDTH);
     }
@@ -116,7 +114,6 @@ Mat convertImageYIQtoRGB( Mat img)
     double y, i, q;
 
     Mat out(img.rows, img.cols, CV_8UC3);
-    int type = out.type();
     /* convert image from RGB to YIQ */
 
     int m=0, n=0;

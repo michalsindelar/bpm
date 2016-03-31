@@ -12,21 +12,28 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->saveOutput = false;
     this->OSWindowName = "OS window";
 
-    if (this->sourceMode == VIDEO_SOURCE_MODE) {
-        // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/try.mov");
-        if(!input.isOpened()) cout << "Unable to open Video File";
-        this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
-//        this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
-        this->bufferFrames = 300;
-    }
-
-    else if (this->sourceMode == CAMERA_SOURCE_MODE) {
+    if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
         this->input = VideoCapture(0);
         if(!input.isOpened()) cout << "Unable to open Video Camera";
         this->fps = FPS;
         this->bufferFrames = BUFFER_FRAMES;
+    }
+
+    else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
+        // Open Video Camera
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/try.mov");
+        if(!input.isOpened()) cout << "Unable to open Video File";
+        this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
+//        this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
+
+        if (this->sourceMode == VIDEO_REAL_SOURCE_MODE) {
+            this->bufferFrames = BUFFER_FRAMES;
+        }
+        else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
+            this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
+        }
+
     }
 
     this->frameSize = getResizedSize(Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)), RESIZED_FRAME_WIDTH);;
@@ -47,11 +54,19 @@ int Bpm::run() {
     // Application window
     namedWindow( this->OSWindowName, CV_WINDOW_AUTOSIZE);
 
-    if (this->sourceMode == CAMERA_SOURCE_MODE) return runCameraMode();
-    if (this->sourceMode == VIDEO_SOURCE_MODE) return runVideoMode();
+    switch (this->sourceMode) {
+        case VIDEO_REAL_SOURCE_MODE:
+            return runRealVideoMode();
+        case VIDEO_STATIC_SOURCE_MODE:
+            return runStaticVideoMode();
+        case CAMERA_SOURCE_MODE:
+            return runCameraMode();
+        default:
+            return runCameraMode();
+    }
 }
 
-int Bpm::runVideoMode() {
+int Bpm::runRealVideoMode() {
 
     for (int frame = 0; true; frame++) {
 
@@ -98,6 +113,96 @@ int Bpm::runVideoMode() {
 
         // Start computing when buffer filled
         compute(frame);
+
+        // Show bpmVisualization video after initialization compute
+        // TODO: Check if this is performance ok
+        visualize(in, out, frame);
+
+        if (saveOutput) {
+            output.write(out);
+        }
+
+        // Merge original + adjusted
+        hconcat(out, in, window);
+
+        // Put the image onto a screen
+        imshow(this->OSWindowName, window);
+
+        // Handling frame rate & time for closing window
+        if (waitKey(1) >= 0) break;
+    }
+
+    return 0;
+}
+
+int Bpm::runStaticVideoMode() {
+
+    // Fill buffer from whole video
+    Mat in;
+    input >> in;
+
+
+
+    int bufferFrames = 0;
+    while(in.cols != 0 && in.data) {
+        // Detect face in own thread
+
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+        pushInputToBuffer(in);
+
+        if (!faceDetector.isWorking()) {
+            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
+        }
+        if (faceDetector.getFaces().size()) {
+            // TODO: function get biggest face
+            this->updateFace(faceDetector.getFaces()[0]);
+        }
+
+        pushInputToBuffer(in);
+
+        input >> in;
+        bufferFrames++;
+    }
+
+    this->bufferFrames = bufferFrames;
+    bpmWorker.setBufferFrames(bufferFrames);
+
+    compute();
+    this->bpmVisualization = this->bpmWorker.getVisualization();
+    this->bpmWorker.clearVisualization();
+
+
+
+    // Reset video
+    input.set(CV_CAP_PROP_POS_MSEC, 0);
+
+    for (int frame = 0; true; frame++) {
+
+        // Grab video frame
+        Mat in;
+        input >> in; // type: CV_8UC3 (16)
+
+        // Reset video
+        if (!in.data) {
+            input.set(CV_CAP_PROP_POS_MSEC, 0);
+            input >> in;
+        }
+
+        // Resize captured frame
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+
+        // Output
+        Mat out = Mat(in.rows, in.cols, in.type());
+
+        // Detect face in own thread
+        if (!faceDetector.isWorking()) {
+            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
+        }
+
+        if (faceDetector.getFaces().size()) {
+            // TODO: function get biggest face
+            this->updateFace(faceDetector.getFaces()[0]);
+        }
 
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
@@ -205,6 +310,12 @@ int Bpm::runCameraMode() {
 
 void Bpm::pushInputToBuffer(Mat in, int index) {
     if (index > CAMERA_INIT && this->isFaceDetected()) {
+        pushInputToBuffer(in);
+    }
+}
+
+void Bpm::pushInputToBuffer(Mat in) {
+    if (this->isFaceDetected()) {
         face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
         face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
 
@@ -234,6 +345,10 @@ void Bpm::compute(int index) {
         boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
         mergeFaces();
     }
+}
+
+void Bpm::compute() {
+    bpmWorker.compute(videoBuffer);
 }
 
 
