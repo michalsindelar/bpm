@@ -141,8 +141,6 @@ int Bpm::runStaticVideoMode() {
     Mat in;
     input >> in;
 
-
-
     int bufferFrames = 0;
     while(in.cols != 0 && in.data) {
         // Detect face in own thread

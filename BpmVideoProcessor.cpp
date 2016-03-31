@@ -15,11 +15,15 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
+
+
 }
 
 void BpmVideoProcessor::compute() {
     buildGDownStack();
-    this->bpm = (int) round(findStrongestRowFreq(countIntensities(blurred), framesCount, fps));
+
+    this->intensities = countIntensities(blurred);
+    this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
     // Amplify blurred buffer's red channel
     amplifyVideoChannels(blurredForMask, 50,  0.1, 0.1);
@@ -28,6 +32,7 @@ void BpmVideoProcessor::compute() {
     createTemporalSpatial(); // Create temporal spatial video
     bandpass(); // Bandpass temporal video
     inverseTemporalSpatial();
+
 }
 
 void BpmVideoProcessor::buildGDownStack() {

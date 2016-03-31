@@ -313,14 +313,12 @@ vector<int> countIntensities(vector<Mat> &video) {
     }
     return intensitySum;
 }
-void saveIntensities(vector<Mat>& video, string filename) {
+void saveIntensities(vector<int> intensities, string filename) {
     ofstream myfile;
     myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
 
-    vector<int> intensitySum = countIntensities(video);
-
-    for (int i = 0; i < video.size(); i++) {
-        myfile << intensitySum.at(i);
+    for (int i = 0; i < intensities.size(); i++) {
+        myfile << intensities.at(i);
         myfile << "\n";
     }
     myfile.close();

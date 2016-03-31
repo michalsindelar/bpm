@@ -52,7 +52,7 @@ void blurDn(Mat & frame, int level, Mat kernel);
 
 // Intensities compute
 vector<int> countIntensities(vector<Mat> &video);
-void saveIntensities(vector<Mat>& video, string filename);
+void saveIntensities(vector<int> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
 
 #endif

@@ -26,6 +26,8 @@ class BpmVideoProcessor {
     vector<Mat> blurredForMask; // Blurred video in set level
     vector<Mat> temporalSpatial; // Temporal spatial
 
+    vector<int> intensities; // Intensities of blurred frames
+
     // Computed bpm
     int bpm;
 
