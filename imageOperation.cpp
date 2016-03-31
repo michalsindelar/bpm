@@ -92,6 +92,7 @@ Mat convertImageRGBtoYIQ(Mat img)
             r = img.data[m*img.step + n*3 + 2];
             g = img.data[m*img.step + n*3 + 1];
             b = img.data[m*img.step + n*3 ];
+
             y = 0.299*r + 0.587*g + 0.114*b;
             i = 0.596*r - 0.275*g - 0.321*b;
             q = 0.212*r - 0.523*g + 0.311*b;
@@ -162,7 +163,7 @@ float freqToBpmMapper(int fps, int framesCount, int index) {
     return (int) (round(SECONDS_IN_MINUTE * fps * (index+1)) / framesCount);
 }
 
-float findStrongestRowFreq(vector<int> row, int framesCount, int fps) {
+float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
     // Create matrix from intensitySum
     float maxValue = 0;
     for (int i = 0; i < row.size(); i++) {
@@ -296,24 +297,29 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 
 }
 
-vector<int> countIntensities(vector<Mat> &video) {
-    vector <int> intensitySum(video.size());
+vector<double> countIntensities(vector<Mat> &video) {
+    vector <double> intensitySum(video.size());
     Size videoFrame(video[0].cols, video[0].rows);
 
+    float r, g, b;
+
     for (int frame = 0; frame < video.size(); frame++) {
-        uint8_t* pixelPtr = (uint8_t*)video[frame].data;
-        int cn = video[frame].channels();
-        Scalar_<uint8_t> bgrPixel;
+        intensitySum.at(frame) = 0;
+
         for(int i = 0; i < videoFrame.height; i++) {
             for(int j = 0; j < videoFrame.width; j++) {
-                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
-                intensitySum.at(frame) += (int)tmp;
+                // Channels
+                r = video[frame].data[i*video[frame].step + j*3 + 2];
+                g = video[frame].data[i*video[frame].step + j*3 + 1];
+                b = video[frame].data[i*video[frame].step + j*3 ];
+
+                intensitySum.at(frame) += r+g+b;
             }
         }
     }
     return intensitySum;
 }
-void saveIntensities(vector<int> intensities, string filename) {
+void saveIntensities(vector<double> intensities, string filename) {
     ofstream myfile;
     myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
 

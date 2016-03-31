@@ -41,7 +41,7 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 
 // Frequency tools helpers
 float freqToBpmMapper(int fps, int framesCount, int index);
-float findStrongestRowFreq(vector<int> row, int framesCount, int fps);
+float findStrongestRowFreq(vector<double> row, int framesCount, int fps);
 float findStrongestRowFreq(Mat row, int framesCount, int fps);
 Mat maskingCoeffs(int width, float fl, float fh, int fps);
 
@@ -51,8 +51,8 @@ Mat binom5Kernel();
 void blurDn(Mat & frame, int level, Mat kernel);
 
 // Intensities compute
-vector<int> countIntensities(vector<Mat> &video);
-void saveIntensities(vector<int> intensities, string filename);
+vector<double> countIntensities(vector<Mat> &video);
+void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
 
 #endif

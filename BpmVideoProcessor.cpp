@@ -23,6 +23,8 @@ void BpmVideoProcessor::compute() {
     buildGDownStack();
 
     this->intensities = countIntensities(blurred);
+    saveIntensities(intensities, "dataAnalysis/vid2.txt"); // Save intensitites
+
     this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
     // Amplify blurred buffer's red channel
@@ -33,6 +35,7 @@ void BpmVideoProcessor::compute() {
     bandpass(); // Bandpass temporal video
     inverseTemporalSpatial();
 
+    saveIntensities(intensities, "dataAnalysis/intensitiesQuick.txt"); // Save intensitites
 }
 
 void BpmVideoProcessor::buildGDownStack() {
