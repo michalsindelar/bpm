@@ -14,6 +14,7 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->levelForMask = 3;
     this->fps = fps;
     this->framesCount = framesCount;
+    this->maskWidth = FREQ_MASK_WIDTH;
 }
 
 void BpmVideoProcessor::compute() {
@@ -27,8 +28,6 @@ void BpmVideoProcessor::compute() {
     createTemporalSpatial(); // Create temporal spatial video
     bandpass(); // Bandpass temporal video
     inverseTemporalSpatial();
-
-    // Here will be probably second iteration
 }
 
 void BpmVideoProcessor::buildGDownStack() {
@@ -74,7 +73,8 @@ void BpmVideoProcessor::bandpass() {
     float strongestTimeStackFreq = findStrongestRowFreq(countIntensities(blurred), framesCount, fps);
 
     // Create mask based on strongest frequency
-    Mat mask = maskingCoeffs(framesCount,  strongestTimeStackFreq-10, strongestTimeStackFreq+10, fps);
+    //
+    Mat mask = generateFreqMask(strongestTimeStackFreq);
 
     for (int i = 0; i < temporalSpatial.size(); i++) {
         
@@ -176,4 +176,25 @@ void BpmVideoProcessor::amplifyVideoChannels(vector<Mat> &video, float r, float 
         amplifyChannels(channels, r, g, b);
         merge(channels, video[i]);
     }
+}
+
+Mat BpmVideoProcessor::generateFreqMask(float freq) {
+    float halfRange = this->maskWidth / 2;
+    float fl, fh;
+
+    // Compute fl & fh
+    if (freq - halfRange < CUTOFF_FL) {
+        fl = CUTOFF_FL;
+        fh = CUTOFF_FH + this->maskWidth;
+    }
+    else if (freq + halfRange > CUTOFF_FH) {
+        fh = CUTOFF_FH;
+        fl = CUTOFF_FH - this->maskWidth;
+    }
+    else {
+        fl = freq - halfRange;
+        fh = freq + halfRange;
+    }
+
+    return maskingCoeffs(framesCount,  fl, fh, fps);
 }

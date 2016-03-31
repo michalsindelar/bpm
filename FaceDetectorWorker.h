@@ -21,8 +21,8 @@ class FaceDetectorWorker {
     Mat frame;
     CascadeClassifier faceCascade;
 
-    float faceHeightScale = 1.5f; // Increase height
-    float faceYOffset = 0.2f; // Move face up
+    float faceHeightScale; // Increase height
+    float faceYOffset; // Move face up
 
     public:
         FaceDetectorWorker();

@@ -5,10 +5,12 @@
 #include "FaceDetectorWorker.h"
 
 FaceDetectorWorker::FaceDetectorWorker() {
+    this->faceHeightScale = 1.3f;
+    this->faceYOffset = 0.2f;
+
     this->working = false;
 
     this->faceCascade = CascadeClassifier();
-
     this->faceCascade.load((string) PROJECT_DIR+"/haarcascade_frontalface_alt.xml");
 }
 

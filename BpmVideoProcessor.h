@@ -45,6 +45,8 @@ class BpmVideoProcessor {
     // For mask computation
     int levelForMask;
 
+    // How wide freq (bpm) range should we keep
+    int maskWidth;
 
 
     public:
@@ -55,6 +57,8 @@ class BpmVideoProcessor {
         void bandpass();
         void createTemporalSpatial();
         void inverseTemporalSpatial();
+
+        Mat generateFreqMask(float freq);
 
         static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
 
