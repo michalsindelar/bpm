@@ -27,6 +27,15 @@ void resizeCropVideo(vector<Mat> &video, int width) {
     }
 }
 
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
+    for (int i = 0; i < src.size(); i++) {
+        Mat tmp = src[i];
+//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
+        dst.push_back(cropImageBorder(tmp, borderWidth));
+//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
+    }
+}
+
 void controlFacePlacement (Rect & roi, const Size frame) {
     int maxXIndex = roi.x + roi.width + ERASED_BORDER_WIDTH;
     int maxYIndex = roi.y + roi.height + ERASED_BORDER_WIDTH;

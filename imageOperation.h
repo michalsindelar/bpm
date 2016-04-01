@@ -26,6 +26,7 @@ Mat resizeImage (Mat image, const double width, int interpolation);
 Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
 void resizeCropVideo(vector<Mat>& video, int width);
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, int width);
 Mat cropImageBorder (Mat image, int borderWidth);
 
 // Range control

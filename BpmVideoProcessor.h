@@ -20,6 +20,8 @@ class BpmVideoProcessor {
     // Input face video - should be const
     vector<Mat> video;
 
+    // Try to extract more sking to this
+    vector<Mat> skinVideo;
 
     vector<Mat> out; // Blood circulation visualization
     vector<Mat> blurred; // Blurred video in set level
@@ -61,8 +63,8 @@ class BpmVideoProcessor {
         void inverseTemporalSpatial();
 
         Mat generateFreqMask(float freq);
-
         static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
+        void gainMoreSkinFromFace();
 
         const vector<Mat> &getOut() const {
             return out;

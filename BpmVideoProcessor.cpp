@@ -9,14 +9,14 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->video = video;
     this->fl = fl;
     this->fh = fh;
-    // TODO: Level will be dynamic
+    // TODO: Level will be dynamic ??
     this->level = level;
     this->levelForMask = 3;
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
 
-
+    this->gainMoreSkinFromFace();
 }
 
 void BpmVideoProcessor::compute() {
@@ -41,7 +41,7 @@ void BpmVideoProcessor::compute() {
 void BpmVideoProcessor::buildGDownStack() {
     Mat kernel = binom5Kernel();
     for (int i = 0; i < framesCount; i++) {
-        Mat frame = video[i].clone();
+        Mat frame = skinVideo[i].clone();
 
         // TODO: REWRITE ctColor2 to float
         cvtColor2(frame, frame, CV2_BGR2YIQ); // returns CV_8UC3
@@ -50,7 +50,7 @@ void BpmVideoProcessor::buildGDownStack() {
         frame.convertTo(frame, CV_32FC3, 1/255.0f);
 
         // Blurring in level for mask at first
-        for (int j = 0; j < levelForMask; j++) {
+        for (int j = 0; j < level; j++) {
             pyrDown(frame, frame);
         }
 
@@ -58,7 +58,7 @@ void BpmVideoProcessor::buildGDownStack() {
         this->blurredForMask.push_back(frame);
 
         // Blurring to final level now
-        for (int j = 0; j < level-levelForMask; j++) {
+        for (int j = 0; j < levelForMask; j++) {
             pyrDown(frame, frame);
         }
 
@@ -75,14 +75,10 @@ void BpmVideoProcessor::buildGDownStack() {
 }
 
 void BpmVideoProcessor::bandpass() {
-    // TODO: Describe
-    int height =  blurredForMask[0].size().height;
-    int width =  blurredForMask[0].size().width;
-
 
     // First of all we need to find strongest frequency for all
-    // TODO: This is only initial compute of strongest freq
-    float strongestTimeStackFreq = findStrongestRowFreq(countIntensities(blurred), framesCount, fps);
+    this->intensities = countIntensities(blurred);
+    float strongestTimeStackFreq = findStrongestRowFreq(intensities, framesCount, fps);
 
     // Create mask based on strongest frequency
     //
@@ -209,4 +205,11 @@ Mat BpmVideoProcessor::generateFreqMask(float freq) {
     }
 
     return maskingCoeffs(framesCount,  fl, fh, fps);
+}
+
+
+void BpmVideoProcessor::gainMoreSkinFromFace() {
+    // TODO: should be more sophisticated -> ellipse
+    int borderWidth = (int) round(min(video[0].cols / 6.0f, video[0].rows / 6.0f));
+    cropToVideo(video, skinVideo, borderWidth);
 }
