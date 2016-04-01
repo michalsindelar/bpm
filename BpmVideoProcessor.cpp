@@ -23,7 +23,9 @@ void BpmVideoProcessor::compute() {
     buildGDownStack();
 
     this->intensities = countIntensities(blurred);
-    saveIntensities(intensities, "dataAnalysis/2.txt"); // Save intensitites
+
+//    saveIntensities(intensities, "dataAnalysis/"+to_string(framesCount)+"_v2_frames.txt");
+//    imwrite((string)PROJECT_DIR+"/images/"+to_string(framesCount)+"_v2_frames.jpg", this->video[0] );
 
     this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
@@ -34,8 +36,6 @@ void BpmVideoProcessor::compute() {
     createTemporalSpatial(); // Create temporal spatial video
     bandpass(); // Bandpass temporal video
     inverseTemporalSpatial();
-
-    saveIntensities(intensities, "dataAnalysis/intensitiesQuick.txt"); // Save intensitites
 }
 
 void BpmVideoProcessor::buildGDownStack() {
