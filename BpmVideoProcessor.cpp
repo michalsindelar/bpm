@@ -47,7 +47,7 @@ void BpmVideoProcessor::buildGDownStack() {
         cvtColor2(frame, frame, CV2_BGR2YIQ); // returns CV_8UC3
 
         // TODO: This solves rounding to int at first and than back to float
-        frame.convertTo(frame, CV_32FC3);
+        frame.convertTo(frame, CV_32FC3, 1/255.0f);
 
         // Blurring in level for mask at first
         for (int j = 0; j < levelForMask; j++) {
@@ -62,7 +62,7 @@ void BpmVideoProcessor::buildGDownStack() {
             pyrDown(frame, frame);
         }
 
-        frame.convertTo(frame, CV_8UC3);
+        frame.convertTo(frame, CV_8UC3, 255.0f);
 
         cvtColor2(frame, frame, CV2_YIQ2BGR); // returns CV_8UC3
 

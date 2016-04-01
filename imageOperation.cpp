@@ -208,8 +208,8 @@ float findStrongestRowFreq(Mat row, int framesCount, int fps) {
 
         // TODO: This should be connected with bpm!
         // TODO: Define cut-off freq to constants
-        if (bpm < 50) continue; // This is under low frequency
-        if (bpm > 180) continue; // This is over high frequency
+        if (bpm < CUTOFF_FL) continue; // This is under low frequency
+        if (bpm > CUTOFF_FH) continue; // This is over high frequency
 
         if (magI.at<float>(i) > maxFreq) {
             maxFreq = magI.at<float>(i);
@@ -309,9 +309,9 @@ vector<double> countIntensities(vector<Mat> &video) {
         for(int i = 0; i < videoFrame.height; i++) {
             for(int j = 0; j < videoFrame.width; j++) {
                 // Channels
-                r = video[frame].data[i*video[frame].step + j*3 + 2];
-                g = video[frame].data[i*video[frame].step + j*3 + 1];
-                b = video[frame].data[i*video[frame].step + j*3 ];
+                r = video[frame].data[i*video[frame].cols + j*3 + 2];
+                g = video[frame].data[i*video[frame].cols + j*3 + 1];
+                b = video[frame].data[i*video[frame].cols + j*3 ];
 
                 intensitySum.at(frame) += r+g+b;
             }
