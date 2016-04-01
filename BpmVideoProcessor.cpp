@@ -50,13 +50,17 @@ void BpmVideoProcessor::buildGDownStack() {
         frame.convertTo(frame, CV_32FC3);
 
         // Blurring in level for mask at first
-        blurDn(frame, levelForMask, kernel);
+        for (int j = 0; j < levelForMask; j++) {
+            pyrDown(frame, frame);
+        }
 
         // Push into buffer for blurring
         this->blurredForMask.push_back(frame);
 
-        // Than rest of levels
-        blurDn(frame, level-levelForMask, kernel);
+        // Blurring to final level now
+        for (int j = 0; j < level-levelForMask; j++) {
+            pyrDown(frame, frame);
+        }
 
         frame.convertTo(frame, CV_8UC3);
 

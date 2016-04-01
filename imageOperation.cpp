@@ -160,7 +160,7 @@ void cvtColor2(Mat src, Mat & dst, int code) {
 }
 
 float freqToBpmMapper(int fps, int framesCount, int index) {
-    return (int) (round(SECONDS_IN_MINUTE * fps * (index+1)) / framesCount);
+    return (int) (round((SECONDS_IN_MINUTE * (float) fps * (index+1)) / framesCount));
 }
 
 float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
