@@ -23,7 +23,7 @@ void BpmVideoProcessor::compute() {
     buildGDownStack();
 
     this->intensities = countIntensities(blurred);
-    saveIntensities(intensities, "dataAnalysis/vid2.txt"); // Save intensitites
+    saveIntensities(intensities, "dataAnalysis/2.txt"); // Save intensitites
 
     this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 

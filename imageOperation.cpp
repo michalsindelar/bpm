@@ -301,21 +301,9 @@ vector<double> countIntensities(vector<Mat> &video) {
     vector <double> intensitySum(video.size());
     Size videoFrame(video[0].cols, video[0].rows);
 
-    float r, g, b;
-
     for (int frame = 0; frame < video.size(); frame++) {
-        intensitySum.at(frame) = 0;
-
-        for(int i = 0; i < videoFrame.height; i++) {
-            for(int j = 0; j < videoFrame.width; j++) {
-                // Channels
-                r = video[frame].data[i*video[frame].cols + j*3 + 2];
-                g = video[frame].data[i*video[frame].cols + j*3 + 1];
-                b = video[frame].data[i*video[frame].cols + j*3 ];
-
-                intensitySum.at(frame) += r+g+b;
-            }
-        }
+        Scalar frameSum = sum(video[frame]);
+        intensitySum.at(frame) = frameSum[0] + frameSum[1] + frameSum[2];
     }
     return intensitySum;
 }
