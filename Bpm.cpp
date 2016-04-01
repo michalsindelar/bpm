@@ -96,6 +96,7 @@ int Bpm::runRealVideoMode() {
         if (faceDetector.getFaces().size()) {
             // TODO: function get biggest face
             this->updateFace(faceDetector.getFaces()[0]);
+            this->updateFace(faceDetector.getBiggestFace());
         }
 
         // Keep maximum BUFFER_FRAMES size

@@ -50,3 +50,16 @@ void FaceDetectorWorker::adjustFacesSize() {
             this->faces[i].height;
     }
 }
+
+
+Rect &FaceDetectorWorker::getBiggestFace() {
+    int maxFaceIndex = 0;
+    int maxFaceArea = 0;
+    for (int i = 0; i < faces.size(); i++) {
+        if (faces[i].width * faces[i].height > maxFaceArea) {
+            maxFaceIndex = 0;
+            maxFaceArea = faces[i].width * faces[i].height;
+        }
+    }
+    return this->faces[maxFaceIndex];
+}

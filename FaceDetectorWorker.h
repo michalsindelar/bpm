@@ -28,6 +28,7 @@ class FaceDetectorWorker {
         FaceDetectorWorker();
         void detectFace(Mat frame);
         void adjustFacesSize();
+        Rect &getBiggestFace();
 
         const vector<Rect> &getFaces() const {
             return faces;
