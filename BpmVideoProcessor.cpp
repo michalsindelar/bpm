@@ -11,7 +11,7 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->fh = fh;
     // TODO: Level will be dynamic ??
     this->level = level;
-    this->levelForMask = 3;
+    this->levelForMask = 4;
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
@@ -20,58 +20,54 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 }
 
 void BpmVideoProcessor::compute() {
-    buildGDownStack();
+    // GDown pyramid for compute
+    buildGDownStack(skinVideo, blurred, level);
 
+    // GDown pyramid for masking video
+    buildGDownStack(video, blurredForMask, levelForMask);
+
+    // Fill intensities of frames in blurred stack
     this->intensities = countIntensities(blurred);
 
-//    saveIntensities(intensities, "dataAnalysis/"+to_string(framesCount)+"_v2_frames.txt");
-//    imwrite((string)PROJECT_DIR+"/images/"+to_string(framesCount)+"_v2_frames.jpg", this->video[0] );
-
+    // Compute bpm from intensities
     this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
     // Amplify blurred buffer's red channel
     amplifyVideoChannels(blurredForMask, 50,  0.1, 0.1);
     amplifyVideoChannels(blurred, 50,  0.1, 0.1);
 
-    createTemporalSpatial(); // Create temporal spatial video
-    bandpass(); // Bandpass temporal video
+    // Create temporal spatial video
+    createTemporalSpatial();
+
+    // Bandpass temporal video
+    bandpass();
+
+    // Inverse temporal spatial to video
     inverseTemporalSpatial();
 }
 
-void BpmVideoProcessor::buildGDownStack() {
-    Mat kernel = binom5Kernel();
+void BpmVideoProcessor::buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level) {
     for (int i = 0; i < framesCount; i++) {
-        Mat frame = skinVideo[i].clone();
+        Mat frame = src[i].clone();
 
         // TODO: REWRITE ctColor2 to float
         cvtColor2(frame, frame, CV2_BGR2YIQ); // returns CV_8UC3
 
-        // TODO: This solves rounding to int at first and than back to float
-        frame.convertTo(frame, CV_32FC3, 1/255.0f);
+        frame.convertTo(frame, CV_32FC3);
 
         // Blurring in level for mask at first
         for (int j = 0; j < level; j++) {
             pyrDown(frame, frame);
         }
 
-        // Push into buffer for blurring
-        this->blurredForMask.push_back(frame);
-
-        // Blurring to final level now
-        for (int j = 0; j < levelForMask; j++) {
-            pyrDown(frame, frame);
-        }
-
-        frame.convertTo(frame, CV_8UC3, 255.0f);
+        frame.convertTo(frame, CV_8UC3);
 
         cvtColor2(frame, frame, CV2_YIQ2BGR); // returns CV_8UC3
 
         frame.convertTo(frame, CV_32FC3);
 
-        blurred.push_back(frame);
+        blurredDst.push_back(frame);
     }
-
-    kernel.release();
 }
 
 void BpmVideoProcessor::bandpass() {
@@ -81,7 +77,6 @@ void BpmVideoProcessor::bandpass() {
     float strongestTimeStackFreq = findStrongestRowFreq(intensities, framesCount, fps);
 
     // Create mask based on strongest frequency
-    //
     Mat mask = generateFreqMask(strongestTimeStackFreq);
 
     for (int i = 0; i < temporalSpatial.size(); i++) {

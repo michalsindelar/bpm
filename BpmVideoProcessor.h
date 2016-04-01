@@ -58,6 +58,8 @@ class BpmVideoProcessor {
         void compute();
 
         void buildGDownStack();
+        void buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level);
+
         void bandpass();
         void createTemporalSpatial();
         void inverseTemporalSpatial();

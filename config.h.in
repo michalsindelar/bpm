@@ -5,10 +5,10 @@
 #define PROJECT_DIR "@PROJECT_DIR@"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 300
+#define BUFFER_FRAMES 120
 
 // Experimental settings of fps
-#define FPS 200
+#define FPS 400
 
 // This is fixed time in milliseconds of on cycle of main loop
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FPS)
