@@ -22,7 +22,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/dad.mov");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
 //        this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
@@ -31,6 +31,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
             this->bufferFrames = BUFFER_FRAMES;
         }
         else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
+            // TODO: Check int vs double
             this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
         }
 
@@ -38,6 +39,10 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     this->frameSize = getResizedSize(Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)), RESIZED_FRAME_WIDTH);;
     this->initialWorkerFlag = false;
+
+
+    this->input.set(CV_CAP_PROP_FRAME_WIDTH, frameSize.width);
+    this->input.set(CV_CAP_PROP_FRAME_HEIGHT, frameSize.height);
 
     // Initialize middleware
     this->bpmWorker = AmplificationWorker();
@@ -95,7 +100,6 @@ int Bpm::runRealVideoMode() {
 
         if (faceDetector.getFaces().size()) {
             // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
             this->updateFace(faceDetector.getBiggestFace());
         }
 
@@ -143,9 +147,10 @@ int Bpm::runStaticVideoMode() {
     input >> in;
 
     int bufferFrames = 0;
-    while(in.cols != 0 && in.data) {
-        // Detect face in own thread
 
+    // TODO: It takes 2x longer than video WHY?
+    while(in.data) {
+        // Detect face in own thread
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
         pushInputToBuffer(in);
 
@@ -154,15 +159,12 @@ int Bpm::runStaticVideoMode() {
         }
         if (faceDetector.getFaces().size()) {
             // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
+            this->updateFace(faceDetector.getBiggestFace());
         }
-
-        pushInputToBuffer(in);
 
         input >> in;
         bufferFrames++;
 
-        waitKey(1);
     }
 
     this->bufferFrames = bufferFrames;
@@ -196,11 +198,6 @@ int Bpm::runStaticVideoMode() {
         // Detect face in own thread
         if (!faceDetector.isWorking()) {
             boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
-        }
-
-        if (faceDetector.getFaces().size()) {
-            // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
         }
 
         // Show bpmVisualization video after initialization compute
@@ -255,8 +252,7 @@ int Bpm::runCameraMode() {
         }
 
         if (faceDetector.getFaces().size()) {
-            // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
+            this->updateFace(faceDetector.getBiggestFace());
         }
 
         // Keep maximum BUFFER_FRAMES size
