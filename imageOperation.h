@@ -15,6 +15,8 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <fstream>
+#include "./FaceDetectorWorker.h"
+
 
 using namespace cv;
 using namespace std;
@@ -27,11 +29,14 @@ Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
 void resizeCropVideo(vector<Mat>& video, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int width);
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi);
 Mat cropImageBorder (Mat image, int borderWidth);
 
 // Range control
-void controlFacePlacement (Rect & roi, const Size frame);
+void handleRoiPlacement(Rect &roi, const Size frame);
+void handleRoiPlacement(Rect &roi, const Size frame, int erasedBorder);
 
+// Deprecated
 bool compareColorAndBwMatrix(Mat color, Mat bw);
 void adjustOutput (Mat image);
 void fakeBeating (Mat image, double index, int maxValue, Rect face);
@@ -55,5 +60,11 @@ void blurDn(Mat & frame, int level, Mat kernel);
 vector<double> countIntensities(vector<Mat> &video);
 void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
+
+
+// Detector
+int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi);
+Rect defaultForehead(Mat face);
+int detectEyes(Mat face, vector<Rect>& eyes);
 
 #endif

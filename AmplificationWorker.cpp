@@ -26,7 +26,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     int currBpm = 0;
 
     // Resizing must be computed according to face SIZE !!
-    BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, CUTOFF_FL, CUTOFF_FH, 6, fps, bufferFrames);
+    BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, CUTOFF_FL, CUTOFF_FH, 3, fps, bufferFrames);
     bpmVideoProcessor.compute();
     this->visualization = bpmVideoProcessor.getOut();
     currBpm = bpmVideoProcessor.getBpm();

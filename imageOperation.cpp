@@ -36,9 +36,59 @@ void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
     }
 }
 
-void controlFacePlacement (Rect & roi, const Size frame) {
-    int maxXIndex = roi.x + roi.width + ERASED_BORDER_WIDTH;
-    int maxYIndex = roi.y + roi.height + ERASED_BORDER_WIDTH;
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
+    for (int i = 0; i < src.size(); i++) {
+        Mat tmp = src[i];
+//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
+        dst.push_back(tmp(roi));
+//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
+    }
+}
+
+// Returns rect in arg face coordinate system
+// face - detected face!
+int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi) {
+    Mat upperFace = face(Rect(0, 0, face.cols, face.rows / 2));
+
+    vector<Rect> eyes;
+    // Cannot set forehead via eyes detection
+    if (!detectEyes(upperFace, eyes)) {
+        return 0;
+    }
+
+    Rect eyeL, eyeR;
+    eyeL = (eyes[0].x < eyes[1].x) ? eyes[0] : eyes[1];
+    eyeR = (eyes[1].x >= eyes[0].x) ? eyes[1] : eyes[0];
+
+    Point2f center((eyeL.x + eyeL.width) + (eyeR.x - eyeL.x - eyeL.width) / 2.0f, eyeL.y - face.cols * 0.11);
+    Size size(face.cols * 0.38, face.rows * 0.15);
+
+    roi = Rect(center.x - size.width/2.0f, center.y - size.height/2.0f, size.width, size.height);
+    handleRoiPlacement(roi, face.size());
+
+    return 1;
+}
+
+
+Rect defaultForehead(Mat face) {
+    return Rect(
+        (int) round(face.cols * 0.25f),
+        (int) round(face.rows * 0.15f),
+        (int) round(face.cols * 0.5f),
+        (int) round(face.rows * 0.14f)
+    );
+}
+
+void handleRoiPlacement(Rect &roi, const Size frame) {
+    handleRoiPlacement(roi, frame, 0);
+}
+
+void handleRoiPlacement(Rect &roi, const Size frame, int erasedBorder) {
+    roi.x  = (roi.x < 0) ? 0 : roi.x;
+    roi.y  = (roi.y < 0) ? 0 : roi.y;
+
+    int maxXIndex = roi.x + roi.width + erasedBorder;
+    int maxYIndex = roi.y + roi.height + erasedBorder;
 
     roi.width = (maxXIndex > frame.width) ?
                 roi.width - (maxXIndex - frame.width) :
@@ -241,6 +291,8 @@ Mat maskingCoeffs(int width, float fl, float fh, int fps) {
     return row;
 }
 
+
+
 /**
 * BINOMIAL 5 - kernel
 * 1 4 6 4 1
@@ -306,6 +358,7 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 
 }
 
+// Move outside
 vector<double> countIntensities(vector<Mat> &video) {
     vector <double> intensitySum(video.size());
     Size videoFrame(video[0].cols, video[0].rows);

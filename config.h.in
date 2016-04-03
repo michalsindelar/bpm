@@ -1,11 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Define project dir folder
+// Define project dir folders
 #define PROJECT_DIR "@PROJECT_DIR@"
+#define DATA_DIR "@PROJECT_DIR@"+"/data"
+
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 120
+#define BUFFER_FRAMES 200
 
 // Experimental settings of fps
 #define FPS 400
@@ -52,5 +54,7 @@
 
 // FREQ MASK
 #define FREQ_MASK_WIDTH 20
+
+#define PI 3.14159265
 
 #endif // CONFIG_H

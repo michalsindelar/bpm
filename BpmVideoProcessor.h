@@ -66,7 +66,7 @@ class BpmVideoProcessor {
 
         Mat generateFreqMask(float freq);
         static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
-        void gainMoreSkinFromFace();
+        void getForeheadSkinArea();
 
         const vector<Mat> &getOut() const {
             return out;

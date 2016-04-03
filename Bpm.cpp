@@ -22,10 +22,9 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/reference.mp4");
+        this->input = VideoCapture((string) PROJECT_DIR + "/data/dad.mov");
         if(!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
-//        this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
 
         if (this->sourceMode == VIDEO_REAL_SOURCE_MODE) {
             this->bufferFrames = BUFFER_FRAMES;
@@ -37,12 +36,8 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     }
 
-    this->frameSize = getResizedSize(Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)), RESIZED_FRAME_WIDTH);;
+    this->frameSize = getResizedSize(Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)), RESIZED_FRAME_WIDTH);
     this->initialWorkerFlag = false;
-
-
-    this->input.set(CV_CAP_PROP_FRAME_WIDTH, frameSize.width);
-    this->input.set(CV_CAP_PROP_FRAME_HEIGHT, frameSize.height);
 
     // Initialize middleware
     this->bpmWorker = AmplificationWorker();
@@ -252,6 +247,7 @@ int Bpm::runCameraMode() {
         }
 
         if (faceDetector.getFaces().size()) {
+            // TODO: function get biggest face
             this->updateFace(faceDetector.getBiggestFace());
         }
 
@@ -315,7 +311,7 @@ void Bpm::pushInputToBuffer(Mat in) {
         face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
 
         Rect roi(face.x, face.y, face.width, face.height);
-        controlFacePlacement(roi, frameSize);
+        handleRoiPlacement(roi, frameSize, ERASED_BORDER_WIDTH);
 
         Mat croppedToFace = in(roi).clone();
         videoBuffer.push_back(croppedToFace);
@@ -358,7 +354,7 @@ void Bpm::visualize(Mat in, Mat & out, int index) {
 
         // Important range check
         Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
-        controlFacePlacement(roi, frameSize);
+        handleRoiPlacement(roi, frameSize, ERASED_BORDER_WIDTH);
         roi.x = roi.y = 0;
 
         // Crop in case mask would be outside frame
