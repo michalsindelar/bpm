@@ -4,13 +4,14 @@
 // Define project dir folders
 #define PROJECT_DIR "@PROJECT_DIR@"
 #define DATA_DIR "@PROJECT_DIR@"+"/data"
-
+#define INTENSITIES_DIR DATA_DIR+"/intensities"
+#define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 200
+#define BUFFER_FRAMES 400
 
 // Experimental settings of fps
-#define FPS 400
+#define FPS 30
 
 // This is fixed time in milliseconds of on cycle of main loop
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FPS)
@@ -19,6 +20,9 @@
 #define CAMERA_INIT 10
 
 #define SECONDS_IN_MINUTE 60
+
+// Resize input video for processing
+#define RESIZED_FRAME_WIDTH_FOR_PROCESSING 1020
 
 // Resize input video
 #define RESIZED_FRAME_WIDTH 600
@@ -55,6 +59,8 @@
 // FREQ MASK
 #define FREQ_MASK_WIDTH 20
 
-#define PI 3.14159265
+// MEASURING
+#define REAL_BPM 52
+#define MEASURE_FILE DATA_DIR+"/"+"measure_"+REAL_BPM+".csv"
 
 #endif // CONFIG_H

@@ -15,21 +15,28 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
-
     this->getForeheadSkinArea();
 }
 
 void BpmVideoProcessor::compute() {
     // GDown pyramid for compute
     buildGDownStack(skinVideo, blurred, 1);
-
     // GDown pyramid for masking video
     buildGDownStack(video, blurredForMask, levelForMask);
 
-    // Fill intensities of frames in blurred stack
-    this->intensities = countIntensities(blurred);
+    saveIntensities(countIntensities(blurred), (string) DATA_DIR+"/full-0.txt");
+    saveIntensities(countIntensities(blurred, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
+
+    if (true) {
+        // Measure
+//        ofstream dataFile;
+//        dataFile.open((string) DATA_DIR + "/measure_72.txt", ios::app);
+//        printIterationRow(blurred, framesCount, fps, 72, dataFile);
+//        dataFile.close();
+    }
 
     // Compute bpm from intensities
+    this->intensities = countIntensities(blurred, 0, 1, 0);
     this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
     // Amplify blurred buffer's red channel
@@ -204,12 +211,10 @@ Mat BpmVideoProcessor::generateFreqMask(float freq) {
 void BpmVideoProcessor::getForeheadSkinArea() {
 
     // At first we try to detect forehead using eyes detection 10x
-    vector<Rect> eyes;
     Rect foreheadRoi;
     int detected = false;
     // We try 10 times to detect
     for (int i = 0; i < 10; i++) {
-        detectEyes(video[i], eyes);
         if (detectForeheadFromFaceViaEyesDetection(video[i], foreheadRoi)) {
             detected = true;
             break;
@@ -223,13 +228,9 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     cropToVideo(video, skinVideo, foreheadRoi);
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 10; i++) {
         imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", skinVideo[i] );
-        Mat tmp = video[i].clone();
-        rectangle(tmp, eyes[0], CV_RGB(255,255,255));
-        rectangle(tmp, eyes[1], CV_RGB(255,255,255));
-
-        imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", tmp );
+        imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", video[i] );
     }
 
 }

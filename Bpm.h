@@ -41,13 +41,14 @@ class Bpm {
         // Bool save output
         bool saveOutput;
 
-        bool initialWorkerFlag = false;
-        int currBpm;
+        // Visibility factor of pulse ampliufication mask
         float beatVisibilityFactor;
 
+        // Input videoreader information
         int fps;
         int bufferFrames;
 
+        // Detected faces
         Rect face;
         Rect tmpFace;
 
@@ -58,10 +59,9 @@ class Bpm {
         VideoCapture input;
         VideoWriter output;
 
-        // Deque for storing captured frames
+        // Vector for storing captured frames
         vector<Mat> videoBuffer;
-        // Orig video buffer
-        vector<Mat> origVideoBuffer;
+
         // Processed mask of blood flow
         vector<Mat> bpmVisualization;
 
@@ -74,6 +74,13 @@ class Bpm {
 
         // Worker for computing
         FaceDetectorWorker faceDetector;
+
+        // showProcessRatio
+        float showProcessRatio;
+
+        // Measuring data
+        int measuringIteration;
+        int workerIteration;
 
     public:
         Bpm(int mode, int maskMode, float beatVisibilityFactor);

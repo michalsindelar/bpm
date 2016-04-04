@@ -58,9 +58,13 @@ void blurDn(Mat & frame, int level, Mat kernel);
 
 // Intensities compute
 vector<double> countIntensities(vector<Mat> &video);
+vector<double> countIntensities(vector<Mat> &video, float r, float g, float b);
 void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
 
+// Printing data
+void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file);
+void printIterationHead(ofstream &file);
 
 // Detector
 int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi);

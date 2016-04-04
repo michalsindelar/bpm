@@ -52,7 +52,6 @@ class BpmVideoProcessor {
     // How wide freq (bpm) range should we keep
     int maskWidth;
 
-
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
         void compute();
@@ -79,6 +78,7 @@ class BpmVideoProcessor {
         int getBpm() const {
             return bpm;
         }
+
 };
 
 

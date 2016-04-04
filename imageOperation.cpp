@@ -360,19 +360,27 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 
 // Move outside
 vector<double> countIntensities(vector<Mat> &video) {
+    return countIntensities(video, 1, 1, 1);
+}
+
+vector<double> countIntensities(vector<Mat> &video, float r, float g, float b) {
     vector <double> intensitySum(video.size());
     Size videoFrame(video[0].cols, video[0].rows);
 
     for (int frame = 0; frame < video.size(); frame++) {
         Scalar frameSum = sum(video[frame]);
-        intensitySum.at(frame) = frameSum[0] + frameSum[1] + frameSum[2];
+        intensitySum.at(frame) =
+            r * frameSum[RED_CHANNEL] +
+            g * frameSum[GREEN_CHANNEL] +
+            b * frameSum[BLUE_CHANNEL];
     }
     return intensitySum;
 }
+
 void saveIntensities(vector<double> intensities, string filename) {
     ofstream myfile;
-    myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
-
+    myfile.open(filename, ios::out);
+    cout << filename;
     for (int i = 0; i < intensities.size(); i++) {
         myfile << intensities.at(i);
         myfile << "\n";
@@ -394,4 +402,59 @@ void generateTemporalSpatialImages(vector<vector<Mat> > temporalSpatialStack) {
 
         imwrite( (string) PROJECT_DIR+"/images/temporalSpatial/"+to_string(i)+".jpg", img );
     }
+}
+
+void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file) {
+    vector<int> bpms(4);
+    // [red, greeb, blue, rgb]
+    bpms[0] = (int) round(findStrongestRowFreq(countIntensities(video, 1, 0, 0), framesCount, fps));
+    bpms[1] = (int) round(findStrongestRowFreq(countIntensities(video, 0, 1, 0), framesCount, fps));
+    bpms[2] = (int) round(findStrongestRowFreq(countIntensities(video, 0, 0, 1), framesCount, fps));
+    bpms[3] = (int) round(findStrongestRowFreq(countIntensities(video), framesCount, fps));
+
+    int closestValue = abs(bpms[0] - realBpm);
+    for (int i = 1; i < bpms.size(); i++) {
+        closestValue = (abs(bpms[i] - realBpm) < closestValue) ?
+            abs(bpms[i] - realBpm) :
+            closestValue;
+    }
+
+    // Print to file
+    for (int i = 0; i < bpms.size(); i++) {
+        // If closest value print different
+        if (bpms[i] == closestValue) {
+            file << ">> ";
+            file << bpms[i];
+            file << " <<";
+        } else {
+            file << bpms[i];
+        }
+        file << ",";
+
+        // Print differnce
+        file << abs(bpms[i]-realBpm);
+        if (i != (int) (bpms.size() - 1)) {
+            file <<",";
+        }
+    }
+    file << "\n";
+}
+
+void printIterationHead(ofstream &file) {
+    file << "RED";
+    file << ", ";
+    file << "RED diff";
+    file << ",";
+    file << "GREEN";
+    file << ", ";
+    file << "GREEN diff";
+    file << ",";
+    file << "BLUE";
+    file << ", ";
+    file << "BLUE diff";
+    file << ",";
+    file << "RGB";
+    file << ", ";
+    file << "RGB diff";
+    file << "\n";
 }

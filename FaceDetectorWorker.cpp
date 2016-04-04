@@ -80,7 +80,7 @@ int detectEyes(Mat face, vector<Rect>& eyes) {
     int eyeFirstIndex = 0;
     int eyeSecondIndex = 1;
     float yDiff = abs(eyesAll[eyeFirstIndex].y - eyesAll[eyeSecondIndex].y);
-    
+
     for (int i = 0; i < eyesAll.size(); i++) {
         for (int j = 0; j < eyesAll.size() / 2; j++) {
             if (i == j) continue;
