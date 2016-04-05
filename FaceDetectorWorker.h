@@ -10,7 +10,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include "config.h"
-
+#include "imageOperation.h"
 
 using namespace cv;
 using namespace std;
@@ -29,6 +29,9 @@ class FaceDetectorWorker {
         void detectFace(Mat frame);
         void adjustFacesSize();
         Rect &getBiggestFace();
+
+        // Returns face closest to center
+        Rect &getMainFace(Mat frame);
 
         const vector<Rect> &getFaces() const {
             return faces;

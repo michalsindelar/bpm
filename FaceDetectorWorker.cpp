@@ -7,11 +7,8 @@
 FaceDetectorWorker::FaceDetectorWorker() {
     this->faceHeightScale = 1.3f;
     this->faceYOffset = 0.1f;
-
     this->working = false;
-
     this->faceCascade.load((string) DATA_DIR+"/haarcascades/haarcascade_frontalface_alt.xml");
-
 }
 
 void FaceDetectorWorker::detectFace(Mat frame) {
@@ -53,15 +50,31 @@ void FaceDetectorWorker::adjustFacesSize() {
 
 
 Rect &FaceDetectorWorker::getBiggestFace() {
-    int maxFaceIndex = 0;
-    int maxFaceArea = 0;
+    int biggestFaceIndex = 0;
+    int biggestFaceArea = 0;
     for (int i = 0; i < faces.size(); i++) {
-        if (faces[i].area() > maxFaceArea) {
-            maxFaceIndex = 0;
-            maxFaceArea = faces[i].area();
+        if (faces[i].area() > biggestFaceArea) {
+            biggestFaceIndex = i;
+            biggestFaceArea = faces[i].area();
         }
     }
-    return this->faces[maxFaceIndex];
+    return this->faces[biggestFaceIndex];
+}
+
+
+Rect &FaceDetectorWorker::getMainFace(Mat frame) {
+    Point2d centerFrame = getCenter(frame.size());
+
+    int closestFaceIndex = 0;
+    double minDistance = getDistance(centerFrame, getCenter(faces[0].size()));
+
+    for (int i = 1; i < faces.size(); i++) {
+        if (getDistance(centerFrame, getCenter(faces[i].size())) < minDistance) {
+            closestFaceIndex = 0;
+            minDistance = getDistance(centerFrame, getCenter(faces[i].size()));
+        }
+    }
+    return this->faces[closestFaceIndex];
 }
 
 int detectEyes(Mat face, vector<Rect>& eyes) {

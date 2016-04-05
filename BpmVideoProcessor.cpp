@@ -20,7 +20,7 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
 void BpmVideoProcessor::compute() {
     // GDown pyramid for compute
-    buildGDownStack(skinVideo, blurred, 1);
+    buildGDownStack(skinVideo, blurred, 0);
     // GDown pyramid for masking video
     buildGDownStack(video, blurredForMask, levelForMask);
 
@@ -37,7 +37,7 @@ void BpmVideoProcessor::compute() {
 
     // Compute bpm from intensities
     this->intensities = countIntensities(blurred, 0, 1, 0);
-    this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
+    this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, 25));
 
     // Amplify blurred buffer's red channel
     amplifyVideoChannels(blurredForMask, 0,  10, 0);

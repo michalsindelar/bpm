@@ -71,4 +71,7 @@ int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi);
 Rect defaultForehead(Mat face);
 int detectEyes(Mat face, vector<Rect>& eyes);
 
+Point2d getCenter(Size size);
+double getDistance(Point2d a, Point2d b);
+
 #endif

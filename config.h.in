@@ -8,7 +8,7 @@
 #define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 400
+#define BUFFER_FRAMES 10
 
 // Experimental settings of fps
 #define FPS 30
@@ -25,7 +25,7 @@
 #define RESIZED_FRAME_WIDTH_FOR_PROCESSING 1020
 
 // Resize input video
-#define RESIZED_FRAME_WIDTH 600
+#define RESIZED_FRAME_WIDTH 1020
 
 // Erased border width
 // TODO: Should by dynamic according to frame dimension!
@@ -59,8 +59,5 @@
 // FREQ MASK
 #define FREQ_MASK_WIDTH 20
 
-// MEASURING
-#define REAL_BPM 52
-#define MEASURE_FILE DATA_DIR+"/"+"measure_"+REAL_BPM+".csv"
 
 #endif // CONFIG_H

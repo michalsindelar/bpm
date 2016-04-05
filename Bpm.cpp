@@ -23,7 +23,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) VIDEO_SAMPLES_DIR + "/63.mov");
+        this->input = VideoCapture((string) VIDEO_SAMPLES_DIR + "/mom_fine_81.mov");
         if (!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
 
@@ -32,7 +32,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
         }
         else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
             // TODO: Check int vs double
-//            this->bufferFrames = BUFFER_FRAMES;
+//            this->bufferFrames = BUFFER_FRAMES;mouse
         }
 
     }
@@ -100,6 +100,9 @@ int Bpm::runRealVideoMode() {
             input >> in;
         }
 
+        // Resize captured frame
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+
         if (frame < CAMERA_INIT) continue;
 
         // Keep maximum BUFFER_FRAMES size
@@ -115,9 +118,6 @@ int Bpm::runRealVideoMode() {
         if (!faceDetector.isWorking()) {
             boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
         }
-
-        // Resize captured frame
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
         // Output
         Mat out = Mat(in.rows, in.cols, in.type());
@@ -343,7 +343,6 @@ void Bpm::pushInputToBuffer(Mat in) {
 
         Rect roi(face.x, face.y, face.width, face.height);
         handleRoiPlacement(roi, in.size(), ERASED_BORDER_WIDTH);
-
         Mat croppedToFace = in(roi).clone();
         videoBuffer.push_back(croppedToFace);
     }
