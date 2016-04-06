@@ -61,7 +61,7 @@ int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi) {
     eyeR = (eyes[1].x >= eyes[0].x) ? eyes[1] : eyes[0];
 
     Point2f center((eyeL.x + eyeL.width) + (eyeR.x - eyeL.x - eyeL.width) / 2.0f, eyeL.y - face.cols * 0.91);
-    Size size(face.cols * 0.65, face.rows * 0.25);
+    Size size(face.cols * 0.60, face.rows * 0.23);
 
     roi = Rect(center.x - size.width/2.0f, center.y - size.height/2.0f, size.width, size.height);
     handleRoiPlacement(roi, face.size());

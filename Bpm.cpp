@@ -103,7 +103,7 @@ int Bpm::runRealVideoMode() {
         // Resize captured frame
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
-        if (frame < CAMERA_INIT) continue;
+//        if (frame < CAMERA_INIT) continue;
 
         // Keep maximum BUFFER_FRAMES size
         if (this->isBufferFull()) {

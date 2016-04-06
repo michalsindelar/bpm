@@ -20,12 +20,13 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
 void BpmVideoProcessor::compute() {
     // GDown pyramid for compute
-    buildGDownStack(skinVideo, blurred, 0);
+//    buildGDownStack(forehead, blurred, 0);
+
     // GDown pyramid for masking video
     buildGDownStack(video, blurredForMask, levelForMask);
 
-    saveIntensities(countIntensities(blurred), (string) DATA_DIR+"/full-0.txt");
-    saveIntensities(countIntensities(blurred, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
+    saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0.txt");
+    saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
 
     if (true) {
         // Measure
@@ -36,21 +37,29 @@ void BpmVideoProcessor::compute() {
     }
 
     // Compute bpm from intensities
-    this->intensities = countIntensities(blurred, 0, 1, 0);
-    this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, 25));
+    this->intensities = countIntensities(forehead, 0, 1, 0);
+    this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
-    // Amplify blurred buffer's red channel
-    amplifyVideoChannels(blurredForMask, 0,  10, 0);
-    amplifyVideoChannels(blurred, 0, 10, 0);
+    // Create beating mask for visualization
+    createBeatingMask(this->blurredForMask, this->temporalSpatial, this->out, this->bpm);
 
+    // Try to bandpass forehead
+    createBeatingMask(this->forehead, this->temporalSpatial, this->forehead, this->bpm);
+//    saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0-bandpassed.txt");
+//    saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0-bandpassed.txt");
+
+}
+
+
+void BpmVideoProcessor::createBeatingMask(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> dst, float bpm) {
     // Create temporal spatial video
-    createTemporalSpatial();
+    createTemporalSpatial(src, temporalSpatial);
 
     // Bandpass temporal video
-    bandpass();
+    bandpass(temporalSpatial, bpm);
 
     // Inverse temporal spatial to video
-    inverseTemporalSpatial();
+    inverseTemporalSpatial(temporalSpatial, dst);
 }
 
 void BpmVideoProcessor::buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level) {
@@ -77,14 +86,10 @@ void BpmVideoProcessor::buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst
     }
 }
 
-void BpmVideoProcessor::bandpass() {
-
-    // First of all we need to find strongest frequency for all
-    this->intensities = countIntensities(blurred);
-    float strongestTimeStackFreq = findStrongestRowFreq(intensities, framesCount, fps);
+void BpmVideoProcessor::bandpass(vector<Mat>& temporalSpatial, float freq) {
 
     // Create mask based on strongest frequency
-    Mat mask = generateFreqMask(this->bpm);
+    Mat mask = generateFreqMask(freq);
 
     for (int i = 0; i < temporalSpatial.size(); i++) {
         
@@ -122,16 +127,16 @@ void BpmVideoProcessor::bandpass() {
     }
 }
 
-void BpmVideoProcessor::createTemporalSpatial() {
-    int dstVectorCount = blurredForMask[0].size().width;
-    int dstVectorWidth = (int) blurredForMask.size();
-    int dstVectorHeight = blurredForMask[0].size().height;
+void BpmVideoProcessor::createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial) {
+    int dstVectorCount = src[0].size().width;
+    int dstVectorWidth = (int) src.size();
+    int dstVectorHeight = src[0].size().height;
 
     for (int i = 0; i < dstVectorCount; i++) {
         // One frame
         Mat frame(dstVectorHeight, dstVectorWidth, CV_32FC1);
         for (int j = 0; j < dstVectorWidth; j++) {
-            Mat tmp = blurredForMask[j].clone();
+            Mat tmp = src[j].clone();
             cvtColor(tmp, tmp, CV_BGR2GRAY);
             tmp.convertTo(tmp, CV_32F);
 
@@ -144,7 +149,7 @@ void BpmVideoProcessor::createTemporalSpatial() {
     }
 }
 
-void BpmVideoProcessor::inverseTemporalSpatial() {
+void BpmVideoProcessor::inverseTemporalSpatial(vector<Mat>& temporalSpatial, vector<Mat>& dst) {
     int dstCount = temporalSpatial[0].cols;
     int dstWidth = (int) temporalSpatial.size();
     int dstHeight = temporalSpatial[0].rows;
@@ -171,7 +176,7 @@ void BpmVideoProcessor::inverseTemporalSpatial() {
         // in range [0,255]
         normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
 
-        this->out.push_back(outputFrame.clone());
+        dst.push_back(outputFrame.clone());
         outputFrame.release();
     }
 }
@@ -226,11 +231,16 @@ void BpmVideoProcessor::getForeheadSkinArea() {
         foreheadRoi = defaultForehead(video[0]);
     }
 
-    cropToVideo(video, skinVideo, foreheadRoi);
+    cropToVideo(video, forehead, foreheadRoi);
 
-    for (int i = 0; i < 10; i++) {
-        imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", skinVideo[i] );
-        imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", video[i] );
+    if (false) {
+        for (int i = 0; i < 10; i++) {
+            Mat tmp = video[i];
+            rectangle(tmp, Point(foreheadRoi.x, foreheadRoi.y), Point(foreheadRoi.x + foreheadRoi.width, foreheadRoi.y + foreheadRoi.height), Scalar(255,255,255));
+            imwrite( (string) PROJECT_DIR+"/images/forehead/head-sking"+to_string(i)+".jpg", tmp );
+            imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", forehead[i]);
+            imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", video[i] );
+        }
     }
 
 }
