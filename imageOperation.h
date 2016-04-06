@@ -15,7 +15,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <fstream>
-#include "./FaceDetectorWorker.h"
+#include "Detector.h"
 
 
 using namespace cv;

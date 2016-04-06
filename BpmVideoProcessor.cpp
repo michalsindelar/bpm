@@ -4,7 +4,6 @@
 
 #include "BpmVideoProcessor.h"
 
-
 BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount) {
     this->video = video;
     this->fl = fl;
@@ -45,13 +44,12 @@ void BpmVideoProcessor::compute() {
 
     // Try to bandpass forehead
     createBeatingMask(this->forehead, this->temporalSpatial, this->forehead, this->bpm);
-//    saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0-bandpassed.txt");
-//    saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0-bandpassed.txt");
+    saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0-bandpassed.txt");
+    saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0-bandpassed.txt");
 
 }
 
-
-void BpmVideoProcessor::createBeatingMask(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> dst, float bpm) {
+void BpmVideoProcessor::createBeatingMask(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat>& dst, float bpm) {
     // Create temporal spatial video
     createTemporalSpatial(src, temporalSpatial);
 
@@ -86,6 +84,7 @@ void BpmVideoProcessor::buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst
     }
 }
 
+// TODO: Check - may not work properly
 void BpmVideoProcessor::bandpass(vector<Mat>& temporalSpatial, float freq) {
 
     // Create mask based on strongest frequency

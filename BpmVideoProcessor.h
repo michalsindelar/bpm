@@ -59,7 +59,7 @@ class BpmVideoProcessor {
         void buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level);
 
         // Used for generating beating mask
-        void createBeatingMask(vector<Mat> src, vector<Mat>& temporalSpatial, vector<Mat> dst, float bpm);
+        void createBeatingMask(vector<Mat> src, vector<Mat>& temporalSpatial, vector<Mat>& dst, float bpm);
 
         void createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial);
         void bandpass(vector<Mat>& temporalSpatial, float freq);

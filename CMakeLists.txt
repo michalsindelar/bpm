@@ -23,8 +23,8 @@ set(SOURCE_FILES
     Bpm.h
     AmplificationWorker.cpp
     AmplificationWorker.h
-    FaceDetectorWorker.cpp
-    FaceDetectorWorker.h
+        Detector.cpp
+        Detector.h
         BpmVideoProcessor.cpp BpmVideoProcessor.h lib/logs/logs.cpp)
 
 

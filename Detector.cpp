@@ -2,16 +2,16 @@
 // Created by Michal on 04/03/16.
 //
 
-#include "FaceDetectorWorker.h"
+#include "Detector.h"
 
-FaceDetectorWorker::FaceDetectorWorker() {
+Detector::Detector() {
     this->faceHeightScale = 1.3f;
     this->faceYOffset = 0.1f;
     this->working = false;
     this->faceCascade.load((string) DATA_DIR+"/haarcascades/haarcascade_frontalface_alt.xml");
 }
 
-void FaceDetectorWorker::detectFace(Mat frame) {
+void Detector::detectFace(Mat frame) {
     if (this->working) return;
 
     // Start work!
@@ -35,12 +35,13 @@ void FaceDetectorWorker::detectFace(Mat frame) {
 }
 
 // Increase height of detected face
-void FaceDetectorWorker::adjustFacesSize() {
+void Detector::adjustFacesSize() {
     for (int i = 0; i < 1; i++) {
         this->faces[i].y -= this->faces[i].height*faceYOffset;
         this->faces[i].height *= faceHeightScale;
 
         // Control range
+        // TODO: WTF?
         this->faces[i].y = (this->faces[i].y < 0) ? 0 : this->faces[i].y;
         this->faces[i].height = ((this->faces[i].y + this->faces[i].height) > frame.rows) ?
             this->faces[i].height - this->faces[i].y :
@@ -49,7 +50,7 @@ void FaceDetectorWorker::adjustFacesSize() {
 }
 
 
-Rect &FaceDetectorWorker::getBiggestFace() {
+Rect &Detector::getBiggestFace() {
     int biggestFaceIndex = 0;
     int biggestFaceArea = 0;
     for (int i = 0; i < faces.size(); i++) {
@@ -62,7 +63,7 @@ Rect &FaceDetectorWorker::getBiggestFace() {
 }
 
 
-Rect &FaceDetectorWorker::getMainFace(Mat frame) {
+Rect &Detector::getMainFace(Mat frame) {
     Point2d centerFrame = getCenter(frame.size());
 
     int closestFaceIndex = 0;

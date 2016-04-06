@@ -15,7 +15,7 @@
 using namespace cv;
 using namespace std;
 
-class FaceDetectorWorker {
+class Detector {
     vector<Rect> faces;
     bool working;
     Mat frame;
@@ -25,7 +25,7 @@ class FaceDetectorWorker {
     float faceYOffset; // Move face up
 
     public:
-        FaceDetectorWorker();
+        Detector();
         void detectFace(Mat frame);
         void adjustFacesSize();
         Rect &getBiggestFace();
@@ -38,11 +38,11 @@ class FaceDetectorWorker {
         }
 
         void setFrame(const Mat &frame) {
-            FaceDetectorWorker::frame = frame;
+            Detector::frame = frame;
         }
 
         void setWorking(bool working) {
-            FaceDetectorWorker::working = working;
+            Detector::working = working;
         }
 
         bool isWorking() const {
@@ -50,7 +50,7 @@ class FaceDetectorWorker {
         }
 
         void setFaces(const vector<Rect> &faces) {
-            FaceDetectorWorker::faces = faces;
+            Detector::faces = faces;
         }
 };
 

@@ -16,7 +16,7 @@
 
 // Classes
 #include "./AmplificationWorker.h"
-#include "./FaceDetectorWorker.h"
+#include "Detector.h"
 
 // Functions
 #include "./imageOperation.h"
@@ -49,7 +49,8 @@ class Bpm {
         int bufferFrames;
 
         // Detected faces
-        Rect face;
+        Rect fullFace;
+        Rect resizedFace;
         Rect tmpFace;
 
         // Size of resized input
@@ -73,7 +74,11 @@ class Bpm {
         AmplificationWorker bpmWorker;
 
         // Worker for computing
-        FaceDetectorWorker faceDetector;
+        Detector faceFullDetector;
+        Detector faceResizedDetector;
+        Detector foreheadDetector;
+
+        Detector smallFaceDetector;
 
         // showProcessRatio
         float showProcessRatio;
@@ -91,10 +96,10 @@ class Bpm {
         int runRealVideoMode();
         int runStaticVideoMode();
 
-        void updateFace(Rect face);
-        void updateTmpFace(Rect face, float variation);
+        void updateFace(Rect src, Rect & dst);
+        void updateTmpFace(Rect src);
         void mergeFaces();
-        bool isFaceDetected();
+        bool isFaceDetected(Rect face);
         bool isBufferFull();
 
         void pushInputToBuffer(Mat frame, int index);
@@ -102,7 +107,7 @@ class Bpm {
         void controlMiddleWare();
         void compute(int index);
         void compute();
-        void visualize(Mat in, Mat & out, int index);
+        void visualize(Mat & in, Mat & out, int index);
 
 
         void setMode(int mode) {
