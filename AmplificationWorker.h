@@ -73,6 +73,7 @@ class AmplificationWorker {
         void clearVisualization() {
             this->visualization.clear();
         }
+
 };
 
 

@@ -23,9 +23,9 @@ set(SOURCE_FILES
     Bpm.h
     AmplificationWorker.cpp
     AmplificationWorker.h
-    FaceDetectorWorker.cpp
-    FaceDetectorWorker.h
-        BpmVideoProcessor.cpp BpmVideoProcessor.h)
+        Detector.cpp
+        Detector.h
+        BpmVideoProcessor.cpp BpmVideoProcessor.h lib/logs/logs.cpp)
 
 
 add_executable(bpm ${SOURCE_FILES})

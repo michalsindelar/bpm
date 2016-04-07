@@ -15,6 +15,8 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <fstream>
+#include "Detector.h"
+
 
 using namespace cv;
 using namespace std;
@@ -26,11 +28,15 @@ Mat resizeImage (Mat image, const double width, int interpolation);
 Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
 void resizeCropVideo(vector<Mat>& video, int width);
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, int width);
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi);
 Mat cropImageBorder (Mat image, int borderWidth);
 
 // Range control
-void controlFacePlacement (Rect & roi, const Size frame);
+void handleRoiPlacement(Rect &roi, const Size frame);
+void handleRoiPlacement(Rect &roi, const Size frame, int erasedBorder);
 
+// Deprecated
 bool compareColorAndBwMatrix(Mat color, Mat bw);
 void adjustOutput (Mat image);
 void fakeBeating (Mat image, double index, int maxValue, Rect face);
@@ -41,7 +47,7 @@ void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
 
 // Frequency tools helpers
 float freqToBpmMapper(int fps, int framesCount, int index);
-float findStrongestRowFreq(vector<int> row, int framesCount, int fps);
+float findStrongestRowFreq(vector<double> row, int framesCount, int fps);
 float findStrongestRowFreq(Mat row, int framesCount, int fps);
 Mat maskingCoeffs(int width, float fl, float fh, int fps);
 
@@ -51,8 +57,24 @@ Mat binom5Kernel();
 void blurDn(Mat & frame, int level, Mat kernel);
 
 // Intensities compute
-vector<int> countIntensities(vector<Mat> &video);
-void saveIntensities(vector<Mat>& video, string filename);
+vector<double> countIntensities(vector<Mat> &video);
+vector<double> countIntensities(vector<Mat> &video, float r, float g, float b);
+void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
+
+// Printing data
+void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file);
+void printIterationHead(ofstream &file);
+
+// Detector
+int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi);
+Rect defaultForehead(Mat face);
+int detectEyes(Mat face, vector<Rect>& eyes);
+
+Point2d getCenter(Size size);
+double getDistance(Point2d a, Point2d b);
+
+// Visualize
+void printRectOnFrame(Mat &frame, Rect rect, Scalar color);
 
 #endif

@@ -11,33 +11,35 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->beatVisibilityFactor = 0.8f;
     this->saveOutput = false;
     this->OSWindowName = "OS window";
+    this->workerIteration = 0;
 
     if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
         this->input = VideoCapture(0);
-        if(!input.isOpened()) cout << "Unable to open Video Camera";
+        if (!input.isOpened()) cout << "Unable to open Video Camera";
         this->fps = FPS;
         this->bufferFrames = BUFFER_FRAMES;
     }
 
     else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) PROJECT_DIR + "/data/try.mov");
-        if(!input.isOpened()) cout << "Unable to open Video File";
+        this->input = VideoCapture((string) VIDEO_SAMPLES_DIR + "/old/mom_fine_81.mov");
+        if (!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
-//        this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
 
         if (this->sourceMode == VIDEO_REAL_SOURCE_MODE) {
             this->bufferFrames = BUFFER_FRAMES;
         }
         else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
-            this->bufferFrames = input.get(CV_CAP_PROP_FRAME_COUNT);
+            // TODO: Check int vs double
+//            this->bufferFrames = BUFFER_FRAMES;mouse
         }
 
     }
 
-    this->frameSize = getResizedSize(Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)), RESIZED_FRAME_WIDTH);;
-    this->initialWorkerFlag = false;
+    this->frameSize = getResizedSize(
+            Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)),
+            RESIZED_FRAME_WIDTH);
 
     // Initialize middleware
     this->bpmWorker = AmplificationWorker();
@@ -46,7 +48,18 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
 
     if (saveOutput) {
-        output.open((string) PROJECT_DIR+"/output/out.avi",CV_FOURCC('m', 'p', '4', 'v'),this->fps, Size(600,400),true);
+        output.open((string) PROJECT_DIR + "/output/out.avi", CV_FOURCC('m', 'p', '4', 'v'), this->fps, Size(600, 400),
+                    true);
+    }
+
+    this->measuringIteration = 20;
+    this->workerIteration = 0;
+
+    if (false) {
+        ofstream dataFile;
+        dataFile.open((string) DATA_DIR + "/measure_72.txt", ios::out);
+        printIterationHead(dataFile);
+        dataFile.close();
     }
 }
 
@@ -70,43 +83,43 @@ int Bpm::runRealVideoMode() {
 
     for (int frame = 0; true; frame++) {
 
+        // Exit measuring
+        if (false && (workerIteration > this->measuringIteration)) {
+            break;
+        };
+
         // Grab video frame
         Mat in;
         input >> in; // type: CV_8UC3 (16)
 
-        // Reset video
+        if (frame < CAMERA_INIT) continue;
+
+        // Reset video when video ends
         if (!in.data) {
             input.set(CV_CAP_PROP_POS_MSEC, 0);
             input >> in;
         }
 
-        if (frame < CAMERA_INIT) continue;
-
-        // Resize captured frame
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
-
-        // Output
-        Mat out = Mat(in.rows, in.cols, in.type());
-
-        // Detect face in own thread
-        if (!faceDetector.isWorking()) {
-            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
-        }
-
-        if (faceDetector.getFaces().size()) {
-            // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
-        }
-
         // Keep maximum BUFFER_FRAMES size
         if (this->isBufferFull()) {
-            // Erase first frame
             videoBuffer.erase(videoBuffer.begin());
         }
 
         // Start cropping frames to face only after init
-        // TODO: Can't run without face!
         pushInputToBuffer(in, frame);
+
+        // Check full face detector
+        handleDetector(in, FULL_FACE);
+
+        // Resize captured frame
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+
+        // Check resized face detector
+        handleDetector(in, RESIZED_FACE);
+        handleDetector(in, FOREHEAD);
+
+        // Output
+        Mat out = Mat(in.rows, in.cols, in.type());
 
         // Update bpm once bpmWorker ready
         controlMiddleWare();
@@ -118,7 +131,7 @@ int Bpm::runRealVideoMode() {
         // TODO: Check if this is performance ok
         visualize(in, out, frame);
 
-        if (saveOutput) {
+        if (false) {
             output.write(out);
         }
 
@@ -139,29 +152,39 @@ int Bpm::runStaticVideoMode() {
 
     // Fill buffer from whole video
     Mat in;
-    input >> in;
 
-
+    // Detect face at first
+    while(!isFaceDetected(this->fullFace)) {
+        input >> in;
+        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+        faceFullDetector.detectFace(in);
+        if (faceFullDetector.getFaces().size()) {
+            this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
+        }
+    }
+    // Reset video
+    input.set(CV_CAP_PROP_POS_MSEC, 0);
 
     int bufferFrames = 0;
     while(in.cols != 0 && in.data) {
         // Detect face in own thread
 
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
-        pushInputToBuffer(in);
 
-        if (!faceDetector.isWorking()) {
-            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
+        if (!faceFullDetector.isWorking()) {
+            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
         }
-        if (faceDetector.getFaces().size()) {
+        if (faceFullDetector.getFaces().size()) {
             // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
+            this->updateFace(faceFullDetector.getBiggestFace(), this->resizedFace);
         }
 
         pushInputToBuffer(in);
 
         input >> in;
         bufferFrames++;
+
+        waitKey(1);
     }
 
     this->bufferFrames = bufferFrames;
@@ -171,15 +194,12 @@ int Bpm::runStaticVideoMode() {
     this->bpmVisualization = this->bpmWorker.getVisualization();
     this->bpmWorker.clearVisualization();
 
-
-
     // Reset video
     input.set(CV_CAP_PROP_POS_MSEC, 0);
 
     for (int frame = 0; true; frame++) {
 
         // Grab video frame
-        Mat in;
         input >> in; // type: CV_8UC3 (16)
 
         // Reset video
@@ -188,20 +208,15 @@ int Bpm::runStaticVideoMode() {
             input >> in;
         }
 
-        // Resize captured frame
+        // Resize captured frame!
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
         // Output
         Mat out = Mat(in.rows, in.cols, in.type());
 
         // Detect face in own thread
-        if (!faceDetector.isWorking()) {
-            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
-        }
-
-        if (faceDetector.getFaces().size()) {
-            // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
+        if (!faceFullDetector.isWorking()) {
+            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
         }
 
         // Show bpmVisualization video after initialization compute
@@ -251,13 +266,13 @@ int Bpm::runCameraMode() {
         Mat out = Mat(in.rows, in.cols, in.type());
 
         // Detect face in own thread
-        if (!faceDetector.isWorking()) {
-            boost::thread workerThread(&FaceDetectorWorker::detectFace, &faceDetector, in);
+        if (!faceFullDetector.isWorking()) {
+            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
         }
 
-        if (faceDetector.getFaces().size()) {
+        if (faceFullDetector.getFaces().size()) {
             // TODO: function get biggest face
-            this->updateFace(faceDetector.getFaces()[0]);
+            this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
         }
 
         // Keep maximum BUFFER_FRAMES size
@@ -307,21 +322,19 @@ int Bpm::runCameraMode() {
     return 0;
 }
 
-
 void Bpm::pushInputToBuffer(Mat in, int index) {
-    if (index > CAMERA_INIT && this->isFaceDetected()) {
+    if (index > CAMERA_INIT && this->isFaceDetected(this->fullFace)) {
         pushInputToBuffer(in);
     }
 }
 
 void Bpm::pushInputToBuffer(Mat in) {
-    if (this->isFaceDetected()) {
-        face.width = ((face.x + face.width) > in.cols) ? face.width - (face.x + face.width - in.cols) : face.width;
-        face.height = ((face.y + face.height) > in.rows) ? face.height - (face.y + face.height - in.rows) : face.height;
+    if (this->isFaceDetected(this->fullFace)) {
+        fullFace.width = ((fullFace.x + fullFace.width) > in.cols) ? fullFace.width - (fullFace.x + fullFace.width - in.cols) : fullFace.width;
+        fullFace.height = ((fullFace.y + fullFace.height) > in.rows) ? fullFace.height - (fullFace.y + fullFace.height - in.rows) : fullFace.height;
 
-        Rect roi(face.x, face.y, face.width, face.height);
-        controlFacePlacement(roi, frameSize);
-
+        Rect roi(fullFace.x, fullFace.y, fullFace.width, fullFace.height);
+        handleRoiPlacement(roi, in.size(), ERASED_BORDER_WIDTH);
         Mat croppedToFace = in(roi).clone();
         videoBuffer.push_back(croppedToFace);
     }
@@ -336,6 +349,7 @@ void Bpm::controlMiddleWare() {
         this->bpmWorker.getVisualization().swap(this->bpmVisualization);
         // Clear bpmWorker bpmVisualsubization array
         this->bpmWorker.clearVisualization();
+        this->workerIteration++;
     }
 }
 
@@ -351,8 +365,7 @@ void Bpm::compute() {
     bpmWorker.compute(videoBuffer);
 }
 
-
-void Bpm::visualize(Mat in, Mat & out, int index) {
+void Bpm::visualize(Mat & in, Mat & out, int index) {
     if (this->bpmWorker.getInitialFlag()) {
         // AMPLIFICATION FOURIER MODE
         Mat visual = Mat::zeros(in.rows, in.cols, in.type());
@@ -363,7 +376,7 @@ void Bpm::visualize(Mat in, Mat & out, int index) {
 
         // Important range check
         Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
-        controlFacePlacement(roi, frameSize);
+        handleRoiPlacement(roi, frameSize, ERASED_BORDER_WIDTH);
         roi.x = roi.y = 0;
 
         // Crop in case mask would be outside frame
@@ -376,31 +389,49 @@ void Bpm::visualize(Mat in, Mat & out, int index) {
 
     } else {
         out = in.clone();
-        putText(out, "Loading...", Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+        putText(out, "Loading... "+to_string(index), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+    }
+
+    // Face detection & forehead
+    visualizeDetected(in);
+
+}
+
+
+void Bpm::visualizeDetected(Mat &in) {
+    if (isFaceDetected(this->tmpFace)) {
+        printRectOnFrame(in, tmpFace, Scalar(255,255,255));
+    }
+    if (isForeheadDetected()) {
+        Rect foreheadGlobal = forehead;
+        // Place to global space
+        foreheadGlobal.x += tmpFace.x;
+        foreheadGlobal.y += tmpFace.y;
+
+        printRectOnFrame(in, foreheadGlobal, Scalar(255,255,255));
     }
 }
 
-void Bpm::updateFace(Rect face) {
+void Bpm::updateFace(Rect src, Rect& dst) {
     // After initial detection update only position (not size)
-    if (!this->face.x) {
-        this->face = this->tmpFace = face;
-    } else {
-        this->updateTmpFace(face, FACE_UPDATE_VARIATION);
+    if (!isFaceDetected(dst)) {
+        dst = src;
     }
 }
 
-void Bpm::updateTmpFace(Rect face, float variation) {
-    if (abs(this->tmpFace.x - face.x) > this->tmpFace.x * variation) {
-        this->tmpFace.x = face.x;
+void Bpm::updateTmpFace(Rect src) {
+    float variation = FACE_UPDATE_VARIATION;
+    if (abs(this->tmpFace.x - src.x) > this->tmpFace.x * variation) {
+        this->tmpFace.x = src.x;
     }
-    if (abs(this->tmpFace.y - face.y) > this->tmpFace.y * variation) {
-        this->tmpFace.y = face.y;
+    if (abs(this->tmpFace.y - src.y) > this->tmpFace.y * variation) {
+        this->tmpFace.y = src.y;
     }
-    if (abs(this->tmpFace.width - face.width) > this->tmpFace.width * variation) {
-        this->tmpFace.width = face.width;
+    if (abs(this->tmpFace.width - src.width) > this->tmpFace.width * variation) {
+        this->tmpFace.width = src.width;
     }
-    if (abs(this->tmpFace.height - face.height) > this->tmpFace.height * variation) {
-        this->tmpFace.height = face.height;
+    if (abs(this->tmpFace.height - src.height) > this->tmpFace.height * variation) {
+        this->tmpFace.height = src.height;
     }
 }
 
@@ -408,10 +439,47 @@ void Bpm::mergeFaces() {
 //    this->face = this->tmpFace;
 }
 
-bool Bpm::isFaceDetected() {
-    return !!this->face.x;
+bool Bpm::isFaceDetected(Rect face) {
+    return !!face.x;
+}
+
+bool Bpm::isForeheadDetected() {
+    return !!this->forehead.x;
 }
 
 bool Bpm::isBufferFull() {
     return videoBuffer.size() == this->bufferFrames;
+}
+
+void Bpm::handleDetector(Mat in, int type) {
+
+    // Detect face in own thread
+    // Update once face ready
+    if (type == FULL_FACE) {
+        // TODO: Change only if differs
+        if (!faceFullDetector.isWorking()) {
+            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
+        }
+        if (faceFullDetector.isDetected()) {
+            this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
+        }
+    } else if (type == RESIZED_FACE) {
+        if (!faceResizedDetector.isWorking()) {
+            boost::thread workerThread(&Detector::detectFace, &faceResizedDetector, in);
+        }
+        if (faceResizedDetector.isDetected()) {
+            this->updateFace(faceResizedDetector.getBiggestFace(), this->resizedFace);
+            this->updateTmpFace(faceResizedDetector.getBiggestFace());
+        }
+    } else if (type == FOREHEAD) {
+        if (!foreheadDetector.isWorking() || isFaceDetected(tmpFace)) {
+            // TODO: This could be better
+            Rect roi = tmpFace;
+            handleRoiPlacement(roi, in.size());
+            boost::thread workerThread(&Detector::detectForehead, &foreheadDetector, in(roi));
+        }
+        if (foreheadDetector.isDetected()) {
+            this->forehead = foreheadDetector.getForehead();
+        }
+    }
 }

@@ -16,7 +16,7 @@
 
 // Classes
 #include "./AmplificationWorker.h"
-#include "./FaceDetectorWorker.h"
+#include "Detector.h"
 
 // Functions
 #include "./imageOperation.h"
@@ -26,6 +26,9 @@
 
 #include "skinDetect.h"
 
+#define FULL_FACE 1
+#define RESIZED_FACE 2
+#define FOREHEAD 3
 
 using namespace cv;
 using namespace std;
@@ -41,15 +44,18 @@ class Bpm {
         // Bool save output
         bool saveOutput;
 
-        bool initialWorkerFlag = false;
-        int currBpm;
+        // Visibility factor of pulse ampliufication mask
         float beatVisibilityFactor;
 
+        // Input videoreader information
         int fps;
         int bufferFrames;
 
-        Rect face;
+        // Detected faces
+        Rect fullFace;
+        Rect resizedFace;
         Rect tmpFace;
+        Rect forehead;
 
         // Size of resized input
         Size frameSize;
@@ -58,10 +64,9 @@ class Bpm {
         VideoCapture input;
         VideoWriter output;
 
-        // Deque for storing captured frames
+        // Vector for storing captured frames
         vector<Mat> videoBuffer;
-        // Orig video buffer
-        vector<Mat> origVideoBuffer;
+
         // Processed mask of blood flow
         vector<Mat> bpmVisualization;
 
@@ -73,7 +78,15 @@ class Bpm {
         AmplificationWorker bpmWorker;
 
         // Worker for computing
-        FaceDetectorWorker faceDetector;
+        Detector faceFullDetector;
+        Detector faceResizedDetector;
+        Detector foreheadDetector;
+
+        Detector smallFaceDetector;
+
+        // Measuring data
+        int measuringIteration;
+        int workerIteration;
 
     public:
         Bpm(int mode, int maskMode, float beatVisibilityFactor);
@@ -84,10 +97,11 @@ class Bpm {
         int runRealVideoMode();
         int runStaticVideoMode();
 
-        void updateFace(Rect face);
-        void updateTmpFace(Rect face, float variation);
+        void updateFace(Rect src, Rect & dst);
+        void updateTmpFace(Rect src);
         void mergeFaces();
-        bool isFaceDetected();
+        bool isFaceDetected(Rect face);
+        bool isForeheadDetected();
         bool isBufferFull();
 
         void pushInputToBuffer(Mat frame, int index);
@@ -95,12 +109,16 @@ class Bpm {
         void controlMiddleWare();
         void compute(int index);
         void compute();
-        void visualize(Mat in, Mat & out, int index);
 
+        void visualize(Mat & in, Mat & out, int index);
+        void visualizeDetected(Mat & in);
+
+        void handleDetector(Mat in, int type);
 
         void setMode(int mode) {
             Bpm::maskMode = mode;
         }
+
 };
 
 

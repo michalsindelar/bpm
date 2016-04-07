@@ -1,14 +1,17 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Define project dir folder
+// Define project dir folders
 #define PROJECT_DIR "@PROJECT_DIR@"
+#define DATA_DIR "@PROJECT_DIR@"+"/data"
+#define INTENSITIES_DIR DATA_DIR+"/intensities"
+#define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 40
+#define BUFFER_FRAMES 20
 
 // Experimental settings of fps
-#define FPS 20
+#define FPS 30
 
 // This is fixed time in milliseconds of on cycle of main loop
 #define LOOP_WAIT_TIME_MUS (CLOCKS_PER_SEC / FPS)
@@ -18,15 +21,18 @@
 
 #define SECONDS_IN_MINUTE 60
 
+// Resize input video for processing
+#define RESIZED_FRAME_WIDTH_FOR_PROCESSING 300
+
 // Resize input video
-#define RESIZED_FRAME_WIDTH 600
+#define RESIZED_FRAME_WIDTH 200
 
 // Erased border width
 // TODO: Should by dynamic according to frame dimension!
 #define ERASED_BORDER_WIDTH 10
 
 // Variation between faces needed for upda
-#define FACE_UPDATE_VARIATION 0.01
+#define FACE_UPDATE_VARIATION 0.1
 
 // MASKING MODES
 #define FOURIER_MASK_MODE 10
@@ -42,12 +48,16 @@
 #define CV2_YIQ2BGR 2
 
 // INITIAL CUT-OFF FREQ
-#define FL 50
-#define FH 180
+#define CUTOFF_FL 50
+#define CUTOFF_FH 180
 
 // COLORS
 #define BLUE_CHANNEL 0
 #define GREEN_CHANNEL 1
 #define RED_CHANNEL 2
+
+// FREQ MASK
+#define FREQ_MASK_WIDTH 20
+
 
 #endif // CONFIG_H

@@ -27,9 +27,68 @@ void resizeCropVideo(vector<Mat> &video, int width) {
     }
 }
 
-void controlFacePlacement (Rect & roi, const Size frame) {
-    int maxXIndex = roi.x + roi.width + ERASED_BORDER_WIDTH;
-    int maxYIndex = roi.y + roi.height + ERASED_BORDER_WIDTH;
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
+    for (int i = 0; i < src.size(); i++) {
+        Mat tmp = src[i];
+//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
+        dst.push_back(cropImageBorder(tmp, borderWidth));
+//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
+    }
+}
+
+void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
+    for (int i = 0; i < src.size(); i++) {
+        Mat tmp = src[i];
+//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
+        dst.push_back(tmp(roi));
+//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
+    }
+}
+
+// Returns rect in arg face coordinate system
+// face - detected face!
+int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi) {
+    Mat upperFace = face(Rect(0, 0, face.cols, face.rows / 2));
+
+    vector<Rect> eyes;
+    // Cannot set forehead via eyes detection
+    if (!detectEyes(upperFace, eyes)) {
+        return 0;
+    }
+
+    Rect eyeL, eyeR;
+    eyeL = (eyes[0].x < eyes[1].x) ? eyes[0] : eyes[1];
+    eyeR = (eyes[1].x >= eyes[0].x) ? eyes[1] : eyes[0];
+
+    Point2f center((eyeL.x + eyeL.width) + (eyeR.x - eyeL.x - eyeL.width) / 2.0f, eyeL.y - face.cols * 0.91);
+    Size size(face.cols * 0.60, face.rows * 0.23);
+
+    roi = Rect(center.x - size.width/2.0f, center.y - size.height/2.0f, size.width, size.height);
+    handleRoiPlacement(roi, face.size());
+
+    return 1;
+}
+
+
+Rect defaultForehead(Mat face) {
+    return Rect(
+        (int) round(face.cols * 0.25f),
+        (int) round(face.rows * 0.15f),
+        (int) round(face.cols * 0.5f),
+        (int) round(face.rows * 0.14f)
+    );
+}
+
+void handleRoiPlacement(Rect &roi, const Size frame) {
+    handleRoiPlacement(roi, frame, 0);
+}
+
+void handleRoiPlacement(Rect &roi, const Size frame, int erasedBorder) {
+    roi.x  = (roi.x < 0) ? 0 : roi.x;
+    roi.y  = (roi.y < 0) ? 0 : roi.y;
+
+    int maxXIndex = roi.x + roi.width + erasedBorder;
+    int maxYIndex = roi.y + roi.height + erasedBorder;
 
     roi.width = (maxXIndex > frame.width) ?
                 roi.width - (maxXIndex - frame.width) :
@@ -92,6 +151,7 @@ Mat convertImageRGBtoYIQ(Mat img)
             r = img.data[m*img.step + n*3 + 2];
             g = img.data[m*img.step + n*3 + 1];
             b = img.data[m*img.step + n*3 ];
+
             y = 0.299*r + 0.587*g + 0.114*b;
             i = 0.596*r - 0.275*g - 0.321*b;
             q = 0.212*r - 0.523*g + 0.311*b;
@@ -159,10 +219,10 @@ void cvtColor2(Mat src, Mat & dst, int code) {
 }
 
 float freqToBpmMapper(int fps, int framesCount, int index) {
-    return (int) (round(SECONDS_IN_MINUTE * fps * (index+1)) / framesCount);
+    return (int) (round((SECONDS_IN_MINUTE * (float) fps * (index+1)) / framesCount));
 }
 
-float findStrongestRowFreq(vector<int> row, int framesCount, int fps) {
+float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
     // Create matrix from intensitySum
     float maxValue = 0;
     for (int i = 0; i < row.size(); i++) {
@@ -207,8 +267,8 @@ float findStrongestRowFreq(Mat row, int framesCount, int fps) {
 
         // TODO: This should be connected with bpm!
         // TODO: Define cut-off freq to constants
-        if (bpm < 50) continue; // This is under low frequency
-        if (bpm > 180) continue; // This is over high frequency
+        if (bpm < CUTOFF_FL) continue; // This is under low frequency
+        if (bpm > CUTOFF_FH) continue; // This is over high frequency
 
         if (magI.at<float>(i) > maxFreq) {
             maxFreq = magI.at<float>(i);
@@ -230,6 +290,8 @@ Mat maskingCoeffs(int width, float fl, float fh, int fps) {
 
     return row;
 }
+
+
 
 /**
 * BINOMIAL 5 - kernel
@@ -296,31 +358,31 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 
 }
 
-vector<int> countIntensities(vector<Mat> &video) {
-    vector <int> intensitySum(video.size());
+// Move outside
+vector<double> countIntensities(vector<Mat> &video) {
+    return countIntensities(video, 1, 1, 1);
+}
+
+vector<double> countIntensities(vector<Mat> &video, float r, float g, float b) {
+    vector <double> intensitySum(video.size());
     Size videoFrame(video[0].cols, video[0].rows);
 
     for (int frame = 0; frame < video.size(); frame++) {
-        uint8_t* pixelPtr = (uint8_t*)video[frame].data;
-        int cn = video[frame].channels();
-        Scalar_<uint8_t> bgrPixel;
-        for(int i = 0; i < videoFrame.height; i++) {
-            for(int j = 0; j < videoFrame.width; j++) {
-                float tmp = pixelPtr[i*video[frame].cols*cn + j*cn + 0] + pixelPtr[i*video[frame].cols*cn + j*cn + 1] + pixelPtr[i*video[frame].cols*cn + j*cn + 2];
-                intensitySum.at(frame) += (int)tmp;
-            }
-        }
+        Scalar frameSum = sum(video[frame]);
+        intensitySum.at(frame) =
+            r * frameSum[RED_CHANNEL] +
+            g * frameSum[GREEN_CHANNEL] +
+            b * frameSum[BLUE_CHANNEL];
     }
     return intensitySum;
 }
-void saveIntensities(vector<Mat>& video, string filename) {
+
+void saveIntensities(vector<double> intensities, string filename) {
     ofstream myfile;
-    myfile.open((string) PROJECT_DIR + "/"  + filename, ios::out);
-
-    vector<int> intensitySum = countIntensities(video);
-
-    for (int i = 0; i < video.size(); i++) {
-        myfile << intensitySum.at(i);
+    myfile.open(filename, ios::out);
+    cout << filename;
+    for (int i = 0; i < intensities.size(); i++) {
+        myfile << intensities.at(i);
         myfile << "\n";
     }
     myfile.close();
@@ -340,4 +402,71 @@ void generateTemporalSpatialImages(vector<vector<Mat> > temporalSpatialStack) {
 
         imwrite( (string) PROJECT_DIR+"/images/temporalSpatial/"+to_string(i)+".jpg", img );
     }
+}
+
+void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file) {
+    vector<int> bpms(4);
+    // [red, greeb, blue, rgb]
+    bpms[0] = (int) round(findStrongestRowFreq(countIntensities(video, 1, 0, 0), framesCount, fps));
+    bpms[1] = (int) round(findStrongestRowFreq(countIntensities(video, 0, 1, 0), framesCount, fps));
+    bpms[2] = (int) round(findStrongestRowFreq(countIntensities(video, 0, 0, 1), framesCount, fps));
+    bpms[3] = (int) round(findStrongestRowFreq(countIntensities(video), framesCount, fps));
+
+    int closestValue = abs(bpms[0] - realBpm);
+    for (int i = 1; i < bpms.size(); i++) {
+        closestValue = (abs(bpms[i] - realBpm) < closestValue) ?
+            abs(bpms[i] - realBpm) :
+            closestValue;
+    }
+
+    // Print to file
+    for (int i = 0; i < bpms.size(); i++) {
+        // If closest value print different
+        if (bpms[i] == closestValue) {
+            file << ">> ";
+            file << bpms[i];
+            file << " <<";
+        } else {
+            file << bpms[i];
+        }
+        file << ",";
+
+        // Print differnce
+        file << abs(bpms[i]-realBpm);
+        if (i != (int) (bpms.size() - 1)) {
+            file <<",";
+        }
+    }
+    file << "\n";
+}
+
+void printIterationHead(ofstream &file) {
+    file << "RED";
+    file << ", ";
+    file << "RED diff";
+    file << ",";
+    file << "GREEN";
+    file << ", ";
+    file << "GREEN diff";
+    file << ",";
+    file << "BLUE";
+    file << ", ";
+    file << "BLUE diff";
+    file << ",";
+    file << "RGB";
+    file << ", ";
+    file << "RGB diff";
+    file << "\n";
+}
+
+Point2d getCenter(Size size) {
+    return Point2d(size.width/2, size.height/2);
+}
+
+double getDistance(Point2d a, Point2d b) {
+    return sqrt(pow(abs(a.x - b.x),2) + pow(abs(a.y - b.y),2));
+}
+
+void printRectOnFrame(Mat &frame, Rect rect, Scalar color) {
+    rectangle( frame, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), color);
 }

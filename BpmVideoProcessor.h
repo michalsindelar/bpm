@@ -20,11 +20,15 @@ class BpmVideoProcessor {
     // Input face video - should be const
     vector<Mat> video;
 
+    // Try to extract more sking to this
+    vector<Mat> forehead;
 
     vector<Mat> out; // Blood circulation visualization
     vector<Mat> blurred; // Blurred video in set level
     vector<Mat> blurredForMask; // Blurred video in set level
     vector<Mat> temporalSpatial; // Temporal spatial
+
+    vector<double> intensities; // Intensities of blurred frames
 
     // Computed bpm
     int bpm;
@@ -45,18 +49,25 @@ class BpmVideoProcessor {
     // For mask computation
     int levelForMask;
 
-
+    // How wide freq (bpm) range should we keep
+    int maskWidth;
 
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
         void compute();
 
-        void buildGDownStack();
-        void bandpass();
-        void createTemporalSpatial();
-        void inverseTemporalSpatial();
+        void buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level);
 
+        // Used for generating beating mask
+        void createBeatingMask(vector<Mat> src, vector<Mat>& temporalSpatial, vector<Mat>& dst, float bpm);
+
+        void createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial);
+        void bandpass(vector<Mat>& temporalSpatial, float freq);
+        void inverseTemporalSpatial(vector<Mat>& temporalSpatial, vector<Mat>& dst);
+
+        Mat generateFreqMask(float freq);
         static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
+        void getForeheadSkinArea();
 
         const vector<Mat> &getOut() const {
             return out;
@@ -69,6 +80,7 @@ class BpmVideoProcessor {
         int getBpm() const {
             return bpm;
         }
+
 };
 
 

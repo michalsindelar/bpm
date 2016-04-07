@@ -10,35 +10,40 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include "config.h"
-
+#include "imageOperation.h"
 
 using namespace cv;
 using namespace std;
 
-class FaceDetectorWorker {
+class Detector {
     vector<Rect> faces;
-    bool working;
+    Rect forehead;
     Mat frame;
     CascadeClassifier faceCascade;
+    bool working;
 
-    float faceHeightScale = 1.5f; // Increase height
-    float faceYOffset = 0.2f; // Move face up
+    float faceHeightScale; // Increase height
+    float faceYOffset; // Move face up
 
     public:
-        FaceDetectorWorker();
+        Detector();
         void detectFace(Mat frame);
         void adjustFacesSize();
+        Rect &getBiggestFace();
+
+        // Returns face closest to center
+        Rect &getMainFace(Mat frame);
 
         const vector<Rect> &getFaces() const {
             return faces;
         }
 
         void setFrame(const Mat &frame) {
-            FaceDetectorWorker::frame = frame;
+            Detector::frame = frame;
         }
 
         void setWorking(bool working) {
-            FaceDetectorWorker::working = working;
+            Detector::working = working;
         }
 
         bool isWorking() const {
@@ -46,7 +51,15 @@ class FaceDetectorWorker {
         }
 
         void setFaces(const vector<Rect> &faces) {
-            FaceDetectorWorker::faces = faces;
+            Detector::faces = faces;
+        }
+
+        void detectForehead(Mat face);
+
+        bool isDetected();
+
+        const Rect &getForehead() const {
+            return forehead;
         }
 };
 
