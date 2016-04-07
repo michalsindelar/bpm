@@ -26,6 +26,9 @@
 
 #include "skinDetect.h"
 
+#define FULL_FACE 1
+#define RESIZED_FACE 2
+
 
 using namespace cv;
 using namespace std;
@@ -80,9 +83,6 @@ class Bpm {
 
         Detector smallFaceDetector;
 
-        // showProcessRatio
-        float showProcessRatio;
-
         // Measuring data
         int measuringIteration;
         int workerIteration;
@@ -109,6 +109,7 @@ class Bpm {
         void compute();
         void visualize(Mat & in, Mat & out, int index);
 
+        void handleDetector(Mat in, int type);
 
         void setMode(int mode) {
             Bpm::maskMode = mode;
