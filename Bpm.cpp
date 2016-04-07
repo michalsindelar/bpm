@@ -116,6 +116,7 @@ int Bpm::runRealVideoMode() {
 
         // Check resized face detector
         handleDetector(in, RESIZED_FACE);
+        handleDetector(in, FOREHEAD);
 
         // Output
         Mat out = Mat(in.rows, in.cols, in.type());
@@ -391,9 +392,23 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
         putText(out, "Loading... "+to_string(index), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
     }
 
-    if (isFaceDetected(this->tmpFace)) {
-        rectangle( in, Point(tmpFace.x, tmpFace.y), Point(tmpFace.x + tmpFace.width, tmpFace.y + tmpFace.height), Scalar(255,255,255));
+    // Face detection & forehead
+    visualizeDetected(in);
 
+}
+
+
+void Bpm::visualizeDetected(Mat &in) {
+    if (isFaceDetected(this->tmpFace)) {
+        printRectOnFrame(in, tmpFace, Scalar(255,255,255));
+    }
+    if (isForeheadDetected()) {
+        Rect foreheadGlobal = forehead;
+        // Place to global space
+        foreheadGlobal.x += tmpFace.x;
+        foreheadGlobal.y += tmpFace.y;
+
+        printRectOnFrame(in, foreheadGlobal, Scalar(255,255,255));
     }
 }
 
@@ -428,6 +443,10 @@ bool Bpm::isFaceDetected(Rect face) {
     return !!face.x;
 }
 
+bool Bpm::isForeheadDetected() {
+    return !!this->forehead.x;
+}
+
 bool Bpm::isBufferFull() {
     return videoBuffer.size() == this->bufferFrames;
 }
@@ -441,16 +460,26 @@ void Bpm::handleDetector(Mat in, int type) {
         if (!faceFullDetector.isWorking()) {
             boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
         }
-        if (faceFullDetector.getFaces().size()) {
+        if (faceFullDetector.isDetected()) {
             this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
         }
     } else if (type == RESIZED_FACE) {
         if (!faceResizedDetector.isWorking()) {
             boost::thread workerThread(&Detector::detectFace, &faceResizedDetector, in);
         }
-        if (faceResizedDetector.getFaces().size()) {
+        if (faceResizedDetector.isDetected()) {
             this->updateFace(faceResizedDetector.getBiggestFace(), this->resizedFace);
             this->updateTmpFace(faceResizedDetector.getBiggestFace());
+        }
+    } else if (type == FOREHEAD) {
+        if (!foreheadDetector.isWorking() || isFaceDetected(tmpFace)) {
+            // TODO: This could be better
+            Rect roi = tmpFace;
+            handleRoiPlacement(roi, in.size());
+            boost::thread workerThread(&Detector::detectForehead, &foreheadDetector, in(roi));
+        }
+        if (foreheadDetector.isDetected()) {
+            this->forehead = foreheadDetector.getForehead();
         }
     }
 }

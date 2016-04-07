@@ -466,3 +466,7 @@ Point2d getCenter(Size size) {
 double getDistance(Point2d a, Point2d b) {
     return sqrt(pow(abs(a.x - b.x),2) + pow(abs(a.y - b.y),2));
 }
+
+void printRectOnFrame(Mat &frame, Rect rect, Scalar color) {
+    rectangle( frame, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), color);
+}

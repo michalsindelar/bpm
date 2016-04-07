@@ -74,4 +74,7 @@ int detectEyes(Mat face, vector<Rect>& eyes);
 Point2d getCenter(Size size);
 double getDistance(Point2d a, Point2d b);
 
+// Visualize
+void printRectOnFrame(Mat &frame, Rect rect, Scalar color);
+
 #endif

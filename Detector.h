@@ -17,9 +17,10 @@ using namespace std;
 
 class Detector {
     vector<Rect> faces;
-    bool working;
+    Rect forehead;
     Mat frame;
     CascadeClassifier faceCascade;
+    bool working;
 
     float faceHeightScale; // Increase height
     float faceYOffset; // Move face up
@@ -51,6 +52,14 @@ class Detector {
 
         void setFaces(const vector<Rect> &faces) {
             Detector::faces = faces;
+        }
+
+        void detectForehead(Mat face);
+
+        bool isDetected();
+
+        const Rect &getForehead() const {
+            return forehead;
         }
 };
 

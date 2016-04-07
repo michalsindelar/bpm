@@ -117,3 +117,16 @@ int detectEyes(Mat face, vector<Rect>& eyes) {
 
     return 1;
 }
+
+void Detector::detectForehead(Mat face) {
+    this->working = true;
+    if(!detectForeheadFromFaceViaEyesDetection(face, this->forehead)) {
+        this->forehead = defaultForehead(face);
+    }
+    this->working = false;
+}
+
+
+bool Detector::isDetected() {
+    return (!!this->faces.size() || !!this->forehead.x);
+}

@@ -28,7 +28,7 @@
 
 #define FULL_FACE 1
 #define RESIZED_FACE 2
-
+#define FOREHEAD 3
 
 using namespace cv;
 using namespace std;
@@ -55,6 +55,7 @@ class Bpm {
         Rect fullFace;
         Rect resizedFace;
         Rect tmpFace;
+        Rect forehead;
 
         // Size of resized input
         Size frameSize;
@@ -100,6 +101,7 @@ class Bpm {
         void updateTmpFace(Rect src);
         void mergeFaces();
         bool isFaceDetected(Rect face);
+        bool isForeheadDetected();
         bool isBufferFull();
 
         void pushInputToBuffer(Mat frame, int index);
@@ -107,13 +109,16 @@ class Bpm {
         void controlMiddleWare();
         void compute(int index);
         void compute();
+
         void visualize(Mat & in, Mat & out, int index);
+        void visualizeDetected(Mat & in);
 
         void handleDetector(Mat in, int type);
 
         void setMode(int mode) {
             Bpm::maskMode = mode;
         }
+
 };
 
 
