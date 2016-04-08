@@ -27,6 +27,7 @@ Mat resizeImage (Mat image, const double width);
 Mat resizeImage (Mat image, const double width, int interpolation);
 Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
+void pyrUpVideo(vector<Mat>& video, int level);
 void resizeCropVideo(vector<Mat>& video, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi);

@@ -10,7 +10,6 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->fh = fh;
     // TODO: Level will be dynamic ??
     this->level = level;
-    this->levelForMask = 5;
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
@@ -22,7 +21,7 @@ void BpmVideoProcessor::compute() {
 //    buildGDownStack(forehead, blurred, 0);
 
     // GDown pyramid for masking video
-    buildGDownStack(video, blurredForMask, levelForMask);
+    buildGDownStack(video, blurredForMask, level);
 
     saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0.txt");
     saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");

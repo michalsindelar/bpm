@@ -27,6 +27,15 @@ void resizeCropVideo(vector<Mat> &video, int width) {
     }
 }
 
+
+void pyrUpVideo(vector<Mat> &video, int level) {
+    for (int i = 0; i < video.size(); i++) {
+        for (int j = 0; j < level; j++) {
+            pyrUp(video[i], video[i]);
+        }
+    }
+}
+
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];

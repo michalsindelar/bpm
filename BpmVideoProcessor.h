@@ -43,11 +43,8 @@ class BpmVideoProcessor {
     int framesCount;
 
     // Level of double decreasing size of each frame
-    int level;
-
-    // Level of double decreasing size of each frame
     // For mask computation
-    int levelForMask;
+    int level;
 
     // How wide freq (bpm) range should we keep
     int maskWidth;

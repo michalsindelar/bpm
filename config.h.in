@@ -8,7 +8,7 @@
 #define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 20
+#define BUFFER_FRAMES 100
 
 // Experimental settings of fps
 #define FPS 30
@@ -25,7 +25,7 @@
 #define RESIZED_FRAME_WIDTH_FOR_PROCESSING 300
 
 // Resize input video
-#define RESIZED_FRAME_WIDTH 200
+#define RESIZED_FRAME_WIDTH 500
 
 // Erased border width
 // TODO: Should by dynamic according to frame dimension!

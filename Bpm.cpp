@@ -32,7 +32,7 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
         }
         else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
             // TODO: Check int vs double
-//            this->bufferFrames = BUFFER_FRAMES;mouse
+//            this->bufferFrames = BUFFER_FRAMES;
         }
 
     }
@@ -45,7 +45,6 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->bpmWorker = AmplificationWorker();
     bpmWorker.setFps(fps);
     bpmWorker.setBufferFrames(bufferFrames);
-
 
     if (saveOutput) {
         output.open((string) PROJECT_DIR + "/output/out.avi", CV_FOURCC('m', 'p', '4', 'v'), this->fps, Size(600, 400),
@@ -73,7 +72,7 @@ int Bpm::run() {
         case VIDEO_STATIC_SOURCE_MODE:
             return runStaticVideoMode();
         case CAMERA_SOURCE_MODE:
-            return runCameraMode();
+            return runRealVideoMode();
         default:
             return runCameraMode();
     }
