@@ -28,6 +28,8 @@ class BpmVideoProcessor {
     vector<Mat> blurredForMask; // Blurred video in set level
     vector<Mat> temporalSpatial; // Temporal spatial
 
+    vector <vector <Mat> > pyramid;
+
     vector<double> intensities; // Intensities of blurred frames
 
     // Computed bpm
@@ -53,7 +55,7 @@ class BpmVideoProcessor {
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
         void compute();
 
-        void buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level);
+        void buildGDownStack(vector<Mat>& src, vector<Mat>& blurredDst, int level);
 
         // Used for generating beating mask
         void createBeatingMask(vector<Mat> src, vector<Mat>& temporalSpatial, vector<Mat>& dst, float bpm);

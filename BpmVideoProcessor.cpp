@@ -14,6 +14,9 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
     this->getForeheadSkinArea();
+
+    // Allocate pyramid
+    this->pyramid = vector <vector <Mat> >(level);
 }
 
 void BpmVideoProcessor::compute() {
@@ -23,10 +26,10 @@ void BpmVideoProcessor::compute() {
     // GDown pyramid for masking video
     buildGDownStack(video, blurredForMask, level);
 
-    saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0.txt");
-    saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
 
     if (true) {
+//        saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0.txt");
+//        saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
         // Measure
 //        ofstream dataFile;
 //        dataFile.open((string) DATA_DIR + "/measure_72.txt", ios::app);
@@ -43,8 +46,6 @@ void BpmVideoProcessor::compute() {
 
     // Try to bandpass forehead
     createBeatingMask(this->forehead, this->temporalSpatial, this->forehead, this->bpm);
-    saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0-bandpassed.txt");
-    saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0-bandpassed.txt");
 
 }
 
@@ -59,7 +60,7 @@ void BpmVideoProcessor::createBeatingMask(vector<Mat> src, vector<Mat> &temporal
     inverseTemporalSpatial(temporalSpatial, dst);
 }
 
-void BpmVideoProcessor::buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst, int level) {
+void BpmVideoProcessor::buildGDownStack(vector<Mat>& src, vector<Mat>& blurredDst, int level) {
     for (int i = 0; i < framesCount; i++) {
         Mat frame = src[i].clone();
 
@@ -71,14 +72,13 @@ void BpmVideoProcessor::buildGDownStack(vector<Mat> src, vector<Mat>& blurredDst
         // Blurring in level for mask at first
         for (int j = 0; j < level; j++) {
             pyrDown(frame, frame);
+
+            frame.convertTo(frame, CV_8UC3);
+            cvtColor2(frame, frame, CV2_YIQ2BGR); // returns CV_8UC3
+            frame.convertTo(frame, CV_32FC3);
+
+            pyramid.at(j).push_back(frame);
         }
-
-        frame.convertTo(frame, CV_8UC3);
-
-        cvtColor2(frame, frame, CV2_YIQ2BGR); // returns CV_8UC3
-
-        frame.convertTo(frame, CV_32FC3);
-
         blurredDst.push_back(frame);
     }
 }
