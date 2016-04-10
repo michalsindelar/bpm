@@ -49,11 +49,13 @@ void BpmVideoProcessor::compute() {
 
 
 void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm) {
-    for (int i = 0; i < level; i++) {
-        pyrUpVideo(pyramid.at(i), pyramid.at(0)[0].size(), i);
+    // TODO: Each level must be in thread!!
+    for (int i = 1; i < level; i++) {
+
 
         vector<Mat> tmp(temporalSpatial.size());
         amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, tmp, bpm);
+        pyrUpVideo(tmp, pyramid.at(0)[0].size(), i);
 
         for (int j = 0; j < pyramid.at(0).size(); j++) {
             if (dst[j].data) {
