@@ -21,8 +21,6 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 }
 
 void BpmVideoProcessor::compute() {
-    // GDown pyramid for compute
-//    buildGDownStack(forehead, blurred, 0);
 
     // GDown pyramid for masking video
     buildGDownPyramid(video, pyramid, level);
@@ -84,28 +82,50 @@ void BpmVideoProcessor::amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &te
 }
 
 void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {
-    for (int i = 0; i < framesCount; i++) {
-        Mat frame = src[i].clone();
+    int framesInPart = 50;
+    int parts = ceil(src.size() / framesInPart);
 
-        cvtColor2(frame, frame, CV2_BGR2YIQ); // returns CV_8UC3
+//    // This is for performance purposes
+//    vector<boost::thread *> z;
+//    vector <vector <Mat>>;
+//    for (int i = 0; i < parts; i++) {
+//
+//        z.push_back(new boost::thread());
+//    }
+//    for (int i = 0; i < parts; i++) {
+//        z.push_back(new boost::thread());
+//    }
 
-        frame.convertTo(frame, CV_32FC3);
+    
+    for (int currLevel = 0; currLevel < level; currLevel++) {
 
-        for (int j = 0; j < level; j++) {
+        for (int i = 0; i < framesCount; i++) {
+            // 0 Level only copy
+            if (currLevel == 0) {
+                pyramid.at(currLevel).push_back(src[i]);
+                continue;
+            }
 
-            if ((int) round(frame.cols / 2.0f) <= MIN_WIDTH_IN_PYRAMID) {
+            // Minimal size of frame in pyramid
+            if ((int) round(src[i].cols / 2.0f) <= MIN_WIDTH_IN_PYRAMID) {
                 // Update level - needed for upsizing
-                this->level = j;
+                this->level = currLevel;
                 break;
             }
 
-            pyrDown(frame, frame);
+            if (src[i].type() == CV_32FC3) {
+                src[i].convertTo(src[i], CV_8UC3);
+            }
 
-            frame.convertTo(frame, CV_8UC3);
-            cvtColor2(frame, frame, CV2_YIQ2BGR); // returns CV_8UC3
-            frame.convertTo(frame, CV_32FC3);
+            cvtColor2(src[i], src[i], CV2_BGR2YIQ); // returns CV_8UC3
+            src[i].convertTo(src[i], CV_32FC3);
+            
+            pyrDown(src[i], src[i]);
 
-            pyramid.at(j).push_back(frame);
+            src[i].convertTo(src[i], CV_8UC3);
+            cvtColor2(src[i], src[i], CV2_YIQ2BGR); // returns CV_8UC3
+            src[i].convertTo(src[i], CV_32FC3);
+            pyramid.at(currLevel).push_back(src[i]);
         }
     }
 }

@@ -11,7 +11,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <boost/thread.hpp>
 #include "imageOperation.h"
+
 
 // Configuration
 #include "./config.h"
@@ -29,6 +31,7 @@ class BpmVideoProcessor {
     vector<Mat> temporalSpatial; // Temporal spatial
 
     vector <vector <Mat> > pyramid;
+    vector <vector <Mat> > pyramidForehead;
 
     vector<double> intensities; // Intensities of blurred frames
 
@@ -56,6 +59,7 @@ class BpmVideoProcessor {
         void compute();
 
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
+        void buildGDownPyramidLevel(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
 
         // Used for generating beating mask
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
@@ -65,6 +69,7 @@ class BpmVideoProcessor {
         void bandpass(vector<Mat>& temporalSpatial, float freq);
         void inverseTemporalSpatial(vector<Mat>& temporalSpatial, vector<Mat>& dst);
 
+        // TODO: rename according to numpy
         Mat generateFreqMask(float freq);
         static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
         void getForeheadSkinArea();
