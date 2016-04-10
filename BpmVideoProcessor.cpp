@@ -85,54 +85,48 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
     int framesInPart = 50;
     int parts = ceil(src.size() / framesInPart);
 
-    // This is for performance purposes
-//    vector<boost::thread *> z;
-//    vector <vector <Mat>>;
-//    for (int i = 0; i < parts; i++) {
-//
-//        z.push_back(new boost::thread());
-//    }
-//
-//    for (int i = 0; i < parts; i++) {
-//        z.push_back(new boost::thread());
-//    }
+
 
     for (int currLevel = 0; currLevel < level; currLevel++) {
-        buildGDownPyramidLevel(src, pyramid.at(currLevel), currLevel);
-    }
-}
 
-void BpmVideoProcessor::buildGDownPyramidLevel(vector<Mat> &src, vector<Mat> &dst, int currLevel) {
-    for (int i = 0; i < src.size(); i++) {
-        // 0 Level only copy
-        if (currLevel == 0) {
-            pyramid.at(currLevel).push_back(src[i]);
-            continue;
-        }
+        // This is for performance purposes
+        vector<boost::thread *> z;
+
+        vector <PyramidLevelWorker> workerParts;
 
         // Minimal size of frame in pyramid
-        if ((int) round(src[i].cols / 2.0f) <= MIN_WIDTH_IN_PYRAMID) {
+        if ((int) round(src[0].cols / 2.0f) <= MIN_WIDTH_IN_PYRAMID) {
             // Update level - needed for upsizing
             this->level = currLevel;
             break;
         }
 
-        if (src[i].type() == CV_32FC3) {
-            src[i].convertTo(src[i], CV_8UC3);
+        for (int i = 0; i < parts; i++) {
+            workerParts.push_back(PyramidLevelWorker(i));
         }
 
-        cvtColor2(src[i], src[i], CV2_BGR2YIQ); // returns CV_8UC3
-        src[i].convertTo(src[i], CV_32FC3);
+        for (int i = 0; i < parts; i++) {
+            int start = i * framesInPart;
+            int end = start + framesInPart;
+            z.push_back(new boost::thread(&PyramidLevelWorker::compute, boost::ref(workerParts[i]), vector <Mat>(src.begin() + start, src.begin() + end), currLevel));
+        }
 
-        pyrDown(src[i], src[i]);
+        // Clear src video
+        src.clear();
 
-        src[i].convertTo(src[i], CV_8UC3);
-        cvtColor2(src[i], src[i], CV2_YIQ2BGR); // returns CV_8UC3
-        src[i].convertTo(src[i], CV_32FC3);
-        dst.push_back(src[i]);
+        // Copy thread parts to pyramid
+        for (int i = 0; i < parts; i++) {
+            z[i]->join();
+            delete z[i];
+            vector <Mat> tmp = workerParts[i].getDst();
+
+            for (int j = 0; j < tmp.size(); j++) {
+                src.push_back(tmp[j]);
+                pyramid[currLevel].push_back(tmp[i]);
+            }
+        }
     }
 }
-
 
 // TODO: Check - may not work properly
 void BpmVideoProcessor::bandpass(vector<Mat>& temporalSpatial, float freq) {

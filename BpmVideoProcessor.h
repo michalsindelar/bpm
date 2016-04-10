@@ -59,7 +59,6 @@ class BpmVideoProcessor {
         void compute();
 
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
-        void buildGDownPyramidLevel(vector<Mat> &src, vector<Mat> &dst, int currLevel);
 
         // Used for generating beating mask
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
@@ -86,7 +85,52 @@ class BpmVideoProcessor {
             return bpm;
         }
 
+
+        static void buildGDownPyramidLevel(vector<Mat> &src, vector<Mat> &dst, int currLevel) {
+            for (int i = 0; i < src.size(); i++) {
+                // 0 Level only copy
+                if (currLevel == 0) {
+                    src[i].convertTo(src[i], CV_32FC3);
+                    dst.push_back(src[i]);
+                    continue;
+                }
+
+                if (src[i].type() == CV_32FC3) {
+                    src[i].convertTo(src[i], CV_8UC3);
+                }
+
+                cvtColor2(src[i], src[i], CV2_BGR2YIQ); // returns CV_8UC3
+                src[i].convertTo(src[i], CV_32FC3);
+
+                pyrDown(src[i], src[i]);
+
+                src[i].convertTo(src[i], CV_8UC3);
+                cvtColor2(src[i], src[i], CV2_YIQ2BGR); // returns CV_8UC3
+                src[i].convertTo(src[i], CV_32FC3);
+                dst.push_back(src[i]);
+            }
+        }
+
 };
 
+class PyramidLevelWorker {
+    vector<Mat> dst;
+    int part;
+
+    public:
+
+        PyramidLevelWorker(int part) {
+            this->part = part;
+        }
+
+        void compute(vector<Mat> &src, int currLevel) {
+            BpmVideoProcessor::buildGDownPyramidLevel(src, dst, currLevel);
+            int i = 0;
+        }
+
+         vector<Mat> &getDst() {
+            return dst;
+        }
+};
 
 #endif //BPM_BPMVIDEOPROCESSOR_H
