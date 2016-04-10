@@ -27,11 +27,22 @@ Mat resizeImage (Mat image, const double width);
 Mat resizeImage (Mat image, const double width, int interpolation);
 Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
+
+// Blurring
 void pyrUpVideo(vector<Mat>& video, int level);
+void pyrUpVideo(vector<Mat>& video, Size size, int level);
+void pyrUpVideo(vector<Mat>& video, Size size);
+Mat binom5Kernel();
+void blurDn(Mat & frame, int level, Mat kernel);
+
+// Cropping
 void resizeCropVideo(vector<Mat>& video, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi);
 Mat cropImageBorder (Mat image, int borderWidth);
+
+// Unify mats
+void unifyMatSize(Mat & frame, Size unifiedSize);
 
 // Range control
 void handleRoiPlacement(Rect &roi, const Size frame);
@@ -45,17 +56,13 @@ void fakeBeating (Mat image, double index, int maxValue, Rect face);
 // Colors handling
 void cvtColor2(Mat src, Mat & dst, int code);
 void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
+void normalizeVid(vector<Mat>& video, int min, int max, int type);
 
 // Frequency tools helpers
 float freqToBpmMapper(int fps, int framesCount, int index);
 float findStrongestRowFreq(vector<double> row, int framesCount, int fps);
 float findStrongestRowFreq(Mat row, int framesCount, int fps);
 Mat maskingCoeffs(int width, float fl, float fh, int fps);
-
-// TODO: Extract to blur file?
-// Blurring
-Mat binom5Kernel();
-void blurDn(Mat & frame, int level, Mat kernel);
 
 // Intensities compute
 vector<double> countIntensities(vector<Mat> &video);

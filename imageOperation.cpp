@@ -36,6 +36,49 @@ void pyrUpVideo(vector<Mat> &video, int level) {
     }
 }
 
+
+void pyrUpVideo(vector<Mat> &video, Size size) {
+    int level = (int) round(log2(video[0].cols / (float) size.width));
+    pyrUpVideo(video, size, level);
+}
+
+void pyrUpVideo(vector<Mat> &video, Size size, int level) {
+
+    for (int i = 0; i < video.size(); i++) {
+        for (int j = 0; j < level; j++) {
+            pyrUp(video[i], video[i]);
+        }
+        unifyMatSize(video[i], size);
+    }
+}
+
+void unifyMatSize(Mat & frame, Size unifiedSize) {
+    // Control if adding border needed
+    int widthDiff = unifiedSize.width - frame.cols ;
+    int heightDiff = unifiedSize.height - frame.rows ;
+
+    if (widthDiff == 0 && heightDiff == 0) return;
+
+    if (widthDiff > 0 && heightDiff > 0) {
+        copyMakeBorder(frame, frame, 0, heightDiff, 0, widthDiff, BORDER_REPLICATE);
+    } else if (widthDiff < 0 && heightDiff < 0) {
+        frame = frame(Rect(0, 0, frame.cols + widthDiff, frame.rows + heightDiff));
+    } else if (widthDiff < 0) {
+        frame = frame(Rect(0, 0, frame.cols + widthDiff, frame.rows));
+        copyMakeBorder(frame, frame, 0, heightDiff, 0, 0, BORDER_REPLICATE);
+    } else if (heightDiff < 0) {
+        frame = frame(Rect(0, 0, frame.cols, frame.rows + heightDiff));
+        copyMakeBorder(frame, frame, 0, 0, 0, widthDiff, BORDER_REPLICATE);
+    }
+}
+
+
+void normalizeVid(vector<Mat> &video, int min, int max, int type) {
+    for (int i = 0; i < video.size(); i++) {
+        normalize(video[i], video[i], min, max, type);
+    }
+}
+
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];

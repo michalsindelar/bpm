@@ -55,10 +55,11 @@ class BpmVideoProcessor {
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
         void compute();
 
-        void buildGDownStack(vector<Mat>& src, vector<Mat>& blurredDst, int level);
+        void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
 
         // Used for generating beating mask
-        void createBeatingMask(vector<Mat> src, vector<Mat>& temporalSpatial, vector<Mat>& dst, float bpm);
+        void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
+        void amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
 
         void createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial);
         void bandpass(vector<Mat>& temporalSpatial, float freq);

@@ -15,8 +15,9 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->maskWidth = FREQ_MASK_WIDTH;
     this->getForeheadSkinArea();
 
-    // Allocate pyramid
+    // Allocate
     this->pyramid = vector <vector <Mat> >(level);
+    this->out = vector <Mat>(video.size());
 }
 
 void BpmVideoProcessor::compute() {
@@ -24,9 +25,9 @@ void BpmVideoProcessor::compute() {
 //    buildGDownStack(forehead, blurred, 0);
 
     // GDown pyramid for masking video
-    buildGDownStack(video, blurredForMask, level);
+    buildGDownPyramid(video, pyramid, level);
 
-
+    /*
     if (true) {
 //        saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0.txt");
 //        saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
@@ -36,20 +37,38 @@ void BpmVideoProcessor::compute() {
 //        printIterationRow(blurred, framesCount, fps, 72, dataFile);
 //        dataFile.close();
     }
+     */
 
     // Compute bpm from intensities
     this->intensities = countIntensities(forehead, 0, 1, 0);
     this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
     // Create beating mask for visualization
-    createBeatingMask(this->blurredForMask, this->temporalSpatial, this->out, this->bpm);
-
-    // Try to bandpass forehead
-    createBeatingMask(this->forehead, this->temporalSpatial, this->forehead, this->bpm);
-
+    amplifyFrequencyInPyramid(pyramid, temporalSpatial, out, bpm);
 }
 
-void BpmVideoProcessor::createBeatingMask(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat>& dst, float bpm) {
+
+void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm) {
+    for (int i = 0; i < level; i++) {
+        pyrUpVideo(pyramid.at(i), pyramid.at(0)[0].size(), i);
+
+        vector<Mat> tmp(temporalSpatial.size());
+        amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, tmp, bpm);
+
+        for (int j = 0; j < pyramid.at(0).size(); j++) {
+            if (dst[j].data) {
+                dst[j] += tmp[j];
+            } else {
+                tmp[j].copyTo(dst[j]);
+            }
+        }
+    }
+
+    normalizeVid(dst, 0, 150, NORM_MINMAX );
+}
+
+void BpmVideoProcessor::amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst,
+                                                float bpm) {
     // Create temporal spatial video
     createTemporalSpatial(src, temporalSpatial);
 
@@ -58,19 +77,26 @@ void BpmVideoProcessor::createBeatingMask(vector<Mat> src, vector<Mat> &temporal
 
     // Inverse temporal spatial to video
     inverseTemporalSpatial(temporalSpatial, dst);
+
+    temporalSpatial.clear();
 }
 
-void BpmVideoProcessor::buildGDownStack(vector<Mat>& src, vector<Mat>& blurredDst, int level) {
+void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {
     for (int i = 0; i < framesCount; i++) {
         Mat frame = src[i].clone();
 
-        // TODO: REWRITE ctColor2 to float
         cvtColor2(frame, frame, CV2_BGR2YIQ); // returns CV_8UC3
 
         frame.convertTo(frame, CV_32FC3);
 
-        // Blurring in level for mask at first
         for (int j = 0; j < level; j++) {
+
+            if ((int) round(frame.cols / 2.0f) <= MIN_WIDTH_IN_PYRAMID) {
+                // Update level - needed for upsizing
+                this->level = j;
+                break;
+            }
+
             pyrDown(frame, frame);
 
             frame.convertTo(frame, CV_8UC3);
@@ -79,7 +105,6 @@ void BpmVideoProcessor::buildGDownStack(vector<Mat>& src, vector<Mat>& blurredDs
 
             pyramid.at(j).push_back(frame);
         }
-        blurredDst.push_back(frame);
     }
 }
 
