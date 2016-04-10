@@ -49,16 +49,17 @@ void BpmVideoProcessor::compute() {
 void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm) {
     // TODO: Each level must be in thread!!
     for (int i = 1; i < level; i++) {
+        amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, pyramid.at(i), bpm);
+    }
 
-        vector<Mat> tmp(temporalSpatial.size());
-        amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, tmp, bpm);
-        pyrUpVideo(tmp, pyramid.at(0)[0].size(), i);
+    for (int i = 1; i < level; i++) {
+        pyrUpVideo(pyramid.at(i), pyramid.at(0)[0].size(), i);
 
         for (int j = 0; j < pyramid.at(0).size(); j++) {
             if (dst[j].data) {
-                dst[j] += tmp[j];
+                dst[j] += pyramid.at(i)[j];
             } else {
-                tmp[j].copyTo(dst[j]);
+                pyramid.at(i)[j].copyTo(dst[j]);
             }
         }
     }
@@ -81,7 +82,7 @@ void BpmVideoProcessor::amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &te
 }
 
 void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {
-    int framesInPart = 50;
+    int framesInPart = 10;
     int parts = ceil(src.size() / framesInPart);
 
 
@@ -221,7 +222,7 @@ void BpmVideoProcessor::inverseTemporalSpatial(vector<Mat>& temporalSpatial, vec
         // in range [0,255]
         normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
 
-        dst.push_back(outputFrame.clone());
+        outputFrame.copyTo(dst[i]);
         outputFrame.release();
     }
 }

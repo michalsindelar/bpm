@@ -9,7 +9,7 @@
 
 // How many frames should be in buffer (amplification process together)
 // Must be deic
-#define BUFFER_FRAMES 100
+#define BUFFER_FRAMES 20
 
 // Experimental settings of fps
 #define FPS 30
