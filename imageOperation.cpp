@@ -250,10 +250,18 @@ Mat convertImageYIQtoRGB( Mat img)
     return out;
 }
 
-void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
+void amplifyChannels(Mat& frame, int r, int g, int b) {
+    // MASKING
+    vector<Mat> channels;
+    // Real & imag part
+    split(frame, channels);
+
+
     channels[RED_CHANNEL] = channels[RED_CHANNEL] * r;
     channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL] * g;
     channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL] * b;
+
+    merge(channels, frame);
 }
 
 void cvtColor2(Mat src, Mat & dst, int code) {

@@ -213,11 +213,8 @@ void BpmVideoProcessor::inverseTemporalSpatial(vector<Mat>& temporalSpatial, vec
         outputFrame.convertTo(outputFrame, CV_8U);
 
         // Keep only red channel
-        vector <Mat> channels;
-        split(outputFrame, channels);
-        channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL]*0.1f;
-        channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL]*0.3f;
-        merge(channels, outputFrame);
+        // TODO: Do weights make sense?
+        amplifyChannels(outputFrame, 1, 0.1f, 0.3f);
 
         // in range [0,255]
         normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
@@ -229,12 +226,7 @@ void BpmVideoProcessor::inverseTemporalSpatial(vector<Mat>& temporalSpatial, vec
 
 void BpmVideoProcessor::amplifyVideoChannels(vector<Mat> &video, float r, float g, float b) {
     for (int i = 0; i < video.size(); i++) {
-        // MASKING
-        vector<Mat> channels;
-        // Real & imag part
-        split(video[i], channels);
-        amplifyChannels(channels, r, g, b);
-        merge(channels, video[i]);
+        amplifyChannels(video[i], r, g, b);
     }
 }
 

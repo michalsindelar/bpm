@@ -55,7 +55,7 @@ void fakeBeating (Mat image, double index, int maxValue, Rect face);
 
 // Colors handling
 void cvtColor2(Mat src, Mat & dst, int code);
-void amplifyChannels(vector<Mat>& channels, int r, int g, int b);
+void amplifyChannels(Mat& frame, int r, int g, int b);
 void normalizeVid(vector<Mat>& video, int min, int max, int type);
 
 // Frequency tools helpers
