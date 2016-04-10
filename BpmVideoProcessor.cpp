@@ -57,17 +57,30 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
     }
 
     for (int i = 1; i < level; i++) {
-        amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, pyramid.at(i), bpm, fps);
+        z.push_back(new boost::thread(&PyramidLevelWorker::computeAmplificationPyramidLevel, boost::ref(workerParts[i-1]), pyramid.at(i), bpm, fps));
+        // amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, pyramid.at(i), bpm, fps);
     }
+
+    // Wait for threads
+    for (int i = 1; i < level; i++) {
+        z[i-1]->join();
+        delete z[i-1];
+    }
+
+    // Swap
+    for (int i = 1; i < level; i++) {
+        workerParts[i-1].getDst().swap(pyramid.at(i-1));
+    }
+
 
     for (int i = 1; i < level; i++) {
         pyrUpVideo(pyramid.at(i), pyramid.at(0)[0].size(), i);
 
         for (int j = 0; j < pyramid.at(0).size(); j++) {
             if (dst[j].data) {
-                dst[j] += pyramid.at(i)[j];
+                dst[j] += pyramid.at(i-1)[j];
             } else {
-                pyramid.at(i)[j].copyTo(dst[j]);
+                pyramid.at(i-1)[j].copyTo(dst[j]);
             }
         }
     }
@@ -107,8 +120,8 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
         // Clear src video
         src.clear();
 
+        // Wait for threads
         for (int i = 0; i < parts; i++) {
-            // Wait for threads
             z[i]->join();
             delete z[i];
         }

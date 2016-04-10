@@ -99,8 +99,6 @@ class BpmVideoProcessor {
 
             // Inverse temporal spatial to video
             inverseTemporalSpatial(temporalSpatial, dst);
-
-            temporalSpatial.clear();
         }
 
         static void createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial) {
@@ -149,7 +147,7 @@ class BpmVideoProcessor {
                 // in range [0,255]
                 normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
 
-                outputFrame.copyTo(dst[i]);
+                dst.push_back(outputFrame);
                 outputFrame.release();
             }
         }
@@ -217,8 +215,10 @@ class PyramidLevelWorker {
             int i = 0;
         }
 
-        void computeAmplificationPyramidLevel (vector<Mat> src, vector<Mat> &temporalSpatial, float bpm, int fps) {
+        void computeAmplificationPyramidLevel (vector<Mat> src, float bpm, int fps) {
+            vector<Mat> temporalSpatial;
             BpmVideoProcessor::amplifyFrequencyInLevel(src, temporalSpatial, dst, bpm, fps);
+            temporalSpatial.clear();
         }
 
         vector<Mat> &getDst() {
