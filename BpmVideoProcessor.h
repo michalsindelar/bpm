@@ -59,7 +59,7 @@ class BpmVideoProcessor {
         void compute();
 
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
-        void buildGDownPyramidLevel(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
+        void buildGDownPyramidLevel(vector<Mat> &src, vector<Mat> &dst, int currLevel);
 
         // Used for generating beating mask
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
