@@ -119,16 +119,12 @@ class PyramidLevelWorker {
 
     public:
 
-        PyramidLevelWorker(int part) {
-            this->part = part;
-        }
-
         void compute(vector<Mat> &src, int currLevel) {
             BpmVideoProcessor::buildGDownPyramidLevel(src, dst, currLevel);
             int i = 0;
         }
 
-         vector<Mat> &getDst() {
+        vector<Mat> &getDst() {
             return dst;
         }
 };

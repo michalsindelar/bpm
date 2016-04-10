@@ -50,7 +50,6 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
     // TODO: Each level must be in thread!!
     for (int i = 1; i < level; i++) {
 
-
         vector<Mat> tmp(temporalSpatial.size());
         amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, tmp, bpm);
         pyrUpVideo(tmp, pyramid.at(0)[0].size(), i);
@@ -89,9 +88,8 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
 
     for (int currLevel = 0; currLevel < level; currLevel++) {
 
-        // This is for performance purposes
+        // We need to split to threads due to performance
         vector<boost::thread *> z;
-
         vector <PyramidLevelWorker> workerParts;
 
         // Minimal size of frame in pyramid
@@ -101,8 +99,9 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
             break;
         }
 
+        // Initialize workers
         for (int i = 0; i < parts; i++) {
-            workerParts.push_back(PyramidLevelWorker(i));
+            workerParts.push_back(PyramidLevelWorker());
         }
 
         for (int i = 0; i < parts; i++) {
@@ -114,12 +113,15 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
         // Clear src video
         src.clear();
 
-        // Copy thread parts to pyramid
         for (int i = 0; i < parts; i++) {
+            // Wait for threads
             z[i]->join();
             delete z[i];
-            vector <Mat> tmp = workerParts[i].getDst();
+        }
 
+        // Copy thread parts to pyramid
+        for (int i = 0; i < parts; i++) {
+            vector <Mat> tmp = workerParts[i].getDst();
             for (int j = 0; j < tmp.size(); j++) {
                 src.push_back(tmp[j]);
                 pyramid[currLevel].push_back(tmp[i]);
