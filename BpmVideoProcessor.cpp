@@ -43,11 +43,12 @@ void BpmVideoProcessor::compute() {
 
     // Create beating mask for visualization
     amplifyFrequencyInPyramid(pyramid, temporalSpatial, out, bpm);
+    reconstructMaskFromPyramid(pyramid, out);
 }
 
 
 void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm) {
-    // TODO: Each level must be in thread!!
+
 
     vector<boost::thread *> z;
     vector <PyramidLevelWorker> workerParts;
@@ -71,8 +72,10 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
     for (int i = 1; i < level; i++) {
         workerParts[i-1].getDst().swap(pyramid.at(i-1));
     }
+}
 
-
+void BpmVideoProcessor::reconstructMaskFromPyramid (vector<vector<Mat> > &pyramid, vector <Mat>& dst) {
+    // TODO: Each level must be in thread!!
     for (int i = 1; i < level; i++) {
         pyrUpVideo(pyramid.at(i), pyramid.at(0)[0].size(), i);
 

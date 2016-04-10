@@ -59,7 +59,7 @@ class BpmVideoProcessor {
         void compute();
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
-
+        void reconstructMaskFromPyramid (vector<vector<Mat> > &pyramid, vector <Mat> & dst);
         void getForeheadSkinArea();
 
         // Static functions
@@ -192,6 +192,7 @@ class BpmVideoProcessor {
 
             }
         }
+
 
         //  Getters & setters
         const vector<Mat> &getOut() const {
