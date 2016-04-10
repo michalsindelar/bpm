@@ -55,13 +55,16 @@ void fakeBeating (Mat image, double index, int maxValue, Rect face);
 
 // Colors handling
 void cvtColor2(Mat src, Mat & dst, int code);
-void amplifyChannels(Mat& frame, int r, int g, int b);
+void amplifyChannels(Mat& frame, float r, float g, float b);
 void normalizeVid(vector<Mat>& video, int min, int max, int type);
 
 // Frequency tools helpers
 float freqToBpmMapper(int fps, int framesCount, int index);
 float findStrongestRowFreq(vector<double> row, int framesCount, int fps);
 float findStrongestRowFreq(Mat row, int framesCount, int fps);
+
+// TODO: rename according to numpy
+Mat generateFreqMask(float freq, int framesCount, int fps);
 Mat maskingCoeffs(int width, float fl, float fh, int fps);
 
 // Intensities compute

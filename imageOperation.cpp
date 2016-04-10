@@ -250,7 +250,7 @@ Mat convertImageYIQtoRGB( Mat img)
     return out;
 }
 
-void amplifyChannels(Mat& frame, int r, int g, int b) {
+void amplifyChannels(Mat& frame, float r, float g, float b) {
     // MASKING
     vector<Mat> channels;
     // Real & imag part
@@ -336,6 +336,28 @@ float findStrongestRowFreq(Mat row, int framesCount, int fps) {
         }
     }
     return freqToBpmMapper(fps, framesCount, maxFreqLoc);
+}
+
+
+Mat generateFreqMask(float freq, int framesCount, int fps) {
+    float halfRange = FREQ_MASK_WIDTH / 2.0f;
+    float fl, fh;
+
+    // Compute fl & fh
+    if (freq - halfRange < CUTOFF_FL) {
+        fl = CUTOFF_FL;
+        fh = CUTOFF_FH + FREQ_MASK_WIDTH;
+    }
+    else if (freq + halfRange > CUTOFF_FH) {
+        fh = CUTOFF_FH;
+        fl = CUTOFF_FH - FREQ_MASK_WIDTH;
+    }
+    else {
+        fl = freq - halfRange;
+        fh = freq + halfRange;
+    }
+
+    return maskingCoeffs(framesCount,  fl, fh, fps);
 }
 
 Mat maskingCoeffs(int width, float fl, float fh, int fps) {

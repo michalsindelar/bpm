@@ -48,8 +48,16 @@ void BpmVideoProcessor::compute() {
 
 void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm) {
     // TODO: Each level must be in thread!!
+
+    vector<boost::thread *> z;
+    vector <PyramidLevelWorker> workerParts;
+    // Initialize workers
     for (int i = 1; i < level; i++) {
-        amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, pyramid.at(i), bpm);
+        workerParts.push_back(PyramidLevelWorker());
+    }
+
+    for (int i = 1; i < level; i++) {
+        amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, pyramid.at(i), bpm, fps);
     }
 
     for (int i = 1; i < level; i++) {
@@ -67,25 +75,9 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
     normalizeVid(dst, 0, 150, NORM_MINMAX );
 }
 
-void BpmVideoProcessor::amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst,
-                                                float bpm) {
-    // Create temporal spatial video
-    createTemporalSpatial(src, temporalSpatial);
-
-    // Bandpass temporal video
-    bandpass(temporalSpatial, bpm);
-
-    // Inverse temporal spatial to video
-    inverseTemporalSpatial(temporalSpatial, dst);
-
-    temporalSpatial.clear();
-}
-
 void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {
     int framesInPart = 10;
     int parts = ceil(src.size() / framesInPart);
-
-
 
     for (int currLevel = 0; currLevel < level; currLevel++) {
 
@@ -108,7 +100,8 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
         for (int i = 0; i < parts; i++) {
             int start = i * framesInPart;
             int end = start + framesInPart;
-            z.push_back(new boost::thread(&PyramidLevelWorker::compute, boost::ref(workerParts[i]), vector <Mat>(src.begin() + start, src.begin() + end), currLevel));
+            z.push_back(new boost::thread(&PyramidLevelWorker::computeGDownPyramidLevel, boost::ref(workerParts[i]),
+                                          vector<Mat>(src.begin() + start, src.begin() + end), currLevel));
         }
 
         // Clear src video
@@ -131,124 +124,10 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
     }
 }
 
-// TODO: Check - may not work properly
-void BpmVideoProcessor::bandpass(vector<Mat>& temporalSpatial, float freq) {
-
-    // Create mask based on strongest frequency
-    Mat mask = generateFreqMask(freq);
-
-    for (int i = 0; i < temporalSpatial.size(); i++) {
-        
-        for (int row = 0; row < temporalSpatial[i].rows; row++) {
-
-            // FFT
-            Mat fourierTransform;
-            dft(temporalSpatial[i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
-
-            // MASKING
-            Mat planes[] = {Mat::zeros(fourierTransform.size(), CV_32F), Mat::zeros(fourierTransform.size(), CV_32F)};
-
-            // Real & imag part
-            split(fourierTransform, planes);
-
-            // Masking parts
-            planes[0] = planes[0].mul(mask);
-            planes[1] = planes[1].mul(mask);
-
-
-            // Merge back
-            merge(planes, 2, fourierTransform);
-
-            // IFFT
-            dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
-
-
-            // COPY BACK
-            fourierTransform.copyTo(temporalSpatial[i].row(row));
-
-            // RELEASE
-            fourierTransform.release();
-        }
-        
-    }
-}
-
-void BpmVideoProcessor::createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial) {
-    int dstVectorCount = src[0].size().width;
-    int dstVectorWidth = (int) src.size();
-    int dstVectorHeight = src[0].size().height;
-
-    for (int i = 0; i < dstVectorCount; i++) {
-        // One frame
-        Mat frame(dstVectorHeight, dstVectorWidth, CV_32FC1);
-        for (int j = 0; j < dstVectorWidth; j++) {
-            Mat tmp = src[j].clone();
-            cvtColor(tmp, tmp, CV_BGR2GRAY);
-            tmp.convertTo(tmp, CV_32F);
-
-            for(int k = 0; k < dstVectorHeight; k++) {
-                frame.at<float>(k,j) = tmp.at<float>(k,i);
-            }
-        }
-        temporalSpatial.push_back(frame.clone());
-        frame.release();
-    }
-}
-
-void BpmVideoProcessor::inverseTemporalSpatial(vector<Mat>& temporalSpatial, vector<Mat>& dst) {
-    int dstCount = temporalSpatial[0].cols;
-    int dstWidth = (int) temporalSpatial.size();
-    int dstHeight = temporalSpatial[0].rows;
-
-    for (int i = 0; i < dstCount; i++) {
-        Mat outputFrame = Mat(dstHeight, dstWidth, CV_32FC1);
-
-        for (int j = 0; j < dstWidth; j++) {
-            for(int k = 0; k < dstHeight; k++) {
-                    outputFrame.at<float>(k, j) = temporalSpatial[j].at<float>(k, i);
-            }
-        }
-
-        cvtColor(outputFrame, outputFrame, CV_GRAY2BGR);
-        outputFrame.convertTo(outputFrame, CV_8U);
-
-        // Keep only red channel
-        // TODO: Do weights make sense?
-        amplifyChannels(outputFrame, 1, 0.1f, 0.3f);
-
-        // in range [0,255]
-        normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
-
-        outputFrame.copyTo(dst[i]);
-        outputFrame.release();
-    }
-}
-
 void BpmVideoProcessor::amplifyVideoChannels(vector<Mat> &video, float r, float g, float b) {
     for (int i = 0; i < video.size(); i++) {
         amplifyChannels(video[i], r, g, b);
     }
-}
-
-Mat BpmVideoProcessor::generateFreqMask(float freq) {
-    float halfRange = this->maskWidth / 2;
-    float fl, fh;
-
-    // Compute fl & fh
-    if (freq - halfRange < CUTOFF_FL) {
-        fl = CUTOFF_FL;
-        fh = CUTOFF_FH + this->maskWidth;
-    }
-    else if (freq + halfRange > CUTOFF_FH) {
-        fh = CUTOFF_FH;
-        fl = CUTOFF_FH - this->maskWidth;
-    }
-    else {
-        fl = freq - halfRange;
-        fh = freq + halfRange;
-    }
-
-    return maskingCoeffs(framesCount,  fl, fh, fps);
 }
 
 void BpmVideoProcessor::getForeheadSkinArea() {

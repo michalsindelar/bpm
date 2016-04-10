@@ -57,34 +57,13 @@ class BpmVideoProcessor {
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
         void compute();
-
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
-
-        // Used for generating beating mask
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
-        void amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
 
-        void createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial);
-        void bandpass(vector<Mat>& temporalSpatial, float freq);
-        void inverseTemporalSpatial(vector<Mat>& temporalSpatial, vector<Mat>& dst);
-
-        // TODO: rename according to numpy
-        Mat generateFreqMask(float freq);
-        static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
         void getForeheadSkinArea();
 
-        const vector<Mat> &getOut() const {
-            return out;
-        }
-
-        const vector<Mat> &getTemporalSpatialMask() const {
-            return temporalSpatial;
-        }
-
-        int getBpm() const {
-            return bpm;
-        }
-
+        // Static functions
+        static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
 
         static void buildGDownPyramidLevel(vector<Mat> &src, vector<Mat> &dst, int currLevel) {
             for (int i = 0; i < src.size(); i++) {
@@ -111,17 +90,135 @@ class BpmVideoProcessor {
             }
         }
 
+        static void amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm, int fps) {
+            // Create temporal spatial video
+            createTemporalSpatial(src, temporalSpatial);
+
+            // Bandpass temporal video
+            bandpass(temporalSpatial, bpm, fps);
+
+            // Inverse temporal spatial to video
+            inverseTemporalSpatial(temporalSpatial, dst);
+
+            temporalSpatial.clear();
+        }
+
+        static void createTemporalSpatial(vector<Mat> src, vector<Mat>& temporalSpatial) {
+            int dstVectorCount = src[0].size().width;
+            int dstVectorWidth = (int) src.size();
+            int dstVectorHeight = src[0].size().height;
+
+            for (int i = 0; i < dstVectorCount; i++) {
+                // One frame
+                Mat frame(dstVectorHeight, dstVectorWidth, CV_32FC1);
+                for (int j = 0; j < dstVectorWidth; j++) {
+                    Mat tmp = src[j].clone();
+                    cvtColor(tmp, tmp, CV_BGR2GRAY);
+                    tmp.convertTo(tmp, CV_32F);
+
+                    for(int k = 0; k < dstVectorHeight; k++) {
+                        frame.at<float>(k,j) = tmp.at<float>(k,i);
+                    }
+                }
+                temporalSpatial.push_back(frame.clone());
+                frame.release();
+            }
+        }
+
+        static void inverseTemporalSpatial(vector<Mat>& temporalSpatial, vector<Mat>& dst) {
+            int dstCount = temporalSpatial[0].cols;
+            int dstWidth = (int) temporalSpatial.size();
+            int dstHeight = temporalSpatial[0].rows;
+
+            for (int i = 0; i < dstCount; i++) {
+                Mat outputFrame = Mat(dstHeight, dstWidth, CV_32FC1);
+
+                for (int j = 0; j < dstWidth; j++) {
+                    for(int k = 0; k < dstHeight; k++) {
+                            outputFrame.at<float>(k, j) = temporalSpatial[j].at<float>(k, i);
+                    }
+                }
+
+                cvtColor(outputFrame, outputFrame, CV_GRAY2BGR);
+                outputFrame.convertTo(outputFrame, CV_8U);
+
+                // Keep only red channel
+                // TODO: Do weights make sense?
+                amplifyChannels(outputFrame, 1, 0.1f, 0.3f);
+
+                // in range [0,255]
+                normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
+
+                outputFrame.copyTo(dst[i]);
+                outputFrame.release();
+            }
+        }
+
+        // TODO: Check - may not work properly
+        static void bandpass(vector<Mat>& temporalSpatial, float freq, int fps) {
+
+            // Create mask based on strongest frequency
+            Mat mask = generateFreqMask(freq, temporalSpatial[0].cols, fps);
+
+            for (int i = 0; i < temporalSpatial.size(); i++) {
+
+                for (int row = 0; row < temporalSpatial[i].rows; row++) {
+
+                    // FFT
+                    Mat fourierTransform;
+                    dft(temporalSpatial[i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+                    // MASKING
+                    Mat planes[] = {Mat::zeros(fourierTransform.size(), CV_32F), Mat::zeros(fourierTransform.size(), CV_32F)};
+
+                    // Real & imag part
+                    split(fourierTransform, planes);
+
+                    // Masking parts
+                    planes[0] = planes[0].mul(mask);
+                    planes[1] = planes[1].mul(mask);
+
+
+                    // Merge back
+                    merge(planes, 2, fourierTransform);
+
+                    // IFFT
+                    dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
+
+                    // COPY BACK
+                    fourierTransform.copyTo(temporalSpatial[i].row(row));
+
+                    // RELEASE
+                    fourierTransform.release();
+                }
+
+            }
+        }
+
+        //  Getters & setters
+        const vector<Mat> &getOut() const {
+            return out;
+        }
+        const vector<Mat> &getTemporalSpatialMask() const {
+            return temporalSpatial;
+        }
+        int getBpm() const {
+            return bpm;
+        }
 };
 
 class PyramidLevelWorker {
     vector<Mat> dst;
-    int part;
 
     public:
 
-        void compute(vector<Mat> &src, int currLevel) {
+        void computeGDownPyramidLevel(vector<Mat> &src, int currLevel) {
             BpmVideoProcessor::buildGDownPyramidLevel(src, dst, currLevel);
             int i = 0;
+        }
+
+        void computeAmplificationPyramidLevel (vector<Mat> src, vector<Mat> &temporalSpatial, float bpm, int fps) {
+            BpmVideoProcessor::amplifyFrequencyInLevel(src, temporalSpatial, dst, bpm, fps);
         }
 
         vector<Mat> &getDst() {
