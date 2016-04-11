@@ -13,14 +13,23 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
+
     this->getForeheadSkinArea();
 
-    // Allocate
-    this->pyramid = vector <vector <Mat> >(level);
+    // Pre-allocate
+    this->pyramid = vector <vector <Mat> >();
+    this->pyramidForehead = vector <vector <Mat> >();
+
     this->out = vector <Mat>(video.size());
 }
 
 void BpmVideoProcessor::compute() {
+
+    // GDown pyramid for forehead
+    buildGDownPyramid(forehead, pyramidForehead, level);
+
+    // Compute bpm multi level
+    computeBpmFromPyramid();
 
     // GDown pyramid for masking video
     buildGDownPyramid(video, pyramid, level);
@@ -36,10 +45,6 @@ void BpmVideoProcessor::compute() {
 //        dataFile.close();
     }
      */
-
-    // Compute bpm from intensities
-    this->intensities = countIntensities(forehead, 0, 1, 0);
-    this->bpm = (int) round(findStrongestRowFreq(intensities, framesCount, fps));
 
     // Create beating mask for visualization
     amplifyFrequencyInPyramid(pyramid, temporalSpatial, out, bpm);
@@ -107,8 +112,9 @@ void BpmVideoProcessor::reconstructMaskFromPyramid (vector<vector<Mat> > &pyrami
 }
 
 void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {
-    int framesInPart = 10;
-    int parts = ceil(src.size() / framesInPart);
+    int framesInPart = 20;
+
+    int parts = (int) ceil(src.size() / framesInPart);
 
     for (int currLevel = 0; currLevel < level; currLevel++) {
 
@@ -122,6 +128,9 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
             this->level = currLevel;
             break;
         }
+
+        // Allocate new level in pyramid
+        pyramid.push_back(vector<Mat>());
 
         // Initialize workers
         for (int i = 0; i < parts; i++) {
@@ -149,7 +158,7 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
             vector <Mat> tmp = workerParts[i].getDst();
             for (int j = 0; j < tmp.size(); j++) {
                 src.push_back(tmp[j]);
-                pyramid[currLevel].push_back(tmp[i]);
+                pyramid[currLevel].push_back(tmp[j]);
             }
         }
     }
@@ -191,4 +200,14 @@ void BpmVideoProcessor::getForeheadSkinArea() {
         }
     }
 
+}
+
+void BpmVideoProcessor::computeBpmFromPyramid() {
+    float bpmSum = 0;
+    int bpmLevel = 0;
+    for (; bpmLevel < pyramidForehead.size(); bpmLevel++) {
+        this->intensities = countIntensities(pyramidForehead.at(bpmLevel), 0, 1, 0);
+        bpmSum += (int) round(findStrongestRowFreq(intensities, framesCount, fps));
+    }
+    this->bpm = (int) round(bpmSum / bpmLevel);
 }

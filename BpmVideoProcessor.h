@@ -61,6 +61,7 @@ class BpmVideoProcessor {
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
         void reconstructMaskFromPyramid (vector<vector<Mat> > &pyramid, vector <Mat> & dst);
         void getForeheadSkinArea();
+        void computeBpmFromPyramid();
 
         // Static functions
         static void amplifyVideoChannels(vector<Mat>& video, float r, float g, float b);
