@@ -20,10 +20,13 @@ using namespace std;
 
 class AmplificationWorker {
     int bpm;
+    int fps;
+
     bool working;
     bool initialFlag;
-    int fps;
     int bufferFrames;
+
+    Size resizedFace;
 
     vector<Mat> videoBuffer;
     vector<Mat> visualization;
@@ -72,6 +75,10 @@ class AmplificationWorker {
 
         void clearVisualization() {
             this->visualization.clear();
+        }
+
+        void setResizedFace(const Size &resizedFace) {
+            AmplificationWorker::resizedFace = resizedFace;
         }
 
 };

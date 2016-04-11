@@ -270,7 +270,6 @@ int Bpm::runCameraMode() {
         }
 
         if (faceFullDetector.getFaces().size()) {
-            // TODO: function get biggest face
             this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
         }
 
@@ -469,6 +468,10 @@ void Bpm::handleDetector(Mat in, int type) {
         if (faceResizedDetector.isDetected()) {
             this->updateFace(faceResizedDetector.getBiggestFace(), this->resizedFace);
             this->updateTmpFace(faceResizedDetector.getBiggestFace());
+
+            // Update size of detected face in resized frame ->
+            // do as much work in thread as possible
+            this->bpmWorker.setResizedFace(faceResizedDetector.getBiggestFace().size());
         }
     } else if (type == FOREHEAD) {
         if (!foreheadDetector.isWorking() || isFaceDetected(tmpFace)) {
