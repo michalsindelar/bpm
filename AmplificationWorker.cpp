@@ -37,7 +37,6 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     // Prevent big changes
     this->bpm = this->bpm ? (this->bpm + currBpm) / 2 : currBpm;
 
-    pyrUpVideo(this->visualization, level);
     resizeCropVideo(this->visualization, this->videoBuffer[0].cols);
 
     this->videoBuffer.clear();

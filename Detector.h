@@ -17,6 +17,7 @@ using namespace std;
 
 class Detector {
     vector<Rect> faces;
+    Rect biggestFace;
     Rect forehead;
     Mat frame;
     CascadeClassifier faceCascade;
@@ -28,8 +29,12 @@ class Detector {
     public:
         Detector();
         void detectFace(Mat frame);
-        void adjustFacesSize();
-        Rect &getBiggestFace();
+        void adjustFaceSize();
+        Rect &determineBiggestFace();
+
+        const Rect &getBiggestFace() const {
+            return biggestFace;
+        }
 
         // Returns face closest to center
         Rect &getMainFace(Mat frame);

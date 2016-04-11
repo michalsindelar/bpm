@@ -28,11 +28,40 @@ void resizeCropVideo(vector<Mat> &video, int width) {
 }
 
 
-void pyrUpVideo(vector<Mat> &video, int level) {
+void pyrUpVideo(vector<Mat> &video, vector<Mat> &dst, Size size, int level) {
     for (int i = 0; i < video.size(); i++) {
         for (int j = 0; j < level; j++) {
             pyrUp(video[i], video[i]);
         }
+        dst.push_back(video[i]);
+        unifyMatSize(dst[i], size);
+    }
+}
+
+void unifyMatSize(Mat & frame, Size unifiedSize) {
+    // Control if adding border needed
+    int widthDiff = unifiedSize.width - frame.cols ;
+    int heightDiff = unifiedSize.height - frame.rows ;
+
+    if (widthDiff == 0 && heightDiff == 0) return;
+
+    if (widthDiff > 0 && heightDiff > 0) {
+        copyMakeBorder(frame, frame, 0, heightDiff, 0, widthDiff, BORDER_REPLICATE);
+    } else if (widthDiff < 0 && heightDiff < 0) {
+        frame = frame(Rect(0, 0, frame.cols + widthDiff, frame.rows + heightDiff));
+    } else if (widthDiff < 0) {
+        frame = frame(Rect(0, 0, frame.cols + widthDiff, frame.rows));
+        copyMakeBorder(frame, frame, 0, heightDiff, 0, 0, BORDER_REPLICATE);
+    } else if (heightDiff < 0) {
+        frame = frame(Rect(0, 0, frame.cols, frame.rows + heightDiff));
+        copyMakeBorder(frame, frame, 0, 0, 0, widthDiff, BORDER_REPLICATE);
+    }
+}
+
+
+void normalizeVid(vector<Mat> &video, int min, int max, int type) {
+    for (int i = 0; i < video.size(); i++) {
+        normalize(video[i], video[i], min, max, type);
     }
 }
 
@@ -207,10 +236,18 @@ Mat convertImageYIQtoRGB( Mat img)
     return out;
 }
 
-void amplifyChannels(vector<Mat>& channels, int r, int g, int b) {
+void amplifyChannels(Mat& frame, float r, float g, float b) {
+    // MASKING
+    vector<Mat> channels;
+    // Real & imag part
+    split(frame, channels);
+
+
     channels[RED_CHANNEL] = channels[RED_CHANNEL] * r;
     channels[GREEN_CHANNEL] = channels[GREEN_CHANNEL] * g;
     channels[BLUE_CHANNEL] = channels[BLUE_CHANNEL] * b;
+
+    merge(channels, frame);
 }
 
 void cvtColor2(Mat src, Mat & dst, int code) {
@@ -285,6 +322,28 @@ float findStrongestRowFreq(Mat row, int framesCount, int fps) {
         }
     }
     return freqToBpmMapper(fps, framesCount, maxFreqLoc);
+}
+
+
+Mat generateFreqMask(float freq, int framesCount, int fps) {
+    float halfRange = FREQ_MASK_WIDTH / 2.0f;
+    float fl, fh;
+
+    // Compute fl & fh
+    if (freq - halfRange < CUTOFF_FL) {
+        fl = CUTOFF_FL;
+        fh = CUTOFF_FH + FREQ_MASK_WIDTH;
+    }
+    else if (freq + halfRange > CUTOFF_FH) {
+        fh = CUTOFF_FH;
+        fl = CUTOFF_FH - FREQ_MASK_WIDTH;
+    }
+    else {
+        fl = freq - halfRange;
+        fh = freq + halfRange;
+    }
+
+    return maskingCoeffs(framesCount,  fl, fh, fps);
 }
 
 Mat maskingCoeffs(int width, float fl, float fh, int fps) {

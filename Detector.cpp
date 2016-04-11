@@ -24,33 +24,31 @@ void Detector::detectFace(Mat frame) {
     // Detect faces
     faceCascade.detectMultiScale( frame, faces, 1.3, 2, 0|CV_HAAR_SCALE_IMAGE);
 
+    // Determine biggest face
+    this->biggestFace = this->determineBiggestFace();
+
     // Check whether detection successful
     if (!this->faces.size()) {
         this->working = false;
         return;
     }
 
-    this->adjustFacesSize();
+    this->adjustFaceSize();
     this->working = false;
 }
 
 // Increase height of detected face
-void Detector::adjustFacesSize() {
-    for (int i = 0; i < 1; i++) {
-        this->faces[i].y -= this->faces[i].height*faceYOffset;
-        this->faces[i].height *= faceHeightScale;
+void Detector::adjustFaceSize() {
+    this->biggestFace.y -= this->biggestFace.height*faceYOffset;
+    this->biggestFace.height *= faceHeightScale;
 
-        // Control range
-        // TODO: WTF?
-        this->faces[i].y = (this->faces[i].y < 0) ? 0 : this->faces[i].y;
-        this->faces[i].height = ((this->faces[i].y + this->faces[i].height) > frame.rows) ?
-            this->faces[i].height - this->faces[i].y :
-            this->faces[i].height;
-    }
+    // Control range
+    handleRoiPlacement(this->biggestFace, this->frame.size());
 }
 
 
-Rect &Detector::getBiggestFace() {
+
+Rect &Detector::determineBiggestFace() {
     int biggestFaceIndex = 0;
     int biggestFaceArea = 0;
     for (int i = 0; i < faces.size(); i++) {
@@ -61,7 +59,6 @@ Rect &Detector::getBiggestFace() {
     }
     return this->faces[biggestFaceIndex];
 }
-
 
 Rect &Detector::getMainFace(Mat frame) {
     Point2d centerFrame = getCenter(frame.size());
@@ -125,7 +122,6 @@ void Detector::detectForehead(Mat face) {
     }
     this->working = false;
 }
-
 
 bool Detector::isDetected() {
     return (!!this->faces.size() || !!this->forehead.x);
