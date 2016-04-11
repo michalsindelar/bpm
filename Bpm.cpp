@@ -371,7 +371,7 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
 
         // As we crop mask in own thread while amplification
         // These steps are appli only if detected face positon has significantly changed
-        Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bufferFrames), tmpFace.width - 2*ERASED_BORDER_WIDTH);
+        Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()), tmpFace.width - 2*ERASED_BORDER_WIDTH);
 
         // Important range check
         Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);

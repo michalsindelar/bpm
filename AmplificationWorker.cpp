@@ -26,7 +26,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     int currBpm = 0;
 
     // Level for masking
-    int level = 5;
+    int level = 6;
 
     // Resizing must be computed according to face SIZE !!
     BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, CUTOFF_FL, CUTOFF_FH, level, fps, bufferFrames);

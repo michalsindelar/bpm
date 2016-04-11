@@ -31,6 +31,12 @@ void BpmVideoProcessor::compute() {
     // Compute bpm multi level
     computeBpmFromPyramid();
 
+
+    for (int i = 0; i < video.size(); i++) {
+        pyrDown(video[i], video[i]);
+        pyrDown(video[i], video[i]);
+    }
+
     // GDown pyramid for masking video
     buildGDownPyramid(video, pyramid, level);
 
@@ -49,6 +55,11 @@ void BpmVideoProcessor::compute() {
     // Create beating mask for visualization
     amplifyFrequencyInPyramid(pyramid, temporalSpatial, out, bpm);
     reconstructMaskFromPyramid(pyramid, out);
+
+    for (int i = 0; i < video.size(); i++) {
+        pyrUp(video[i], video[i]);
+        pyrUp(video[i], video[i]);
+    }
 }
 
 
@@ -58,23 +69,23 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
     vector<boost::thread *> z;
     vector <PyramidLevelWorker> workerParts;
     // Initialize workers
-    for (int i = 1; i < level; i++) {
+    for (int i = 0; i < level; i++) {
         workerParts.push_back(PyramidLevelWorker());
     }
 
-    for (int i = 1; i < level; i++) {
-        z.push_back(new boost::thread(&PyramidLevelWorker::computeAmplificationPyramidLevel, boost::ref(workerParts[i-1]), pyramid.at(i), bpm, fps));
+    for (int i = 0; i < level; i++) {
+        z.push_back(new boost::thread(&PyramidLevelWorker::computeAmplificationPyramidLevel, boost::ref(workerParts[i]), pyramid.at(i), bpm, fps));
     }
 
     // Wait for threads
-    for (int i = 1; i < level; i++) {
-        z[i-1]->join();
-        delete z[i-1];
+    for (int i = 0; i < level; i++) {
+        z[i]->join();
+        delete z[i];
     }
 
     // Swap
-    for (int i = 1; i < level; i++) {
-        workerParts[i-1].getDst().swap(pyramid.at(i-1));
+    for (int i = 0; i < level; i++) {
+        workerParts[i].getDst().swap(pyramid.at(i));
     }
 }
 
@@ -82,33 +93,33 @@ void BpmVideoProcessor::reconstructMaskFromPyramid (vector<vector<Mat> > &pyrami
     vector<boost::thread *> z;
     vector <PyramidLevelWorker> workerParts;
     // Initialize workers
-    for (int i = 1; i < level; i++) {
+    for (int i = 0; i < level; i++) {
         workerParts.push_back(PyramidLevelWorker());
     }
 
-    for (int i = 1; i < level; i++) {
-        z.push_back(new boost::thread(&PyramidLevelWorker::reconstructPyramidLevel, boost::ref(workerParts[i-1]), pyramid, i));
+    for (int i = 0; i < level; i++) {
+        z.push_back(new boost::thread(&PyramidLevelWorker::reconstructPyramidLevel, boost::ref(workerParts[i]), pyramid, i));
     }
 
     // Wait for threads
-    for (int i = 1; i < level; i++) {
-        z[i-1]->join();
-        delete z[i-1];
+    for (int i = 0; i < level; i++) {
+        z[i]->join();
+        delete z[i];
     }
 
     // Dst is empty
     workerParts[0].getDst().swap(dst);
 
     // Now increment dst
-    for (int i = 2; i < level; i++) {
-        vector <Mat> tmp = workerParts[i-1].getDst();
+    for (int i = 1; i < level; i++) {
+        vector <Mat> tmp = workerParts[i].getDst();
         for (int j = 0; j < tmp.size(); j++) {
             dst[j] += tmp[j];
         }
     }
 
     // Normalize dst
-    normalizeVid(dst, 0, 150, NORM_MINMAX );
+    normalizeVid(dst, 0, 200, NORM_MINMAX );
 }
 
 void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {
