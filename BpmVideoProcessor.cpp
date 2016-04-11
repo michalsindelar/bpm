@@ -59,7 +59,6 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
 
     for (int i = 1; i < level; i++) {
         z.push_back(new boost::thread(&PyramidLevelWorker::computeAmplificationPyramidLevel, boost::ref(workerParts[i-1]), pyramid.at(i), bpm, fps));
-        // amplifyFrequencyInLevel(pyramid.at(i), temporalSpatial, pyramid.at(i), bpm, fps);
     }
 
     // Wait for threads
@@ -75,19 +74,35 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
 }
 
 void BpmVideoProcessor::reconstructMaskFromPyramid (vector<vector<Mat> > &pyramid, vector <Mat>& dst) {
-    // TODO: Each level must be in thread!!
+    vector<boost::thread *> z;
+    vector <PyramidLevelWorker> workerParts;
+    // Initialize workers
     for (int i = 1; i < level; i++) {
-        pyrUpVideo(pyramid.at(i), pyramid.at(0)[0].size(), i);
+        workerParts.push_back(PyramidLevelWorker());
+    }
 
-        for (int j = 0; j < pyramid.at(0).size(); j++) {
-            if (dst[j].data) {
-                dst[j] += pyramid.at(i-1)[j];
-            } else {
-                pyramid.at(i-1)[j].copyTo(dst[j]);
-            }
+    for (int i = 1; i < level; i++) {
+        z.push_back(new boost::thread(&PyramidLevelWorker::reconstructPyramidLevel, boost::ref(workerParts[i-1]), pyramid, i));
+    }
+
+    // Wait for threads
+    for (int i = 1; i < level; i++) {
+        z[i-1]->join();
+        delete z[i-1];
+    }
+
+    // Dst is empty
+    workerParts[0].getDst().swap(dst);
+
+    // Now increment dst
+    for (int i = 2; i < level; i++) {
+        vector <Mat> tmp = workerParts[i-1].getDst();
+        for (int j = 0; j < tmp.size(); j++) {
+            dst[j] += tmp[j];
         }
     }
 
+    // Normalize dst
     normalizeVid(dst, 0, 150, NORM_MINMAX );
 }
 

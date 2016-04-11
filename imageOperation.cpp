@@ -28,27 +28,13 @@ void resizeCropVideo(vector<Mat> &video, int width) {
 }
 
 
-void pyrUpVideo(vector<Mat> &video, int level) {
+void pyrUpVideo(vector<Mat> &video, vector<Mat> &dst, Size size, int level) {
     for (int i = 0; i < video.size(); i++) {
         for (int j = 0; j < level; j++) {
             pyrUp(video[i], video[i]);
         }
-    }
-}
-
-
-void pyrUpVideo(vector<Mat> &video, Size size) {
-    int level = (int) round(log2(video[0].cols / (float) size.width));
-    pyrUpVideo(video, size, level);
-}
-
-void pyrUpVideo(vector<Mat> &video, Size size, int level) {
-
-    for (int i = 0; i < video.size(); i++) {
-        for (int j = 0; j < level; j++) {
-            pyrUp(video[i], video[i]);
-        }
-        unifyMatSize(video[i], size);
+        dst.push_back(video[i]);
+        unifyMatSize(dst[i], size);
     }
 }
 

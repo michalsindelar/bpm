@@ -222,6 +222,10 @@ class PyramidLevelWorker {
             temporalSpatial.clear();
         }
 
+        void reconstructPyramidLevel(vector<vector<Mat> > &pyramid, int currLevel) {
+            pyrUpVideo(pyramid.at(currLevel-1), dst, pyramid.at(0)[0].size(), currLevel);
+        }
+
         vector<Mat> &getDst() {
             return dst;
         }

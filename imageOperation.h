@@ -29,9 +29,8 @@ Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
 
 // Blurring
-void pyrUpVideo(vector<Mat>& video, int level);
 void pyrUpVideo(vector<Mat>& video, Size size, int level);
-void pyrUpVideo(vector<Mat>& video, Size size);
+void pyrUpVideo(vector<Mat> &video, vector<Mat> &dst, Size size, int level);
 Mat binom5Kernel();
 void blurDn(Mat & frame, int level, Mat kernel);
 
