@@ -60,6 +60,16 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
         printIterationHead(dataFile);
         dataFile.close();
     }
+
+    // State
+    this->state = DETECTING;
+
+    // State notes
+    this->stateNotes.push_back("Detecting face and forehead.");
+    this->stateNotes.push_back("Please don't move.");
+    this->stateNotes.push_back("Trying to compute your bpm.");
+    this->stateNotes.push_back("Amplifying your bpm.");
+
 }
 
 int Bpm::run() {
@@ -80,7 +90,7 @@ int Bpm::run() {
 
 int Bpm::runRealVideoMode() {
 
-    for (int frame = 0; true; frame++) {
+    for (int index = 0; true; index++) {
 
         // Exit measuring
         if (false && (workerIteration > this->measuringIteration)) {
@@ -91,7 +101,7 @@ int Bpm::runRealVideoMode() {
         Mat in;
         input >> in; // type: CV_8UC3 (16)
 
-        if (frame < CAMERA_INIT) continue;
+        if (index < CAMERA_INIT) continue;
 
         // Reset video when video ends
         if (!in.data) {
@@ -104,11 +114,11 @@ int Bpm::runRealVideoMode() {
             videoBuffer.erase(videoBuffer.begin());
         }
 
-        // Start cropping frames to face only after init
-        pushInputToBuffer(in, frame);
-
         // Check full face detector
         handleDetector(in, FULL_FACE);
+
+        // Start cropping frames to face after init & face detected
+        pushInputToBuffer(in, index);
 
         // Resize captured frame
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
@@ -120,15 +130,12 @@ int Bpm::runRealVideoMode() {
         // Output
         Mat out = Mat(in.rows, in.cols, in.type());
 
-        // Update bpm once bpmWorker ready
-        controlMiddleWare();
-
-        // Start computing when buffer filled
-        compute(frame);
+        // Control state -> update / first compute / nothing
+        controlMiddleWare(index);
 
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
-        visualize(in, out, frame);
+        visualize(in, out, index);
 
         if (false) {
             output.write(out);
@@ -189,7 +196,7 @@ int Bpm::runStaticVideoMode() {
     this->bufferFrames = bufferFrames;
     bpmWorker.setBufferFrames(bufferFrames);
 
-    compute();
+    compute(false);
     this->bpmVisualization = this->bpmWorker.getVisualization();
     this->bpmWorker.clearVisualization();
 
@@ -285,7 +292,7 @@ int Bpm::runCameraMode() {
         pushInputToBuffer(in, frame);
 
         // Update bpm once bpmWorker ready
-        controlMiddleWare();
+        controlMiddleWare(frame);
 
         // Start computing when buffer filled
         compute(frame);
@@ -338,8 +345,21 @@ void Bpm::pushInputToBuffer(Mat in) {
     }
 }
 
-void Bpm::controlMiddleWare() {
+void Bpm::controlMiddleWare(int index) {
+    bool shouldCompute = (index > CAMERA_INIT + this->bufferFrames && this->isBufferFull() && !bpmWorker.isWorking());
     bool shouldUpdateMiddleWare = (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag() && this->isBufferFull());
+
+    // If still computing update state to bpm detected
+    if (this->bpmWorker.isBpmDetected()) {
+        this->state = (this->state == COMPUTING) ? BPM_DETECTED : this->state;
+    }
+
+    // If still only bpm detected update state to visualization detected
+    if (shouldUpdateMiddleWare) {
+        this->state = (this->state == BPM_DETECTED) ? VISUALIZATION_DETECTED : this->state;
+    }
+
+    // Get visualization from worker
     if (shouldUpdateMiddleWare) {
         // Clear current bpmVisualization array
         this->bpmVisualization.clear();
@@ -349,18 +369,23 @@ void Bpm::controlMiddleWare() {
         this->bpmWorker.clearVisualization();
         this->workerIteration++;
     }
-}
 
-void Bpm::compute(int index) {
-    bool shouldCompute = (index > CAMERA_INIT + this->bufferFrames && this->isBufferFull() && !bpmWorker.isWorking());
+    // Start computing when buffer filled
     if (shouldCompute) {
-        boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
-        mergeFaces();
+        // If still fetching update to computing
+        this->state = (this->state == FETCHING) ? COMPUTING : this->state;
+
+        compute();
     }
 }
 
-void Bpm::compute() {
-    bpmWorker.compute(videoBuffer);
+void Bpm::compute(bool thread) {
+    if (thread) {
+        boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
+        mergeFaces();
+    } else {
+        bpmWorker.compute(videoBuffer);
+    }
 }
 
 void Bpm::visualize(Mat & in, Mat & out, int index) {
@@ -414,6 +439,9 @@ void Bpm::updateFace(Rect src, Rect& dst) {
     // After initial detection update only position (not size)
     if (!isFaceDetected(dst)) {
         dst = src;
+
+        // Face both forehead detected -> fetching frames
+        this->state = (this->state == DETECTING) ? FETCHING: this->state;
     }
 }
 
@@ -471,7 +499,7 @@ void Bpm::handleDetector(Mat in, int type) {
 
             // Update size of detected face in resized frame ->
             // do as much work in thread as possible
-            this->bpmWorker.setResizedFace(faceResizedDetector.getBiggestFace().size());
+            this->bpmWorker.setResizedFaceSize(faceResizedDetector.getBiggestFace().size());
         }
     } else if (type == FOREHEAD) {
         if (!foreheadDetector.isWorking() || isFaceDetected(tmpFace)) {

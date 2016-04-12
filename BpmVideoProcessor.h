@@ -56,11 +56,13 @@ class BpmVideoProcessor {
 
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
-        void compute();
+        void computeAmplifiedMask();
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);
         void reconstructMaskFromPyramid (vector<vector<Mat> > &pyramid, vector <Mat> & dst);
         void getForeheadSkinArea();
+
+        void computeBpm();
         void computeBpmFromPyramid();
 
         // Static functions

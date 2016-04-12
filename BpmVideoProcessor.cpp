@@ -23,14 +23,16 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->out = vector <Mat>(video.size());
 }
 
-void BpmVideoProcessor::compute() {
 
+void BpmVideoProcessor::computeBpm() {
     // GDown pyramid for forehead
     buildGDownPyramid(forehead, pyramidForehead, level);
 
     // Compute bpm multi level
     computeBpmFromPyramid();
+}
 
+void BpmVideoProcessor::computeAmplifiedMask() {
 
     for (int i = 0; i < video.size(); i++) {
         pyrDown(video[i], video[i]);

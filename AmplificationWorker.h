@@ -23,6 +23,8 @@ class AmplificationWorker {
     int fps;
 
     bool working;
+    bool bpmDetected;
+
     bool initialFlag;
     int bufferFrames;
 
@@ -37,6 +39,7 @@ class AmplificationWorker {
     public:
         AmplificationWorker();
         void compute(vector<Mat> videoBuffer);
+        void updateBpm(int bpm);
 
         bool isWorking() {
             return this->working;
@@ -47,14 +50,6 @@ class AmplificationWorker {
 
         vector<Mat> & getVisualization() {
             return this->visualization;
-        }
-
-        void setWorking(bool working) {
-            AmplificationWorker::working = working;
-        }
-
-        void setFace(const Rect &face) {
-            AmplificationWorker::face = face;
         }
 
         int getBpm() const {
@@ -77,10 +72,14 @@ class AmplificationWorker {
             this->visualization.clear();
         }
 
-        void setResizedFace(const Size &resizedFace) {
+        void setResizedFaceSize(const Size &resizedFace) {
             AmplificationWorker::resizedFace = resizedFace;
         }
 
+
+        bool isBpmDetected() const {
+            return bpmDetected;
+        }
 };
 
 

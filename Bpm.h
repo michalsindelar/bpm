@@ -26,9 +26,18 @@
 
 #include "skinDetect.h"
 
-#define FULL_FACE 1
-#define RESIZED_FACE 2
-#define FOREHEAD 3
+// Detectors
+#define FULL_FACE 10
+#define RESIZED_FACE 20
+#define FOREHEAD 30
+
+// States
+#define DETECTING 0
+#define FETCHING 1
+#define COMPUTING 2
+#define BPM_DETECTED 3
+#define VISUALIZATION_DETECTED 4
+
 
 using namespace cv;
 using namespace std;
@@ -82,7 +91,9 @@ class Bpm {
         Detector faceResizedDetector;
         Detector foreheadDetector;
 
-        Detector smallFaceDetector;
+        // App state
+        int state;
+        vector <string> stateNotes;
 
         // Measuring data
         int measuringIteration;
@@ -106,9 +117,9 @@ class Bpm {
 
         void pushInputToBuffer(Mat frame, int index);
         void pushInputToBuffer(Mat in);
-        void controlMiddleWare();
-        void compute(int index);
-        void compute();
+        void controlMiddleWare(int index);
+
+        void compute(bool thread = true);
 
         void visualize(Mat & in, Mat & out, int index);
         void visualizeDetected(Mat & in);
