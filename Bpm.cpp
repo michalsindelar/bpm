@@ -65,11 +65,11 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->state = DETECTING;
 
     // State notes
-    this->stateNotes.push_back("Detecting face and forehead.");
-    this->stateNotes.push_back("Please don't move.");
-    this->stateNotes.push_back("Trying to compute your bpm.");
-    this->stateNotes.push_back("Amplifying your bpm.");
+    fillLoadingNotes();
 
+    // State bar with white bg
+    this->stateBar = Mat((int) round(frameSize.height * 0.1), 2*frameSize.width, CV_8UC3);
+    this->stateBar = Scalar(255,255,255);
 }
 
 int Bpm::run() {
@@ -143,6 +143,9 @@ int Bpm::runRealVideoMode() {
 
         // Merge original + adjusted
         hconcat(out, in, window);
+
+        // Merge frames + status bar
+        vconcat(window, stateBar, window);
 
         // Put the image onto a screen
         imshow(this->OSWindowName, window);
@@ -295,7 +298,7 @@ int Bpm::runCameraMode() {
         controlMiddleWare(frame);
 
         // Start computing when buffer filled
-        compute(frame);
+        compute(true);
 
         // Show bpmVisualization video after initialization compute
         // TODO: Check if this is performance ok
@@ -512,4 +515,11 @@ void Bpm::handleDetector(Mat in, int type) {
             this->forehead = foreheadDetector.getForehead();
         }
     }
+}
+
+void Bpm::fillLoadingNotes() {
+    this->stateNotes.push_back("Detecting face and forehead.");
+    this->stateNotes.push_back("Please don't move.");
+    this->stateNotes.push_back("Trying to compute your bpm.");
+    this->stateNotes.push_back("Amplifying your bpm.");
 }

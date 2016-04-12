@@ -61,10 +61,7 @@ class Bpm {
         int bufferFrames;
 
         // Detected faces
-        Rect fullFace;
-        Rect resizedFace;
-        Rect tmpFace;
-        Rect forehead;
+        Rect fullFace, resizedFace, tmpFace, forehead;
 
         // Size of resized input
         Size frameSize;
@@ -81,6 +78,7 @@ class Bpm {
 
         // OS window
         Mat window;
+        Mat stateBar;
         string OSWindowName;
 
         // Worker for computing
@@ -125,6 +123,8 @@ class Bpm {
         void visualizeDetected(Mat & in);
 
         void handleDetector(Mat in, int type);
+
+        void fillLoadingNotes();
 
         void setMode(int mode) {
             Bpm::maskMode = mode;
