@@ -126,6 +126,11 @@ class Bpm {
 
         void fillLoadingNotes();
 
+        // OS Window
+        void renderMainWindow(Mat &a, Mat &b);
+        void mergeMainWindow(Mat &a, Mat &b);
+        void renderStateBar();
+
         void setMode(int mode) {
             Bpm::maskMode = mode;
         }

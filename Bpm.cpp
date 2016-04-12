@@ -69,7 +69,6 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
 
     // State bar with white bg
     this->stateBar = Mat((int) round(frameSize.height * 0.1), 2*frameSize.width, CV_8UC3);
-    this->stateBar = Scalar(255,255,255);
 }
 
 int Bpm::run() {
@@ -141,11 +140,7 @@ int Bpm::runRealVideoMode() {
             output.write(out);
         }
 
-        // Merge original + adjusted
-        hconcat(out, in, window);
-
-        // Merge frames + status bar
-        vconcat(window, stateBar, window);
+        renderMainWindow(in, out);
 
         // Put the image onto a screen
         imshow(this->OSWindowName, window);
@@ -522,4 +517,34 @@ void Bpm::fillLoadingNotes() {
     this->stateNotes.push_back("Please don't move.");
     this->stateNotes.push_back("Trying to compute your bpm.");
     this->stateNotes.push_back("Amplifying your bpm.");
+}
+
+
+void Bpm::renderMainWindow(Mat &a, Mat &b) {
+    // Render state note to state bar
+    renderStateBar();
+    // Merge frames & status bar together
+    mergeMainWindow(a, b);
+}
+
+void Bpm::mergeMainWindow(Mat &a, Mat &b) {
+    // Merge original + adjusted
+    hconcat(a, b, window);
+
+    // Merge frames + status bar
+    vconcat(window, stateBar, window);
+}
+
+void Bpm::renderStateBar() {
+    // Default bg background
+    this->stateBar = Scalar(246,246,246);
+    putText(
+            this->stateBar,
+            this->stateNotes[this->state]+"...",
+            Point(20, 20),
+            FONT_HERSHEY_SIMPLEX,
+            0.5f, // font scale
+            Scalar(0,0,0), // color
+            1 // thickness
+    );
 }
