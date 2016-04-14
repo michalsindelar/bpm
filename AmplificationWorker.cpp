@@ -10,6 +10,7 @@ AmplificationWorker::AmplificationWorker() {
 
     this->initialFlag = false;
     this->working = false;
+    this->bpm = 0;
     this->bpmDetected = false;
 };
 

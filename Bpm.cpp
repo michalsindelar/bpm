@@ -387,13 +387,24 @@ void Bpm::compute(bool thread) {
 }
 
 void Bpm::visualize(Mat & in, Mat & out, int index) {
-    if (this->bpmWorker.getInitialFlag()) {
-        // AMPLIFICATION FOURIER MODE
+
+    if (state == FETCHING) {
+        out = in.clone();
+        putText(out, "Needed more " + to_string(bufferFrames - index) + " frames", Point(20, out.rows - 30), FONT_HERSHEY_SIMPLEX,
+                1.0, Scalar(200, 200, 200), 2);
+    }
+    else if (state == BPM_DETECTED) {
+        out = in.clone();
+        putText(out, to_string(this->bpmWorker.getBpm()), Point(out.cols / 2 - 30, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
+                Scalar(200, 200, 200), 2);
+    }
+    else if (state == VISUALIZATION_DETECTED) {
         Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
         // As we crop mask in own thread while amplification
         // These steps are appli only if detected face positon has significantly changed
-        Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()), tmpFace.width - 2*ERASED_BORDER_WIDTH);
+        Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()),
+                              tmpFace.width - 2 * ERASED_BORDER_WIDTH);
 
         // Important range check
         Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
@@ -406,11 +417,12 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
         tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
         out = in + this->beatVisibilityFactor * visual;
 
-        putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
+        putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
+                Scalar(200, 200, 200), 2);
 
-    } else {
+    }
+    else {
         out = in.clone();
-        putText(out, "Loading... "+to_string(index), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,Scalar(200,200,200),2);
     }
 
     // Face detection & forehead
