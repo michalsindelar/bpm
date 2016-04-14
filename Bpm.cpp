@@ -456,7 +456,7 @@ void Bpm::updateFace(Rect src, Rect& dst) {
 }
 
 void Bpm::updateTmpFace(Rect src) {
-    float variation = FACE_UPDATE_VARIATION;
+    float variation = DETECTOR_UPDATE_VARIATION;
     if (abs(this->tmpFace.x - src.x) > this->tmpFace.x * variation) {
         this->tmpFace.x = src.x;
     }
@@ -519,7 +519,16 @@ void Bpm::handleDetector(Mat in, int type) {
             boost::thread workerThread(&Detector::detectForehead, &foreheadDetector, in(roi));
         }
         if (foreheadDetector.isDetected()) {
-            this->forehead = foreheadDetector.getForehead();
+            if (!isForeheadDetected()) {
+                // Just copy
+                this->forehead = foreheadDetector.getForehead();
+            } else {
+                Rect newForehead = foreheadDetector.getForehead();
+                // Update only when significant change
+                bool shouldUpdate = (abs(forehead.x - newForehead.x) > DETECTOR_UPDATE_VARIATION * forehead.x) || (abs(forehead.y - newForehead.y) > DETECTOR_UPDATE_VARIATION * forehead.y);
+                this->forehead = shouldUpdate ? newForehead : this->forehead;
+            }
+
         }
     }
 }
@@ -529,6 +538,7 @@ void Bpm::fillLoadingNotes() {
     this->stateNotes.push_back("Please don't move.");
     this->stateNotes.push_back("Trying to compute your bpm.");
     this->stateNotes.push_back("Amplifying your bpm.");
+    this->stateNotes.push_back("Showing amplified blood flow.");
 }
 
 
