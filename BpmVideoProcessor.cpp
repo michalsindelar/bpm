@@ -8,7 +8,6 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->video = video;
     this->fl = fl;
     this->fh = fh;
-    // TODO: Level will be dynamic ??
     this->level = level;
     this->fps = fps;
     this->framesCount = framesCount;
@@ -34,13 +33,16 @@ void BpmVideoProcessor::computeBpm() {
 
 void BpmVideoProcessor::computeAmplifiedMask() {
 
-    for (int i = 0; i < video.size(); i++) {
-        pyrDown(video[i], video[i]);
-        pyrDown(video[i], video[i]);
+    // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
+    vector <Mat> cutVideo = vector <Mat>(video.begin(), video.begin() + FRAMES_FOR_VISUALIZATION);
+
+    for (int i = 0; i < cutVideo .size(); i++) {
+        pyrDown(cutVideo [i], cutVideo [i]);
+        pyrDown(cutVideo [i], cutVideo [i]);
     }
 
-    // GDown pyramid for masking video
-    buildGDownPyramid(video, pyramid, level);
+    // GDown pyramid for masking cutVideo 
+    buildGDownPyramid(cutVideo , pyramid, level);
 
     /*
     if (true) {
@@ -58,9 +60,10 @@ void BpmVideoProcessor::computeAmplifiedMask() {
     amplifyFrequencyInPyramid(pyramid, temporalSpatial, out, bpm);
     reconstructMaskFromPyramid(pyramid, out);
 
-    for (int i = 0; i < video.size(); i++) {
-        pyrUp(video[i], video[i]);
-        pyrUp(video[i], video[i]);
+
+    for (int i = 0; i < cutVideo .size(); i++) {
+        pyrUp(cutVideo [i], cutVideo [i]);
+        pyrUp(cutVideo [i], cutVideo [i]);
     }
 }
 
