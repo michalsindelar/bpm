@@ -31,7 +31,7 @@ set(SOURCE_FILES
     lib/BpmVideoProcessor.cpp
     lib/BpmVideoProcessor.h
     lib/logs/logs.cpp
-        MyButton.cpp MyButton.h)
+        ModeSelectorWindow.cpp ModeSelectorWindow.h)
 
 
 add_executable(bpm ${SOURCE_FILES})

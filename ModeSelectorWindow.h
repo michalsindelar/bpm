@@ -9,20 +9,22 @@
 #include <QWidget>
 #include <QPushButton>
 
-class MyButton : public QWidget {
+class ModeSelectorWindow : public QWidget {
     Q_OBJECT
 
     private:
         int mode;
 
     public:
-        MyButton(QWidget *parent = 0);
-    public slots:
-        void handleClickMan();
-
+        ModeSelectorWindow(QWidget *parent = 0);
         int getMode() const {
             return mode;
         }
+
+    public slots:
+        void handleCameraSourceMode();
+        void handleVideoRealMode();
+        void handleVideoStaticMode();
 };
 
 
