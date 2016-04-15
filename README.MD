@@ -15,6 +15,7 @@ Prefered way via brew.
 `brew install opencv -v --with-ffmpeg --with-qt --c++11`
 `brew install qt5`
 `brew linkapps qt5`
+`brew install moc` - auto mock
 
 ### ffmpeg library
 * Rotate video counterclockwise

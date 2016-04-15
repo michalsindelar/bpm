@@ -20,6 +20,9 @@ class MyButton : public QWidget {
     public slots:
         void handleClickMan();
 
+        int getMode() const {
+            return mode;
+        }
 };
 
 

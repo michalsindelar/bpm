@@ -3,6 +3,7 @@
 //
 
 #include "MyButton.h"
+#include "config.h"
 
 MyButton::MyButton(QWidget *parent)
         : QWidget(parent) {
@@ -16,14 +17,14 @@ MyButton::MyButton(QWidget *parent)
     QPushButton *modeVideoStatic = new QPushButton("Mode Video Static", this);
     modeVideoStatic->setGeometry(340, 40, 150, 50);
 
-    connect(modeCamera, SIGNAL(clicked()), this, (SLOT(handleClickMan(CAMERA_SOURCE_MODE))));
-    connect(modeVideoReal, SIGNAL(clicked()), this, SLOT(handleClickMan(VIDEO_REAL_SOURCE_MODE)));
-    connect(modeVideoStatic, SIGNAL(clicked()), this, SLOT(handleClickMan(VIDEO_STATIC_SOURCE_MODE)));
+    connect(modeCamera, SIGNAL(clicked()), this, (SLOT(handleClickMan())));
+    connect(modeVideoReal, SIGNAL(clicked()), this, SLOT(handleClickMan()));
+    connect(modeVideoStatic, SIGNAL(clicked()), this, SLOT(handleClickMan()));
 }
 
 
-void MyButton::handleClickMan(int mode) {
-    this->mode = mode;
+void MyButton::handleClickMan() {
+    this->mode = CAMERA_SOURCE_MODE;
 }
 
 #include "moc_MyButton.cpp"

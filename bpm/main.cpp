@@ -18,8 +18,7 @@ int main (int argc, char * argv[]) {
 
     app.exec();
 
-
-    Bpm bpm = Bpm(VIDEO_REAL_SOURCE_MODE, FOURIER_MASK_MODE, 1.5f);
+    Bpm bpm = Bpm(modes.getMode(), FOURIER_MASK_MODE, 1.5f);
 
     // HERE WE GO!!
     bpm.run();
