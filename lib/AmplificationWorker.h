@@ -13,7 +13,7 @@
 #include "./BpmVideoProcessor.h"
 
 // Configuration
-#include "./config.h"
+#include "./../config.h"
 
 using namespace cv;
 using namespace std;

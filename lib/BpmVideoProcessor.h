@@ -16,7 +16,7 @@
 
 
 // Configuration
-#include "./config.h"
+#include "./../config.h"
 
 class BpmVideoProcessor {
     // Input face video - should be const

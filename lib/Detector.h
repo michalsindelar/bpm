@@ -9,7 +9,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include "config.h"
+#include "../config.h"
 #include "imageOperation.h"
 
 using namespace cv;

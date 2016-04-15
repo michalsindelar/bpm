@@ -3,7 +3,11 @@ project(bpm)
 
 # Opencv
 find_package( OpenCV REQUIRED)
-find_package(Boost COMPONENTS log log_setup thread filesystem system)
+find_package(Boost COMPONENTS log log_setup thread filesystem system REQUIRED)
+find_package (Qt4 REQUIRED)
+include(${QT_USE_FILE})
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Define current folder
 set(PROJECT_DIR "${CMAKE_SOURCE_DIR}")
@@ -12,23 +16,24 @@ configure_file(config.h.in ${CMAKE_SOURCE_DIR}/config.h)
 include_directories(${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 
-
-
 set(SOURCE_FILES
     bpm/main.cpp
-    imageOperation.cpp
-    imageOperation.h
+    lib/imageOperation.cpp
+    lib/imageOperation.h
     skinDetect.cpp
     skinDetect.h
     Bpm.cpp
     Bpm.h
-    AmplificationWorker.cpp
-    AmplificationWorker.h
-        Detector.cpp
-        Detector.h
-        BpmVideoProcessor.cpp BpmVideoProcessor.h lib/logs/logs.cpp)
+    lib/AmplificationWorker.cpp
+    lib/AmplificationWorker.h
+    lib/Detector.cpp
+    lib/Detector.h
+    lib/BpmVideoProcessor.cpp
+    lib/BpmVideoProcessor.h
+    lib/logs/logs.cpp
+        MyButton.cpp MyButton.h)
 
 
 add_executable(bpm ${SOURCE_FILES})
 
-target_link_libraries(bpm ${OpenCV_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(bpm ${OpenCV_LIBS} ${Boost_LIBRARIES} Qt4::QtGui)

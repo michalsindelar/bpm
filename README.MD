@@ -9,9 +9,12 @@ This is experimental app trying to detect your pulse from fine video source or c
 
 ### How to run
 Install all dependencies at first. App is compiled via CMake. Navigate to app folder then run:
-```
-TODO:
-```
+
+## OS X
+Prefered way via brew.
+`brew install opencv -v --with-ffmpeg --with-qt --c++11`
+`brew install qt5`
+`brew linkapps qt5`
 
 ### ffmpeg library
 * Rotate video counterclockwise

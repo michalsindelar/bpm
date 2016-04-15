@@ -10,7 +10,7 @@
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
-#include "config.h"
+#include "../config.h"
 #include <math.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>

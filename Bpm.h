@@ -15,11 +15,11 @@
 #include <opencv2/imgproc/imgproc_c.h>
 
 // Classes
-#include "./AmplificationWorker.h"
-#include "Detector.h"
+#include "./lib/AmplificationWorker.h"
+#include "./lib/Detector.h"
 
 // Functions
-#include "./imageOperation.h"
+#include "./lib/imageOperation.h"
 
 // Configuration
 #include "./config.h"
