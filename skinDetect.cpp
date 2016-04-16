@@ -5,7 +5,7 @@ void detectSkin (Mat mask) {
 
     // Load face cascade
     CascadeClassifier face_cascade;
-    face_cascade.load(strcat(PROJECT_DIR,"/haarcascade_frontalface_alt.xml"));
+    face_cascade.load(strcat((char *) PROJECT_DIR,"/haarcascade_frontalface_alt.xml"));
     
     // Create bw mat
     Mat frame_gray;

@@ -52,10 +52,8 @@ void BpmVideoProcessor::computeBpm(int computeType) {
 
 
     if (DATA_LOGGING) {
-        for (int i = 0; i < 20; i++) {
-            saveIntensities(this->foreheadIntensities, (string) DATA_DIR+"/localIntensities.txt");
-            saveIntensities(globalIntensities, (string) DATA_DIR+"/global.txt");
-        }
+        saveIntensities(this->foreheadIntensities, (string) DATA_DIR+"/localIntensities.txt");
+        saveIntensities(globalIntensities, (string) DATA_DIR+"/global.txt");
      }
 
 }
