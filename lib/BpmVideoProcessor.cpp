@@ -30,6 +30,7 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
 void BpmVideoProcessor::computeBpm(int computeType) {
 
+
     switch (computeType) {
         case AVG_COMPUTE:
             this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
@@ -43,27 +44,19 @@ void BpmVideoProcessor::computeBpm(int computeType) {
             this->foreheadIntensities = countMeanValues(forehead, GREEN_CHANNEL);
             break;
     }
+
+    vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
+    //suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
+
     this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
 
 
-//        // Video with black face -> keep only globa changes
-//        vector <Mat> filledFace;
-//        // Set face area to zero
-//        // TODO: Reimplement performance
-//        fillRoiInVideo(origVideo, filledFace, this->faceRoi, Scalar(0, 0, 0));
-//
-//        vector <double> globalIntensities = countIntensities(filledFace, 0, 1, 0);
-//        this->bpm = (int) round(findStrongestRowFreq(globalIntensities, framesCount, fps));
-//
-//
-//        suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
-
-        /*
-
+    if (DATA_LOGGING) {
         for (int i = 0; i < 20; i++) {
-            imwrite( (string) PROJECT_DIR+"/images/forehead/filledHead"+to_string(i)+".jpg", filledFace[i] );
+            saveIntensities(this->foreheadIntensities, (string) DATA_DIR+"/localIntensities.txt");
+            saveIntensities(globalIntensities, (string) DATA_DIR+"/global.txt");
         }
-        */
+     }
 
 }
 

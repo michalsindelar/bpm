@@ -452,6 +452,43 @@ vector<double> countIntensities(vector<Mat> video, float r, float g, float b) {
     return intensities;
 }
 
+vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, float g, float b, int computeType) {
+    vector <double> intensities(video.size());
+    int stripHeight = (int) round((video[0].rows * 0.5));
+    for (int i = 0; i < video.size(); i ++) {
+        // Merge 2 side strips - consedering as bg
+        Mat strips;
+        hconcat(video[i](Rect(0,0,face.x, stripHeight)).clone(), video[i](Rect(face.x + face.width, 0, video[0].cols - (face.x + face.width), stripHeight)).clone(), strips);
+
+        if (DATA_LOGGING) {
+            imwrite( (string) PROJECT_DIR+"/images/forehead/strips"+to_string(i)+".jpg", strips);
+        }
+
+        Scalar frameMeans, frameSum;
+        switch (computeType) {
+            case AVG_COMPUTE:
+                frameSum = sum(strips);
+                intensities.at(i) =
+                    r * frameSum[RED_CHANNEL] +
+                    g * frameSum[GREEN_CHANNEL] +
+                    b * frameSum[BLUE_CHANNEL];
+            break;
+            case MEAN_COMPUTE:
+                frameMeans = mean(strips);
+                intensities.at(i) =
+                    r * frameMeans[RED_CHANNEL] +
+                    g * frameMeans[GREEN_CHANNEL] +
+                    b * frameMeans[BLUE_CHANNEL];
+            break;
+            default:
+                frameMeans = mean(strips);
+                intensities.at(i) = frameMeans[GREEN_CHANNEL];
+            break;
+        }
+
+    }
+    return intensities;
+}
 
 vector<double> countMeanValues(vector<Mat> video, int channel) {
     vector <double> values(video.size());

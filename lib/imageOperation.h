@@ -74,7 +74,7 @@ vector<double> countMeanValues(vector<Mat> video, int channel = GREEN_CHANNEL);
 void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
 void suppressGlobalChanges(vector<double>& localIntensities, vector<double> globalIntensities);
-
+vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, float g, float b, int mode);
 
 
 // Printing data
