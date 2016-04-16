@@ -64,7 +64,7 @@ class BpmVideoProcessor {
         void reconstructMaskFromPyramid (vector<vector<Mat> > &pyramid, vector <Mat> & dst);
         void getForeheadSkinArea();
 
-        void computeBpm();
+        void computeBpm(int computeType = AVG_COMPUTE);
         void computeBpmFromPyramid();
 
         // Static functions

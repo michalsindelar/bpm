@@ -28,25 +28,42 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 }
 
 
-void BpmVideoProcessor::computeBpm() {
-    // Intensities of detected forehead
-    this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
+void BpmVideoProcessor::computeBpm(int computeType) {
 
-    // Video with black face -> keep only globa changes
-    vector <Mat> filledFace;
-    // Set face area to zero
-    fillRoiInVideo(origVideo, filledFace, this->faceRoi, Scalar(0, 0, 0));
-    vector <double> globalIntensities = countIntensities(filledFace, 0, 1, 0);
+    switch (computeType) {
+        case AVG_COMPUTE:
+            this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
+            break;
+        case MEAN_COMPUTE:
+            this->foreheadIntensities = countMeanValues(forehead, GREEN_CHANNEL);
+            break;
 
-
-    /*
-
-    for (int i = 0; i < 20; i++) {
-        imwrite( (string) PROJECT_DIR+"/images/forehead/filledHead"+to_string(i)+".jpg", filledFace[i] );
+        // Default mean values
+        default:
+            this->foreheadIntensities = countMeanValues(forehead, GREEN_CHANNEL);
+            break;
     }
-    */
-
     this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
+
+
+//        // Video with black face -> keep only globa changes
+//        vector <Mat> filledFace;
+//        // Set face area to zero
+//        // TODO: Reimplement performance
+//        fillRoiInVideo(origVideo, filledFace, this->faceRoi, Scalar(0, 0, 0));
+//
+//        vector <double> globalIntensities = countIntensities(filledFace, 0, 1, 0);
+//        this->bpm = (int) round(findStrongestRowFreq(globalIntensities, framesCount, fps));
+//
+//
+//        suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
+
+        /*
+
+        for (int i = 0; i < 20; i++) {
+            imwrite( (string) PROJECT_DIR+"/images/forehead/filledHead"+to_string(i)+".jpg", filledFace[i] );
+        }
+        */
 
 }
 
@@ -226,7 +243,6 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     cropToVideo(faceVideo, forehead, foreheadRoi);
 
-    if (false) {
         for (int i = 0; i < 10; i++) {
             Mat tmp = faceVideo[i];
             rectangle(tmp, Point(foreheadRoi.x, foreheadRoi.y), Point(foreheadRoi.x + foreheadRoi.width, foreheadRoi.y + foreheadRoi.height), Scalar(255,255,255));
@@ -234,7 +250,6 @@ void BpmVideoProcessor::getForeheadSkinArea() {
             imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", forehead[i]);
             imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", faceVideo[i] );
         }
-    }
 
 }
 

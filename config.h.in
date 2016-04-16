@@ -8,7 +8,7 @@
 #define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 200
+#define BUFFER_FRAMES 400
 #define FRAMES_FOR_VISUALIZATION 200
 
 // Experimental settings of fps
@@ -48,7 +48,7 @@
 #define CV2_YIQ2BGR 2
 
 // INITIAL CUT-OFF FREQ
-#define CUTOFF_FL 50
+#define CUTOFF_FL 55
 #define CUTOFF_FH 150
 
 // COLORS
@@ -61,5 +61,9 @@
 
 // MINIMALE FRAME WIDTH RESIZED IN GDOWN PYRAMID
 #define MIN_WIDTH_IN_PYRAMID 10
+
+// BPM COMPUTE TYPE
+#define AVG_COMPUTE 210
+#define MEAN_COMPUTE 220
 
 #endif // CONFIG_H

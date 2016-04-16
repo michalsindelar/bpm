@@ -274,16 +274,22 @@ float freqToBpmMapper(int fps, int framesCount, int index) {
 float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
     // Create matrix from intensitySum
     float maxValue = 0;
+    float minValue = 0;
     for (int i = 0; i < row.size(); i++) {
         maxValue = (row[i] > maxValue) ? row[i] : maxValue;
+        minValue = (row[i] < minValue) ? row[i] : minValue;
     }
+    maxValue += minValue;
 
     Mat rowMat = Mat::zeros(1, row.size(), CV_32F);
 
     // Normalization
     for (int i = 0; i < row.size(); i++) {
+        rowMat.at<float>(i) += minValue;
         rowMat.at<float>(i) = row[i] / maxValue;
     }
+    cout << "/n";
+    cout << rowMat;
 
     return findStrongestRowFreq(rowMat, framesCount, fps);
 }
@@ -436,14 +442,24 @@ vector<double> countIntensities(vector<Mat> video) {
 
 vector<double> countIntensities(vector<Mat> video, float r, float g, float b) {
     vector <double> intensities(video.size());
-    for (int frame = 0; frame < video.size(); frame++) {
-        Scalar frameSum = sum(video[frame]);
-        intensities.at(frame) =
+    for (int i = 0; i < video.size(); i ++) {
+        Scalar frameSum = sum(video[i]);
+        intensities.at(i) =
             r * frameSum[RED_CHANNEL] +
             g * frameSum[GREEN_CHANNEL] +
             b * frameSum[BLUE_CHANNEL];
     }
     return intensities;
+}
+
+
+vector<double> countMeanValues(vector<Mat> video, int channel) {
+    vector <double> values(video.size());
+    for (int i = 0; i < video.size(); i++) {
+        Scalar color = mean(video[i]);
+        values.at(i) = color[channel];
+    }
+    return values;
 }
 
 void saveIntensities(vector<double> intensities, string filename) {
@@ -455,6 +471,19 @@ void saveIntensities(vector<double> intensities, string filename) {
         myfile << "\n";
     }
     myfile.close();
+}
+
+
+void suppressGlobalChanges(vector<double>& localIntensities, vector<double> globalIntensities) {
+    saveIntensities(localIntensities, ((string) DATA_DIR)+"/localOrig.txt");
+
+    saveIntensities(globalIntensities, ((string) DATA_DIR)+"/global.txt");
+
+    for(int i = 0; i < localIntensities.size(); i++) {
+        localIntensities[i] -= globalIntensities[i];
+    }
+
+    saveIntensities(localIntensities, ((string) DATA_DIR)+"/localAfterSupression.txt");
 }
 
 void generateTemporalSpatialImages(vector<vector<Mat> > temporalSpatialStack) {
@@ -541,8 +570,14 @@ void printRectOnFrame(Mat &frame, Rect rect, Scalar color) {
 }
 
 void fillRoiInVideo(vector<Mat> src, vector<Mat> & dst, Rect roi, Scalar color) {
+    roi.y = 0;
+    roi.height = src[0].rows;
+
+    handleRoiPlacement(roi, src[0].size());
     for (int i = 0; i < src.size(); i++) {
         dst.push_back(src[i]);
         rectangle(dst[i], roi, color, CV_FILLED);
+
+        rectangle(dst[i], Rect(0, src[i].rows - 200, src[i].cols, 200), color, CV_FILLED);
     }
 }

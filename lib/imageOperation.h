@@ -70,8 +70,12 @@ Mat maskingCoeffs(int width, float fl, float fh, int fps);
 // Intensities compute
 vector<double> countIntensities(vector<Mat> video);
 vector<double> countIntensities(vector<Mat> video, float r, float g, float b);
+vector<double> countMeanValues(vector<Mat> video, int channel = GREEN_CHANNEL);
 void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
+void suppressGlobalChanges(vector<double>& localIntensities, vector<double> globalIntensities);
+
+
 
 // Printing data
 void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file);
