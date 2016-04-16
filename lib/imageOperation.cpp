@@ -288,8 +288,6 @@ float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
         rowMat.at<float>(i) += minValue;
         rowMat.at<float>(i) = row[i] / maxValue;
     }
-    cout << "/n";
-    cout << rowMat;
 
     return findStrongestRowFreq(rowMat, framesCount, fps);
 }
