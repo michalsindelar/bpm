@@ -35,15 +35,15 @@ void BpmVideoProcessor::computeAmplifiedMask() {
 
     // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
     // TODO: process all but in threads
-    int framesForVisualization = max(FRAMES_FOR_VISUALIZATION, (int) video.size());
+    int framesForVisualization = min(FRAMES_FOR_VISUALIZATION, (int) video.size());
     vector <Mat> cutVideo = vector <Mat>(video.begin(), video.begin() + framesForVisualization);
 
-    for (int i = 0; i < cutVideo .size(); i++) {
+    for (int i = 0; i < cutVideo.size(); i++) {
         pyrDown(cutVideo [i], cutVideo [i]);
         pyrDown(cutVideo [i], cutVideo [i]);
     }
 
-    // GDown pyramid for masking cutVideo 
+    // GDown pyramid for masking cutVideo
     buildGDownPyramid(cutVideo , pyramid, level);
 
     /*
@@ -126,7 +126,7 @@ void BpmVideoProcessor::reconstructMaskFromPyramid (vector<vector<Mat> > &pyrami
     }
 
     // Normalize dst
-    normalizeVid(dst, 0, 200, NORM_MINMAX );
+    normalizeVid(dst, 0, 100, NORM_MINMAX );
 }
 
 void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level) {

@@ -98,7 +98,7 @@ class BpmVideoProcessor {
             createTemporalSpatial(src, temporalSpatial);
 
             // Bandpass temporal video
-            bandpass(temporalSpatial, bpm, fps);
+            bandpassFilter(temporalSpatial, bpm, fps);
 
             // Inverse temporal spatial to video
             inverseTemporalSpatial(temporalSpatial, dst);
@@ -145,7 +145,7 @@ class BpmVideoProcessor {
 
                 // Keep only red channel
                 // TODO: Do weights make sense?
-                amplifyChannels(outputFrame, 1, 0.1f, 0.3f);
+                amplifyChannels(outputFrame, 1.0, .5f, 0.1f);
 
                 // in range [0,255]
                 normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
@@ -156,44 +156,45 @@ class BpmVideoProcessor {
         }
 
         // TODO: Check - may not work properly
-        static void bandpass(vector<Mat>& temporalSpatial, float freq, int fps) {
+        static void bandpassFilter(vector<Mat> &temporalSpatial, float freq, int fps) {
 
             // Create mask based on strongest frequency
-            Mat mask = generateFreqMask(freq, temporalSpatial[0].cols, fps);
+
+            int width = cv::getOptimalDFTSize(temporalSpatial[0].cols);
+            int height = cv::getOptimalDFTSize(temporalSpatial[0].rows);
+
+            Mat row = generateFreqMask(freq, width, fps);
+            Mat filter(height, width, CV_32FC1);
+
+            for (int i = 0; i < filter.rows; i++) {
+                row.copyTo(filter.row(i));
+            }
 
             for (int i = 0; i < temporalSpatial.size(); i++) {
 
-                for (int row = 0; row < temporalSpatial[i].rows; row++) {
+                Mat frame = temporalSpatial[i];
+                Mat tmp;
 
-                    // FFT
-                    Mat fourierTransform;
-                    dft(temporalSpatial[i].row(row), fourierTransform, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+                cv::copyMakeBorder(frame, tmp,
+                                   0, height - frame.rows,
+                                   0, width - frame.cols,
+                                   cv::BORDER_CONSTANT, cv::Scalar::all(0));
+                // apply DFT
+                cv::dft(tmp, tmp, cv::DFT_ROWS | cv::DFT_SCALE);
 
-                    // MASKING
-                    Mat planes[] = {Mat::zeros(fourierTransform.size(), CV_32F), Mat::zeros(fourierTransform.size(), CV_32F)};
+                // Filter
+                cv::mulSpectrums(tmp, filter, tmp, cv::DFT_ROWS);
 
-                    // Real & imag part
-                    split(fourierTransform, planes);
+                // apply inverse DFT
+                cv::idft(tmp, tmp, cv::DFT_ROWS | cv::DFT_SCALE);
 
-                    // Masking parts
-                    planes[0] = planes[0].mul(mask);
-                    planes[1] = planes[1].mul(mask);
+                // Copy with roi to temporal spatial frame
+                tmp(cv::Rect(0, 0, frame.cols, frame.rows)).copyTo(temporalSpatial[i]);
 
-
-                    // Merge back
-                    merge(planes, 2, fourierTransform);
-
-                    // IFFT
-                    dft(fourierTransform, fourierTransform, cv::DFT_INVERSE|cv::DFT_REAL_OUTPUT);
-
-                    // COPY BACK
-                    fourierTransform.copyTo(temporalSpatial[i].row(row));
-
-                    // RELEASE
-                    fourierTransform.release();
-                }
+                normalize(temporalSpatial[i], temporalSpatial[i], 0, 1, CV_MINMAX);
 
             }
+
         }
 
 

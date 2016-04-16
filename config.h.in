@@ -29,7 +29,6 @@
 #define RESIZED_FRAME_WIDTH 500
 
 // Erased border width
-// TODO: Should by dynamic according to frame dimension!
 #define ERASED_BORDER_WIDTH 10
 
 // Variation between faces needed for upda
@@ -58,7 +57,7 @@
 #define RED_CHANNEL 2
 
 // FREQ MASK
-#define FREQ_MASK_WIDTH 30
+#define FREQ_MASK_WIDTH 10
 
 // MINIMALE FRAME WIDTH RESIZED IN GDOWN PYRAMID
 #define MIN_WIDTH_IN_PYRAMID 10

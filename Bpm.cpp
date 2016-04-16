@@ -8,7 +8,7 @@
 Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
     this->sourceMode = sourceMode;
     this->maskMode = maskMode;
-    this->beatVisibilityFactor = 0.8f;
+    this->beatVisibilityFactor = 0.4f;
     this->saveOutput = false;
     this->OSWindowName = "OS window";
     this->workerIteration = 0;
