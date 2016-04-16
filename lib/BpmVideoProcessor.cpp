@@ -34,7 +34,9 @@ void BpmVideoProcessor::computeBpm() {
 void BpmVideoProcessor::computeAmplifiedMask() {
 
     // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
-    vector <Mat> cutVideo = vector <Mat>(video.begin(), video.begin() + FRAMES_FOR_VISUALIZATION);
+    // TODO: process all but in threads
+    int framesForVisualization = max(FRAMES_FOR_VISUALIZATION, (int) video.size());
+    vector <Mat> cutVideo = vector <Mat>(video.begin(), video.begin() + framesForVisualization);
 
     for (int i = 0; i < cutVideo .size(); i++) {
         pyrDown(cutVideo [i], cutVideo [i]);
@@ -90,7 +92,7 @@ void BpmVideoProcessor::amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid,
 
     // Swap
     for (int i = 0; i < level; i++) {
-        workerParts[i].getDst().swap(pyramid.at(i));
+        workerParts[i].getResult().swap(pyramid.at(i));
     }
 }
 
@@ -113,11 +115,11 @@ void BpmVideoProcessor::reconstructMaskFromPyramid (vector<vector<Mat> > &pyrami
     }
 
     // Dst is empty
-    workerParts[0].getDst().swap(dst);
+    workerParts[0].getResult().swap(dst);
 
     // Now increment dst
     for (int i = 1; i < level; i++) {
-        vector <Mat> tmp = workerParts[i].getDst();
+        vector <Mat> tmp = workerParts[i].getResult();
         for (int j = 0; j < tmp.size(); j++) {
             dst[j] += tmp[j];
         }
@@ -171,7 +173,7 @@ void BpmVideoProcessor::buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> 
 
         // Copy thread parts to pyramid
         for (int i = 0; i < parts; i++) {
-            vector <Mat> tmp = workerParts[i].getDst();
+            vector <Mat> tmp = workerParts[i].getResult();
             for (int j = 0; j < tmp.size(); j++) {
                 src.push_back(tmp[j]);
                 pyramid[currLevel].push_back(tmp[j]);

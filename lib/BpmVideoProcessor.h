@@ -210,27 +210,27 @@ class BpmVideoProcessor {
 };
 
 class PyramidLevelWorker {
-    vector<Mat> dst;
+    vector<Mat> result;
 
     public:
 
         void computeGDownPyramidLevel(vector<Mat> &src, int currLevel) {
-            BpmVideoProcessor::buildGDownPyramidLevel(src, dst, currLevel);
+            BpmVideoProcessor::buildGDownPyramidLevel(src, result, currLevel);
             int i = 0;
         }
 
         void computeAmplificationPyramidLevel (vector<Mat> src, float bpm, int fps) {
             vector<Mat> temporalSpatial;
-            BpmVideoProcessor::amplifyFrequencyInLevel(src, temporalSpatial, dst, bpm, fps);
+            BpmVideoProcessor::amplifyFrequencyInLevel(src, temporalSpatial, result, bpm, fps);
             temporalSpatial.clear();
         }
 
         void reconstructPyramidLevel(vector<vector<Mat> > &pyramid, int currLevel) {
-            pyrUpVideo(pyramid.at(currLevel), dst, pyramid.at(0)[0].size(), currLevel);
+            pyrUpVideo(pyramid.at(currLevel), result, pyramid.at(0)[0].size(), currLevel);
         }
 
-        vector<Mat> &getDst() {
-            return dst;
+        vector<Mat> &getResult() {
+            return result;
         }
 };
 
