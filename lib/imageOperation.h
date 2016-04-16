@@ -39,6 +39,7 @@ void resizeCropVideo(vector<Mat>& video, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int width);
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi);
 Mat cropImageBorder (Mat image, int borderWidth);
+void fillRoiInVideo(vector<Mat> src, vector<Mat> & dst, Rect roi, Scalar color);
 
 // Unify mats
 void unifyMatSize(Mat & frame, Size unifiedSize);
@@ -67,8 +68,8 @@ Mat generateFreqMask(float freq, int framesCount, int fps);
 Mat maskingCoeffs(int width, float fl, float fh, int fps);
 
 // Intensities compute
-vector<double> countIntensities(vector<Mat> &video);
-vector<double> countIntensities(vector<Mat> &video, float r, float g, float b);
+vector<double> countIntensities(vector<Mat> video);
+vector<double> countIntensities(vector<Mat> video, float r, float g, float b);
 void saveIntensities(vector<double> intensities, string filename);
 void generateTemporalSpatialImages(vector <vector<Mat> > temporalSpatialStack);
 

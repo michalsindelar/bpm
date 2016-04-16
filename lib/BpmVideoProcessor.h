@@ -20,20 +20,22 @@
 
 class BpmVideoProcessor {
     // Input face video - should be const
-    vector<Mat> video;
+    vector<Mat> faceVideo;
+    vector<Mat> origVideo;
 
     // Try to extract more sking to this
     vector<Mat> forehead;
 
     vector<Mat> out; // Blood circulation visualization
-    vector<Mat> blurred; // Blurred video in set level
-    vector<Mat> blurredForMask; // Blurred video in set level
     vector<Mat> temporalSpatial; // Temporal spatial
 
     vector <vector <Mat> > pyramid;
     vector <vector <Mat> > pyramidForehead;
 
-    vector<double> intensities; // Intensities of blurred frames
+    Rect foreheadRoi;
+    Rect faceRoi;
+
+    vector<double> foreheadIntensities; // Intensities of forehead area
 
     // Computed bpm
     int bpm;
@@ -55,7 +57,7 @@ class BpmVideoProcessor {
     int maskWidth;
 
     public:
-        BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount);
+        BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount, Rect faceRoi);
         void computeAmplifiedMask();
         void buildGDownPyramid(vector<Mat> &src, vector<vector <Mat> > &pyramid, int level);
         void amplifyFrequencyInPyramid(vector<vector <Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm);

@@ -75,6 +75,9 @@ void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
 }
 
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
+    // Check roi placement
+    handleRoiPlacement(roi, src[0].size());
+
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];
 //        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
@@ -427,22 +430,20 @@ void blurDn(Mat & frame, int level, Mat kernel) {
 }
 
 // Move outside
-vector<double> countIntensities(vector<Mat> &video) {
+vector<double> countIntensities(vector<Mat> video) {
     return countIntensities(video, 1, 1, 1);
 }
 
-vector<double> countIntensities(vector<Mat> &video, float r, float g, float b) {
-    vector <double> intensitySum(video.size());
-    Size videoFrame(video[0].cols, video[0].rows);
-
+vector<double> countIntensities(vector<Mat> video, float r, float g, float b) {
+    vector <double> intensities(video.size());
     for (int frame = 0; frame < video.size(); frame++) {
         Scalar frameSum = sum(video[frame]);
-        intensitySum.at(frame) =
+        intensities.at(frame) =
             r * frameSum[RED_CHANNEL] +
             g * frameSum[GREEN_CHANNEL] +
             b * frameSum[BLUE_CHANNEL];
     }
-    return intensitySum;
+    return intensities;
 }
 
 void saveIntensities(vector<double> intensities, string filename) {
@@ -537,4 +538,11 @@ double getDistance(Point2d a, Point2d b) {
 
 void printRectOnFrame(Mat &frame, Rect rect, Scalar color) {
     rectangle( frame, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), color);
+}
+
+void fillRoiInVideo(vector<Mat> src, vector<Mat> & dst, Rect roi, Scalar color) {
+    for (int i = 0; i < src.size(); i++) {
+        dst.push_back(src[i]);
+        rectangle(dst[i], roi, color, CV_FILLED);
+    }
 }

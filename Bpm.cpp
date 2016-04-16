@@ -333,13 +333,7 @@ void Bpm::pushInputToBuffer(Mat in, int index) {
 
 void Bpm::pushInputToBuffer(Mat in) {
     if (this->isFaceDetected(this->fullFace)) {
-        fullFace.width = ((fullFace.x + fullFace.width) > in.cols) ? fullFace.width - (fullFace.x + fullFace.width - in.cols) : fullFace.width;
-        fullFace.height = ((fullFace.y + fullFace.height) > in.rows) ? fullFace.height - (fullFace.y + fullFace.height - in.rows) : fullFace.height;
-
-        Rect roi(fullFace.x, fullFace.y, fullFace.width, fullFace.height);
-        handleRoiPlacement(roi, in.size(), ERASED_BORDER_WIDTH);
-        Mat croppedToFace = in(roi).clone();
-        videoBuffer.push_back(croppedToFace);
+        videoBuffer.push_back(in);
     }
 }
 
@@ -372,7 +366,6 @@ void Bpm::controlMiddleWare(int index) {
     if (shouldCompute) {
         // If still fetching update to computing
         this->state = (this->state == FETCHING) ? COMPUTING : this->state;
-
         compute();
     }
 }
@@ -498,6 +491,10 @@ void Bpm::handleDetector(Mat in, int type) {
         }
         if (faceFullDetector.isDetected()) {
             this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
+
+            if (!isFaceDetected(this->bpmWorker.getFaceRoi())) {
+                this->bpmWorker.setFaceRoi(this->fullFace);
+            }
         }
     } else if (type == RESIZED_FACE) {
         if (!faceResizedDetector.isWorking()) {

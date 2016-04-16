@@ -4,15 +4,20 @@
 
 #include "BpmVideoProcessor.h"
 
-BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount) {
-    this->video = video;
+BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount, Rect faceRoi) {
+
+    this->origVideo = video;
+    cropToVideo(video, this->faceVideo, faceRoi);
+
     this->fl = fl;
     this->fh = fh;
     this->level = level;
     this->fps = fps;
     this->framesCount = framesCount;
     this->maskWidth = FREQ_MASK_WIDTH;
+    this->faceRoi = faceRoi;
 
+    // Detect forehead
     this->getForeheadSkinArea();
 
     // Pre-allocate
@@ -24,19 +29,33 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
 
 void BpmVideoProcessor::computeBpm() {
-    // GDown pyramid for forehead
-    buildGDownPyramid(forehead, pyramidForehead, level);
+    // Intensities of detected forehead
+    this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
 
-    // Compute bpm multi level
-    computeBpmFromPyramid();
+    // Video with black face -> keep only globa changes
+    vector <Mat> filledFace;
+    // Set face area to zero
+    fillRoiInVideo(origVideo, filledFace, this->faceRoi, Scalar(0, 0, 0));
+    vector <double> globalIntensities = countIntensities(filledFace, 0, 1, 0);
+
+
+    /*
+
+    for (int i = 0; i < 20; i++) {
+        imwrite( (string) PROJECT_DIR+"/images/forehead/filledHead"+to_string(i)+".jpg", filledFace[i] );
+    }
+    */
+
+    this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
+
 }
 
 void BpmVideoProcessor::computeAmplifiedMask() {
 
     // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
     // TODO: process all but in threads
-    int framesForVisualization = min(FRAMES_FOR_VISUALIZATION, (int) video.size());
-    vector <Mat> cutVideo = vector <Mat>(video.begin(), video.begin() + framesForVisualization);
+    int framesForVisualization = min(FRAMES_FOR_VISUALIZATION, (int) faceVideo.size());
+    vector <Mat> cutVideo = vector <Mat>(faceVideo.begin(), faceVideo.begin() + framesForVisualization);
 
     for (int i = 0; i < cutVideo.size(); i++) {
         pyrDown(cutVideo [i], cutVideo [i]);
@@ -191,11 +210,10 @@ void BpmVideoProcessor::amplifyVideoChannels(vector<Mat> &video, float r, float 
 void BpmVideoProcessor::getForeheadSkinArea() {
 
     // At first we try to detect forehead using eyes detection 10x
-    Rect foreheadRoi;
     int detected = false;
     // We try 10 times to detect
     for (int i = 0; i < 10; i++) {
-        if (detectForeheadFromFaceViaEyesDetection(video[i], foreheadRoi)) {
+        if (detectForeheadFromFaceViaEyesDetection(faceVideo[i], this->foreheadRoi)) {
             detected = true;
             break;
         }
@@ -203,18 +221,18 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     // Unsuccessful eyes & forehead detection -> default forehead area
     if (!detected) {
-        foreheadRoi = defaultForehead(video[0]);
+        foreheadRoi = defaultForehead(faceVideo[0]);
     }
 
-    cropToVideo(video, forehead, foreheadRoi);
+    cropToVideo(faceVideo, forehead, foreheadRoi);
 
     if (false) {
         for (int i = 0; i < 10; i++) {
-            Mat tmp = video[i];
+            Mat tmp = faceVideo[i];
             rectangle(tmp, Point(foreheadRoi.x, foreheadRoi.y), Point(foreheadRoi.x + foreheadRoi.width, foreheadRoi.y + foreheadRoi.height), Scalar(255,255,255));
             imwrite( (string) PROJECT_DIR+"/images/forehead/head-sking"+to_string(i)+".jpg", tmp );
             imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", forehead[i]);
-            imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", video[i] );
+            imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", faceVideo[i] );
         }
     }
 
@@ -224,8 +242,8 @@ void BpmVideoProcessor::computeBpmFromPyramid() {
     float bpmSum = 0;
     int bpmLevel = 0;
     for (; bpmLevel < pyramidForehead.size(); bpmLevel++) {
-        this->intensities = countIntensities(pyramidForehead.at(bpmLevel), 0, 1, 0);
-        bpmSum += (int) round(findStrongestRowFreq(intensities, framesCount, fps));
+        this->foreheadIntensities = countIntensities(pyramidForehead.at(bpmLevel), 0, 1, 0);
+        bpmSum += (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
     }
     this->bpm = (int) round(bpmSum / bpmLevel);
 }

@@ -33,8 +33,7 @@ class AmplificationWorker {
     vector<Mat> videoBuffer;
     vector<Mat> visualization;
 
-    Rect face;
-    Size origVideoSize;
+    Rect faceRoi;
 
     public:
         AmplificationWorker();
@@ -76,9 +75,16 @@ class AmplificationWorker {
             AmplificationWorker::resizedFace = resizedFace;
         }
 
-
         bool isBpmDetected() const {
             return bpmDetected;
+        }
+
+        void setFaceRoi(const Rect &faceRoi) {
+            AmplificationWorker::faceRoi = faceRoi;
+        }
+
+        const Rect &getFaceRoi() const {
+            return faceRoi;
         }
 };
 
