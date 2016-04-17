@@ -47,6 +47,9 @@ class Bpm {
         // CAMERA_REAL_SOURCE_MODE / VIDEO_SOURCE_MODE
         int sourceMode;
 
+        // DEFAULT VIDEO NAME - must be in repository
+        string videoFileName = (string) VIDEO_SAMPLES_DIR + "/old/reference.mp4";
+
         // FOURIER_MASK_MODE / FAKE_BEATING_MODE
         int maskMode;
 
@@ -98,7 +101,7 @@ class Bpm {
         int workerIteration;
 
     public:
-        Bpm(int mode, int maskMode, float beatVisibilityFactor);
+        int init(int mode, int maskMode);
 
         // Runt modes
         int run();
@@ -135,6 +138,10 @@ class Bpm {
             Bpm::maskMode = mode;
         }
 
+        void setVideoFileName(const string &videoFileName) {
+            cout << videoFileName;
+            Bpm::videoFileName = videoFileName;
+        }
 };
 
 

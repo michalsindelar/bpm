@@ -5,14 +5,20 @@
 #include "Bpm.h"
 
 // Constructor
-Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
+
+
+
+int Bpm::init(int sourceMode, int maskMode) {
+
     this->sourceMode = sourceMode;
     this->maskMode = maskMode;
     this->beatVisibilityFactor = 0.4f;
-    this->saveOutput = false;
-    this->OSWindowName = "OS window";
+
+    this->OSWindowName = "Bpm";
     this->workerIteration = 0;
 
+
+    // CAMERA SOURCE MODE
     if (this->sourceMode == CAMERA_SOURCE_MODE) {
         // Open Video Camera
         this->input = VideoCapture(0);
@@ -21,9 +27,10 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
         this->bufferFrames = BUFFER_FRAMES;
     }
 
+    // VIDEO SOURCE MODE
     else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture((string) VIDEO_SAMPLES_DIR + "/old/reference.mp4");
+        this->input = VideoCapture(this->videoFileName);
         if (!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
 
@@ -31,21 +38,26 @@ Bpm::Bpm(int sourceMode, int maskMode, float beatVisibilityFactor) {
             this->bufferFrames = BUFFER_FRAMES;
         }
         else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
-            // TODO: Check int vs double
+            // TODO: All frames - will be devided in class to threads
 //            this->bufferFrames = BUFFER_FRAMES;
         }
 
     }
 
+    // COMPUTE RESIZED FRAME SIZE
     this->frameSize = getResizedSize(
             Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)),
             RESIZED_FRAME_WIDTH);
 
-    // Initialize middleware
+    // INITALIZE MIDDLEWARE
+    // TODO: Rename to middleware
     this->bpmWorker = AmplificationWorker();
-    bpmWorker.setFps(fps);
-    bpmWorker.setBufferFrames(bufferFrames);
+    this->bpmWorker.setFps(fps);
+    this->bpmWorker.setBufferFrames(bufferFrames);
 
+    // TODO: Will be known from modes selector window gui
+    // TODO: Function
+    this->saveOutput = false;
     if (saveOutput) {
         output.open((string) PROJECT_DIR + "/output/out.avi", CV_FOURCC('m', 'p', '4', 'v'), this->fps, Size(600, 400),
                     true);
@@ -85,6 +97,8 @@ int Bpm::run() {
         default:
             return runCameraMode();
     }
+
+    return 0;
 }
 
 int Bpm::runRealVideoMode() {
