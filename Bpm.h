@@ -48,13 +48,14 @@ class Bpm {
         int sourceMode;
 
         // DEFAULT VIDEO NAME - must be in repository
-        string videoFileName = (string) VIDEO_SAMPLES_DIR + "/old/reference.mp4";
+        string videoFilePath = (string) VIDEO_SAMPLES_DIR + "/old/reference.mp4";
 
         // FOURIER_MASK_MODE / FAKE_BEATING_MODE
         int maskMode;
 
         // Bool save output
         bool saveOutput;
+        string outputFilePath;
 
         // Visibility factor of pulse ampliufication mask
         float beatVisibilityFactor;
@@ -139,8 +140,12 @@ class Bpm {
         }
 
         void setVideoFileName(const string &videoFileName) {
-            cout << videoFileName;
-            Bpm::videoFileName = videoFileName;
+            Bpm::videoFilePath = videoFileName;
+        }
+
+        void setOutputFilePath(const string &outputFilePath) {
+            Bpm::outputFilePath = outputFilePath;
+            Bpm::saveOutput = true;
         }
 };
 

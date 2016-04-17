@@ -22,7 +22,9 @@ class ModeSelectorWindow : public QWidget {
 
 private:
     int mode;
-    QString * fileName;
+    bool saveOutput;
+    QString *inputFilePath;
+    QString *outputFolderPath;
 
 public:
     ModeSelectorWindow(QWidget *parent = 0);
@@ -32,14 +34,25 @@ public:
     }
 
     QString *getFileName() const {
-        return fileName;
+        return inputFilePath;
+    }
+
+    QString *getOutputFolder() const {
+        return outputFolderPath;
+    }
+
+    bool getSaveOutput() const {
+        return saveOutput;
     }
 
 public slots:
     void handleCameraSourceMode();
     void handleVideoRealMode();
     void handleVideoStaticMode();
-    void handleFileDialog();
+    void handleInputFileDialog();
+
+    void handleOutputFileDialog();
+    void handleSaveButton();
 };
 
 

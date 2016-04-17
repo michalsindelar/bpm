@@ -30,7 +30,7 @@ int Bpm::init(int sourceMode, int maskMode) {
     // VIDEO SOURCE MODE
     else if (this->sourceMode == VIDEO_REAL_SOURCE_MODE || this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
         // Open Video Camera
-        this->input = VideoCapture(this->videoFileName);
+        this->input = VideoCapture(this->videoFilePath);
         if (!input.isOpened()) cout << "Unable to open Video File";
         this->fps = (int) round(this->input.get(CV_CAP_PROP_FPS));
 
@@ -95,10 +95,9 @@ int Bpm::run() {
         case CAMERA_SOURCE_MODE:
             return runRealVideoMode();
         default:
-            return runCameraMode();
+            return runRealVideoMode();
     }
 
-    return 0;
 }
 
 int Bpm::runRealVideoMode() {
