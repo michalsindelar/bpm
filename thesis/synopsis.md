@@ -83,13 +83,15 @@
   * průměrné intenzity vs medián
   * potlačení globálních světelných změn - jako finální měření
 
-### Měření dat a porovnávání se Ground truth
-* generovat tabulky a porovnávat s Ground truth
+### Měření dat a porovnávání s Ground truth (tlakoměr)
+* generovat tabulky a porovnávat s gt
 * výpočet relativních a absolutních chyb, korelace?
-* možnost generování statistickým dat a obrazů asi zachovat i v aplikaci?
-* zde bychom měli zhodnotit, zda je algoritmus použitelný
+* možnost generování statistickým dat a obrazů asi zachovat i v aplikaci (teď jen jako developer fáze)
 * minimalni pocet buffer frames - podlozit daty
+  * zmínit konvergenci k lepším výsledkům při delších video sekvencích (ty ale nejsou využitelné s webkamerou - nesmí se hýbat a trvá hodně dlouho)
+  * zmínit jaká je nejdelší doba, kterou je někdo schopen čekat před webkamerou ?
 * minimalni pocet frames pro vizualizaci - podlozit prilohou
+  * toto se příliš nedá měčřit -> musíme nechat na subjektivním pocitu
 
 ### Zhodnocení
 * zmínit požadavky na vstupní videa
@@ -98,7 +100,11 @@
   * resolution - dokázat s daty
   * musí být detekován obličej
   * dostupné čelo bez vlasů
-
+* zde bychom měli zhodnotit
+  * zda je algoritmus použitelný
+  * za jakých podmínek funguje dobře
+* Už teď mám spoustu nápadů, které by šly implementovat a tím chod aplikace zlepšít, ale nejsou úplně triviální
+  * do budoucna bude co dělat :-)
 -----
 ## Obrazová příloha
 * Zde jsou nápady co by bylo zajímavé v bakalářce zobrazit
