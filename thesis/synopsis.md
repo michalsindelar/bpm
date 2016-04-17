@@ -1,5 +1,8 @@
 # Synopsis
 
+## Shrnutí
+* shrnutí práce
+
 ## Teoretický uvod & vymezení pojmů
 * Eulerian magnification
   * Image pyramid
@@ -15,42 +18,42 @@
     * Green channel (oxo hemoglobin) s nejvýraznější fluktuací
     * source: <https://www.osapublishing.org/oe/abstract.cfm?uri=oe-16-26-21434>
     * Zmínit ještě přístup, kdy se snímá jenom prst -> 100% plochy je kůže -> nevhodná pro náš případ, kdy chceme následně tep i zobrazovat pomocí magnification
-  * Zmínit jiné možnosti určení tepu
+  * Zmínit jiné experimentální možnosti určení tepu
     * Head motions (source: <http://people.csail.mit.edu/balakg/pulsefromheadmotion.html>)
 * Fourierova transformace
   * stěžejní pro hledání nejsilnější frekvence, která má odpovídat tepu
 
-## Požadavky na aplikaci
-  * požadavky na aplikace
-  * nice to have požadavky
-  * zde by mělo být napsáno jak by měla appka vypadat, ale ne jak toho dosáhneme
+## Požadavky a cíle aplikace
+  * požadavky na aplikaci
+  * zde by mělo být napsáno jak by měla aplikace vypadat, ale ne jak toho dosáhneme
   * popsat 3 různé módy, které budeme implementovat
     - static video source mode (zpracování celého video)
     - real video source mode (zpracování videa jako z webkamery)
     - webcamera source mode
 
 ## Zvolené technologie dle požadavků
-* požadavky na skoro real time zpracování proto přechod z matlabu do c++ & opencv
-  * napsat rozdíl ve zpracování videa v matlabu a c++, případně změřit
+* Zde bych rád popsal technologie, které v aplikaci využívám.
+* Požadavky na skoro real time zpracování proto přechod z matlabu do c++ & opencv
+  * Napsat rozdíl ve zpracování videa v matlabu a c++, případně změřit.
+* Opencv & c++
 * Viola Jones: detekce obličeje nejstabilnější řešení
   * porovnání s ostatními postupy
   * <http://www.vision.caltech.edu/html-files/EE148-2005-Spring/pprs/viola04ijcv.pdf>
 * Forehead detection
   * Cascade eyes detection same as face?
-* Opencv & c++
 * Qt, ffmpeg?
   * ffmpeg library pro rychlejší vytažení framů z videa než defaultní opencv stream
 * Boost threading library
   * rozepsat se o performance
   * esenciální pro efektnivní, časově přijatelné řešení
-* verzovací systém git
+  * doložit daty - může být jen stručně - jednovláknové x vícevláknové
+* Verzovací systém git
   * standarní workflow: master, develop, pull requesty pro přidávání nových features
-* generování grafů + obraz. příloh v aplikaci matlab
-* zmínit psaní v JetBrains CLion ?
+* Generování grafů + obraz. příloh v aplikaci Matlab.
+* Zmínit psaní v ide JetBrains CLion?
 
 ## Návrh aplikace
-* minimalni pocet buffer frames - podlozit daty
-* minimalni pocet frames pro vizualizaci - podlozit prilohou
+* Hrubý popis jak by měla aplikace fungovat (pohled uživatele)
 * Hlavni rozhrani
 * Detekce - lock pozice
 * Middleware thread
@@ -63,10 +66,13 @@
 * Zobrazeni fourierovy domény + popisy
 * Popis nalezení nejsilnější frekvence a odpovídajícího tepu - viz. funkce `freqToBpmMapper()`
 * Popsat cut-off frekvence, které považujeme za nekorektní (50 - 180 bpm - range of interest)
+* Popsat chybu měření v závislosti na počtu zpracovávaných snímku (např. při 100 snímcích rozdíl mezi dvěma index je až 10bpm - při 400 už podstatně zredukováno)
+* minimalni pocet buffer frames - podlozit daty
 
 ### Demonstrace na konkrétním postupu
 * hodně doprovázet obrazovou přílohou a podrobně vysvětlit chování částí aplikace
 * společné chování pro camera mode a video real mode x rozdílné pro static mode
+* diskutovat minimální počet snímků pro vizualizaci - podložit přílohou
 
 ### Grafy rozdílných (čím dál více pokročilých) přístupů
 * V této části postupovat od naivního iniciálního měření (bez detekovaného obličej) až po konečné řešení s detekovaným čelem a potlačení globálních světelných změn - podložit reálnými daty
@@ -82,9 +88,16 @@
 * výpočet relativních a absolutních chyb, korelace?
 * možnost generování statistickým dat a obrazů asi zachovat i v aplikaci?
 * zde bychom měli zhodnotit, zda je algoritmus použitelný
+* minimalni pocet buffer frames - podlozit daty
+* minimalni pocet frames pro vizualizaci - podlozit prilohou
 
 ### Zhodnocení
-* zmínit požadavky na vstupní videa, bez velkých globálních světelných změn
+* zmínit požadavky na vstupní videa
+  * bez velkých globálních světelných změn
+  * SNR signal to noise ratio
+  * resolution - dokázat s daty
+  * musí být detekován obličej
+  * dostupné čelo bez vlasů
 
 -----
 ## Obrazová příloha

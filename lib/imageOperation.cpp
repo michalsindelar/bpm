@@ -226,6 +226,8 @@ Mat convertImageYIQtoRGB( Mat img)
             i = img.data[m*img.step + n*3 + 1];
             q = img.data[m*img.step + n*3 ];
 
+            // TODO: Check data types
+
             r =  y  + 0.9563 * i + 0.6210 * q;
             g =  y  - 0.2721 * i - 0.6474 * q;
             b =  y  - 1.1070 * i + 1.7046 * q;

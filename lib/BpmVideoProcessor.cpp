@@ -29,8 +29,7 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
 
 void BpmVideoProcessor::computeBpm(int computeType) {
-
-
+    // TODO: Consider converting to ntsc
     switch (computeType) {
         case AVG_COMPUTE:
             this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
