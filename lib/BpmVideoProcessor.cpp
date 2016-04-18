@@ -22,15 +22,45 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
     // Pre-allocate
     setMaxPyramidLevel();
-
-    this->out = vector <Mat>(video.size());
 }
 
 
 void BpmVideoProcessor::computeAmplifiedMask() {
-    ThreadWorker worker;
-    worker.amplifyVideo(faceVideo, level, bpm, fps);
-    out.swap(worker.getResult());
+
+    vector<boost::thread *> z;
+    vector <ThreadWorker> workerParts;
+
+    int framesInPart = min(FRAMES_FOR_VISUALIZATION, (int) faceVideo.size());
+    int parts = (int) ceil(faceVideo.size() / framesInPart);
+
+    // Initialize workers
+    for (int i = 0; i < parts; i++) {
+        workerParts.push_back(ThreadWorker());
+    }
+
+    // Start to compute in threads
+    for (int i = 0; i < parts; i++) {
+        int start = i * framesInPart;
+        int end = start + framesInPart;
+
+        z.push_back(new boost::thread(&ThreadWorker::amplifyVideo, boost::ref(workerParts[i]),
+                                      vector<Mat>(faceVideo.begin() + start, faceVideo.begin() + end), level, bpm, fps));
+
+    }
+
+    // Wait for threads
+    for (int i = 0; i < parts; i++) {
+        z[i]->join();
+        delete z[i];
+    }
+
+    // Copy thread parts to pyramid
+    for (int i = 0; i < parts; i++) {
+        vector <Mat> tmp = workerParts[i].getResult();
+        for (int j = 0; j < tmp.size(); j++) {
+            out.push_back(tmp[j]);
+        }
+    }
 }
 
 void BpmVideoProcessor::computeBpm(int computeType) {
@@ -82,7 +112,7 @@ void BpmVideoProcessor::getForeheadSkinArea() {
     int detected = false;
     // We try 10 times to detect
     for (int i = 0; i < 10; i++) {
-        if (detectForeheadFromFaceViaEyesDetection(faceVideo[i], this->foreheadRoi)) {
+        if (Detector::detectForeheadFromFaceViaEyesDetection(faceVideo[i], this->foreheadRoi)) {
             detected = true;
             break;
         }

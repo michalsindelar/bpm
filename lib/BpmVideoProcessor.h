@@ -13,7 +13,7 @@
 #include <fstream>
 #include <boost/thread.hpp>
 #include "imageOperation.h"
-
+#include "Detector.h"
 
 // Configuration
 #include "./../config.h"
@@ -250,6 +250,7 @@ class BpmVideoProcessor {
                     workerParts.push_back(ThreadWorker());
                 }
 
+                // Start to compute in threads
                 for (int i = 0; i < parts; i++) {
                     int start = i * framesInPart;
                     int end = start + framesInPart;
