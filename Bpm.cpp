@@ -529,13 +529,14 @@ void Bpm::handleDetector(Mat in, int type) {
             boost::thread workerThread(&Detector::detectForehead, &foreheadDetector, in(roi));
         }
         if (foreheadDetector.isDetected()) {
-            if (!isForeheadDetected()) {
+            if (!isForeheadDetected() && Detector::shouldAcceptForehead(resizedFace, foreheadDetector.getForehead())) {
+                // TODO: remake to bpm processor!!!
                 // Just copy
                 this->forehead = foreheadDetector.getForehead();
             } else {
                 Rect newForehead = foreheadDetector.getForehead();
                 // Update only when significant change
-                bool shouldUpdate = (abs(forehead.x - newForehead.x) > DETECTOR_UPDATE_VARIATION * forehead.x) || (abs(forehead.y - newForehead.y) > DETECTOR_UPDATE_VARIATION * forehead.y);
+                bool shouldUpdate = (abs(forehead.x - newForehead.x) > (2*DETECTOR_UPDATE_VARIATION * forehead.x)) || (abs(forehead.y - newForehead.y) > (2*DETECTOR_UPDATE_VARIATION * forehead.y));
                 this->forehead = shouldUpdate ? newForehead : this->forehead;
             }
 

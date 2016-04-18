@@ -15,7 +15,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <fstream>
-#include "Detector.h"
 
 
 using namespace cv;
@@ -82,9 +81,7 @@ void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm,
 void printIterationHead(ofstream &file);
 
 // Detector
-int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi);
 Rect defaultForehead(Mat face);
-int detectEyes(Mat face, vector<Rect>& eyes);
 
 Point2d getCenter(Size size);
 double getDistance(Point2d a, Point2d b);

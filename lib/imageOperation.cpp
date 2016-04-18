@@ -88,27 +88,7 @@ void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
 
 // Returns rect in arg face coordinate system
 // face - detected face!
-int detectForeheadFromFaceViaEyesDetection(Mat face, Rect &roi) {
-    Mat upperFace = face(Rect(0, 0, face.cols, face.rows / 2));
 
-    vector<Rect> eyes;
-    // Cannot set forehead via eyes detection
-    if (!detectEyes(upperFace, eyes)) {
-        return 0;
-    }
-
-    Rect eyeL, eyeR;
-    eyeL = (eyes[0].x < eyes[1].x) ? eyes[0] : eyes[1];
-    eyeR = (eyes[1].x >= eyes[0].x) ? eyes[1] : eyes[0];
-
-    Point2f center((eyeL.x + eyeL.width) + (eyeR.x - eyeL.x - eyeL.width) / 2.0f, (int) round(eyeL.y - face.rows * 0.15f));
-    Size size((int) round(face.cols * 0.50), (int) round(face.rows * 0.15));
-
-    roi = Rect((int) round(center.x - size.width/2.0f), (int) round(center.y - size.height/2.0f), size.width, size.height);
-    handleRoiPlacement(roi, face.size());
-
-    return 1;
-}
 
 
 Rect defaultForehead(Mat face) {
