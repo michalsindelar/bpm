@@ -31,8 +31,9 @@ set(SOURCE_FILES
     lib/BpmVideoProcessor.cpp
     lib/BpmVideoProcessor.h
     lib/logs/logs.cpp
-        ModeSelectorWindow.cpp ModeSelectorWindow.h lib/PyramidLevelWorker.cpp lib/PyramidLevelWorker.h)
-
+    ModeSelectorWindow.cpp
+    ModeSelectorWindow.h
+)
 
 add_executable(bpm ${SOURCE_FILES})
 
