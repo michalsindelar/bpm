@@ -14,6 +14,7 @@
 
 // Configuration
 #include "./../config.h"
+#include <boost/thread.hpp>
 
 using namespace cv;
 using namespace std;
