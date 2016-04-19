@@ -32,11 +32,11 @@ ModeSelectorWindow::ModeSelectorWindow(QWidget *parent)
     saveButton->setGeometry(20, 150, buttonSize.width, buttonSize.height);
 
     QPushButton *saveDialogButton = new QPushButton("Choose output folder", this);
-    saveDialogButton->setGeometry(200, 150, buttonSize.width, buttonSize.height);
+    saveDialogButton->setGeometry(180, 150, buttonSize.width, buttonSize.height);
     connect(saveDialogButton, SIGNAL(clicked()), this, SLOT(handleOutputFileDialog()));
 
     QPushButton *runButton = new QPushButton("Run app!", this);
-    runButton->setGeometry(200, 250, buttonSize.width, buttonSize.height);
+    runButton->setGeometry(180, 250, buttonSize.width, buttonSize.height);
 
     connect(modeCameraButton, SIGNAL(clicked()), this, (SLOT(handleCameraSourceMode())));
     connect(modeVideoRealButton, SIGNAL(clicked()), this, SLOT(handleVideoRealMode()));

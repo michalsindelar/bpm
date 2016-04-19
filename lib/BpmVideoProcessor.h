@@ -184,10 +184,7 @@ class BpmVideoProcessor {
 
                 // Keep only red channel
                 // TODO: Do weights make sense?
-                amplifyChannels(outputFrame, 60.0, 0.1f, 0.1f);
-
-                // in range [0,255]
-                normalize(outputFrame, outputFrame, 0, 20, NORM_MINMAX );
+                amplifyChannels(outputFrame, 80.0, 0.1f, 0.1f);
 
                 dst.push_back(outputFrame);
                 outputFrame.release();
@@ -340,7 +337,7 @@ class BpmVideoProcessor {
             }
 
             // Normalize dst
-            normalizeVid(dst, 0, 100, NORM_MINMAX );
+            normalizeVid(dst, 0, 50, NORM_MINMAX );
         }
 
         static void amplifyVideo(vector<Mat> &video, vector<Mat> &out, int doubleDownscalingLevel, int level, int bpm, int fps) {
