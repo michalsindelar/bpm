@@ -125,6 +125,9 @@ class BpmVideoProcessor {
         }
 
         static void amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm, int fps) {
+            // Keep only green channel
+            amplifyVideoChannels(src, 0, 1, 0);
+
             // Create temporal spatial video
             createTemporalSpatial(src, temporalSpatial);
 
@@ -174,12 +177,13 @@ class BpmVideoProcessor {
                 cvtColor(outputFrame, outputFrame, CV_GRAY2BGR);
                 outputFrame.convertTo(outputFrame, CV_8U);
 
+
                 // Keep only red channel
                 // TODO: Do weights make sense?
-                amplifyChannels(outputFrame, 1.0, .5f, 0.1f);
+                amplifyChannels(outputFrame, 20.0, 0.5f, 0.5f);
 
                 // in range [0,255]
-                normalize(outputFrame, outputFrame, 0, 150, NORM_MINMAX );
+                normalize(outputFrame, outputFrame, 0, 30, NORM_MINMAX );
 
                 dst.push_back(outputFrame);
                 outputFrame.release();
@@ -208,7 +212,7 @@ class BpmVideoProcessor {
                 cv::copyMakeBorder(frame, tmp,
                                    0, height - frame.rows,
                                    0, width - frame.cols,
-                                   cv::BORDER_CONSTANT, cv::Scalar::all(0));
+                                   cv::BORDER_REFLECT, cv::Scalar::all(0));
                 // apply DFT
                 cv::dft(tmp, tmp, cv::DFT_ROWS | cv::DFT_SCALE);
 
