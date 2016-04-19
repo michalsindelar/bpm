@@ -36,17 +36,8 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     bpmVideoProcessor.computeBpm();
     updateBpm(bpmVideoProcessor.getBpm());
 
-    // TODO: Here will be video split into thread parts
-    // Each part has own bpmVideoProcessor class
-    // Compute bpm amplification mask
 
-    vector<boost::thread *> z;
-    int threadPartFrames = min(FRAMES_FOR_VISUALIZATION, (int) videoBuffer.size());
-    int parts = (int) ceil(videoBuffer.size() / threadPartFrames);
-
-    for (int i = 0; i < parts; i++) {
-        // Magic here
-    }
+    // Magic inside class
     bpmVideoProcessor.computeAmplifiedMask();
     this->visualization = bpmVideoProcessor.getOut();
 

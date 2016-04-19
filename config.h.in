@@ -9,7 +9,7 @@
 
 // How many frames should be in buffer (amplification process together)
 #define BUFFER_FRAMES 400
-#define FRAMES_FOR_VISUALIZATION 200
+#define FRAMES_FOR_VISUALIZATION 400
 
 // Experimental settings of fps
 #define FPS 30
@@ -57,7 +57,7 @@
 #define RED_CHANNEL 2
 
 // FREQ MASK
-#define FREQ_MASK_WIDTH 20
+#define FREQ_MASK_WIDTH 10
 
 // MINIMALE FRAME WIDTH RESIZED IN GDOWN PYRAMID
 #define MIN_WIDTH_IN_PYRAMID 10

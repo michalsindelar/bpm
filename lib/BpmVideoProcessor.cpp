@@ -19,13 +19,13 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
     // Detect forehead
     this->getForeheadSkinArea();
-
-    // Pre-allocate
-    setMaxPyramidLevel();
 }
 
 
 void BpmVideoProcessor::computeAmplifiedMask() {
+
+    // Init settings of amplification
+    setMaxPyramidLevel();
 
     vector<boost::thread *> z;
     vector <ThreadWorker> workerParts;
@@ -64,7 +64,6 @@ void BpmVideoProcessor::computeAmplifiedMask() {
 }
 
 void BpmVideoProcessor::computeBpm(int computeType) {
-    // TODO: Consider converting to ntsc
     switch (computeType) {
         case AVG_COMPUTE:
             this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
@@ -78,7 +77,7 @@ void BpmVideoProcessor::computeBpm(int computeType) {
             break;
     }
 
-    vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
+//    vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
     //suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
 
     this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
@@ -86,7 +85,7 @@ void BpmVideoProcessor::computeBpm(int computeType) {
 
     if (DATA_LOGGING) {
         saveIntensities(this->foreheadIntensities, (string) DATA_DIR+"/localIntensities.txt");
-        saveIntensities(globalIntensities, (string) DATA_DIR+"/global.txt");
+//        saveIntensities(globalIntensities, (string) DATA_DIR+"/global.txt");
      }
 
 }
@@ -125,7 +124,7 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     cropToVideo(faceVideo, forehead, foreheadRoi);
 
-    if (DATA_LOGGING){
+    if (true){
         for (int i = 0; i < 10; i++) {
             Mat tmp = faceVideo[i];
             rectangle(tmp, Point(foreheadRoi.x, foreheadRoi.y), Point(foreheadRoi.x + foreheadRoi.width, foreheadRoi.y + foreheadRoi.height), Scalar(255,255,255));
