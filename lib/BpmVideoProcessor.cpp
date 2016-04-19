@@ -110,8 +110,8 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     // At first we try to detect forehead using eyes detection 10x
     int detected = false;
-    // We try 10 times to detect
-    for (int i = 0; i < 10; i++) {
+    // TODO: Check how long does it take
+    for (int i = 0; i < faceVideo.size(); i++) {
         if (Detector::detectForeheadFromFaceViaEyesDetection(faceVideo[i], this->foreheadRoi)) {
             detected = true;
             break;
@@ -120,11 +120,12 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     // Unsuccessful eyes & forehead detection -> default forehead area
     if (!detected) {
-        foreheadRoi = defaultForehead(faceVideo[0]);
+        foreheadRoi = Detector::defaultForehead(faceVideo[0]);
     }
 
     cropToVideo(faceVideo, forehead, foreheadRoi);
 
+    if (DATA_LOGGING){
         for (int i = 0; i < 10; i++) {
             Mat tmp = faceVideo[i];
             rectangle(tmp, Point(foreheadRoi.x, foreheadRoi.y), Point(foreheadRoi.x + foreheadRoi.width, foreheadRoi.y + foreheadRoi.height), Scalar(255,255,255));
@@ -132,6 +133,7 @@ void BpmVideoProcessor::getForeheadSkinArea() {
             imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", forehead[i]);
             imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", faceVideo[i] );
         }
+    }
 
 }
 

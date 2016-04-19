@@ -80,8 +80,6 @@ vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, fl
 void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file);
 void printIterationHead(ofstream &file);
 
-// Detector
-Rect defaultForehead(Mat face);
 
 Point2d getCenter(Size size);
 double getDistance(Point2d a, Point2d b);

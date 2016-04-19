@@ -28,7 +28,10 @@ class Detector {
 
     public:
         Detector();
+        // Non static function for main loop purposes
         void detectFace(Mat frame);
+        void adjustFaceSize();
+        Rect &determineBiggestFace();
 
         static int detectEyes(Mat face, vector<Rect>& eyes) {
             vector<Rect> eyesAll;
@@ -83,28 +86,36 @@ class Detector {
             eyeL = (eyes[0].x < eyes[1].x) ? eyes[0] : eyes[1];
             eyeR = (eyes[1].x >= eyes[0].x) ? eyes[1] : eyes[0];
 
-            Point2f center((eyeL.x + eyeL.width) + (eyeR.x - eyeL.x - eyeL.width) / 2.0f, (int) round(eyeL.y - face.rows * 0.15f));
-            Size size((int) round(face.cols * 0.50), (int) round(face.rows * 0.15));
+            Point2f center((eyeL.x + eyeL.width) + (eyeR.x - eyeL.x - eyeL.width) / 2.0f, (int) round(eyeL.y - face.rows * 0.11f));
+            Size size((int) round(face.cols * 0.55), (int) round(face.rows * 0.16));
 
-            roi = Rect((int) round(center.x - size.width/2.0f), (int) round(center.y - size.height/2.0f), size.width, size.height);
+            Rect tmp = Rect((int) round(center.x - size.width/2.0f), (int) round(center.y - size.height/2.0f), size.width, size.height);
 
-            if (!Detector::shouldAcceptForehead(Rect(0,0, face.cols, face.rows), roi)) {
+            if (!Detector::shouldAcceptForehead(Rect(0,0, face.cols, face.rows), tmp)) {
                 return 0;
             }
 
-            handleRoiPlacement(roi, face.size());
+            handleRoiPlacement(tmp, face.size());
+            roi = tmp;
+
             return 1;
         }
 
         // Accept only fine detected forehead in center
-        static bool shouldAcceptForehead(Rect face, Rect forehead, float diff = 2*DETECTOR_UPDATE_VARIATION) {
-            double foreheadCenter = (forehead.x + forehead.width) / 2.0f;
+        static bool shouldAcceptForehead(Rect face, Rect forehead, float diff = 1.5*DETECTOR_UPDATE_VARIATION) {
+            double foreheadCenter = forehead.x + (forehead.width / 2.0f);
             double faceCenter = face.width / 2.0f;
             return (abs(foreheadCenter - faceCenter) < (diff * face.width));
         };
 
-        void adjustFaceSize();
-        Rect &determineBiggestFace();
+        static Rect defaultForehead(Mat face) {
+            return Rect(
+                (int) round(face.cols * 0.25f),
+                (int) round(face.rows * 0.05f),
+                (int) round(face.cols * 0.5f),
+                (int) round(face.rows * 0.15f)
+            );
+        }
 
         const Rect &getBiggestFace() const {
             return biggestFace;

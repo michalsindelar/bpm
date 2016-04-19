@@ -86,19 +86,6 @@ void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
     }
 }
 
-// Returns rect in arg face coordinate system
-// face - detected face!
-
-
-
-Rect defaultForehead(Mat face) {
-    return Rect(
-        (int) round(face.cols * 0.25f),
-        (int) round(face.rows * 0.05f),
-        (int) round(face.cols * 0.5f),
-        (int) round(face.rows * 0.15f)
-    );
-}
 
 void handleRoiPlacement(Rect &roi, const Size frame) {
     handleRoiPlacement(roi, frame, 0);

@@ -522,21 +522,21 @@ void Bpm::handleDetector(Mat in, int type) {
             this->bpmWorker.setResizedFaceSize(faceResizedDetector.getBiggestFace().size());
         }
     } else if (type == FOREHEAD) {
-        if (!foreheadDetector.isWorking() || isFaceDetected(tmpFace)) {
+        if (!foreheadDetector.isWorking() && isFaceDetected(tmpFace)) {
             // TODO: This could be better
             Rect roi = tmpFace;
             handleRoiPlacement(roi, in.size());
             boost::thread workerThread(&Detector::detectForehead, &foreheadDetector, in(roi));
         }
         if (foreheadDetector.isDetected()) {
-            if (!isForeheadDetected() && Detector::shouldAcceptForehead(resizedFace, foreheadDetector.getForehead())) {
-                // TODO: remake to bpm processor!!!
-                // Just copy
+            if (!isForeheadDetected()) {
                 this->forehead = foreheadDetector.getForehead();
             } else {
                 Rect newForehead = foreheadDetector.getForehead();
                 // Update only when significant change
                 bool shouldUpdate = (abs(forehead.x - newForehead.x) > (2*DETECTOR_UPDATE_VARIATION * forehead.x)) || (abs(forehead.y - newForehead.y) > (2*DETECTOR_UPDATE_VARIATION * forehead.y));
+                // And still must be centered
+                shouldUpdate = shouldUpdate && Detector::shouldAcceptForehead(Rect(0, 0, resizedFace.width, resizedFace.height), newForehead);
                 this->forehead = shouldUpdate ? newForehead : this->forehead;
             }
 

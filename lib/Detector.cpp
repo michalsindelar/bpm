@@ -75,9 +75,7 @@ Rect &Detector::getMainFace(Mat frame) {
 
 void Detector::detectForehead(Mat face) {
     this->working = true;
-    if(!detectForeheadFromFaceViaEyesDetection(face, this->forehead)) {
-        this->forehead = defaultForehead(face);
-    }
+    detectForeheadFromFaceViaEyesDetection(face, this->forehead);
     this->working = false;
 }
 
