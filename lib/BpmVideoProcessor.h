@@ -50,8 +50,11 @@ class BpmVideoProcessor {
     // Number of frames in face buffer
     int framesCount;
 
-    // Level of double decreasing size of each frame
-    // For mask computation
+    // Double downscaling levels
+    // Before amplification
+    int doubleDownscalingLevel;
+
+    // For amplification
     int level;
 
     // How wide freq (bpm) range should we keep
@@ -64,8 +67,8 @@ class BpmVideoProcessor {
 
             public:
 
-                void amplifyVideo(vector<Mat> &video, int level, int bpm, int fps) {
-                    BpmVideoProcessor::amplifyVideo(video, result, level, bpm, fps);
+                void amplifyVideo(vector<Mat> &video, int doubleDownscalingLevel, int level, int bpm, int fps) {
+                    BpmVideoProcessor::amplifyVideo(video, result, doubleDownscalingLevel, level, bpm, fps);
                 }
 
                 void computeGDownPyramidLevel(vector<Mat> &src, int currLevel) {
@@ -92,8 +95,9 @@ class BpmVideoProcessor {
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount, Rect faceRoi);
         void computeBpm(int computeType = AVG_COMPUTE);
         void computeBpmFromPyramid();
-        void setMaxPyramidLevel();
         void computeAmplifiedMask();
+        void setMaxPyramidLevel();
+        void setDoubleDownscalingLevel();
 
         // Could be static
         void getForeheadSkinArea();
@@ -339,7 +343,7 @@ class BpmVideoProcessor {
             normalizeVid(dst, 0, 100, NORM_MINMAX );
         }
 
-        static void amplifyVideo(vector<Mat> &video, vector<Mat> &out, int level, int bpm, int fps) {
+        static void amplifyVideo(vector<Mat> &video, vector<Mat> &out, int doubleDownscalingLevel, int level, int bpm, int fps) {
             // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
             // TODO: process all but in threads
 
@@ -349,9 +353,11 @@ class BpmVideoProcessor {
             int framesForVisualization = min(FRAMES_FOR_VISUALIZATION, (int) video.size());
             vector <Mat> cutVideo = vector <Mat>(video.begin(), video.begin() + framesForVisualization);
 
+            // For performance reasons downscale video at first
             for (int i = 0; i < video.size(); i++) {
-                pyrDown(video [i], video [i]);
-                pyrDown(video [i], video [i]);
+                for (int j = 0; j < doubleDownscalingLevel; j++) {
+                    pyrDown(video [i], video [i]);
+                }
             }
 
             // GDown pyramid for masking video
@@ -375,8 +381,9 @@ class BpmVideoProcessor {
 
 
             for (int i = 0; i < video .size(); i++) {
-                pyrUp(video [i], video [i]);
-                pyrUp(video [i], video [i]);
+                for (int j = 0; j < doubleDownscalingLevel; j++) {
+                    pyrUp(video [i], video [i]);
+                }
             }
         }
 

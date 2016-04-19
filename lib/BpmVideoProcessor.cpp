@@ -24,6 +24,11 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
 void BpmVideoProcessor::computeAmplifiedMask() {
 
+    // Set pyr down resizing
+    // Set closest pyr down level value to ideal frame width for amplification
+    // TODO: Control if video is big enough -> in bpm.cpp
+
+
     // Init settings of amplification
     setMaxPyramidLevel();
 
@@ -44,7 +49,8 @@ void BpmVideoProcessor::computeAmplifiedMask() {
         int end = start + framesInPart;
 
         z.push_back(new boost::thread(&ThreadWorker::amplifyVideo, boost::ref(workerParts[i]),
-                                      vector<Mat>(faceVideo.begin() + start, faceVideo.begin() + end), level, bpm, fps));
+                                      vector<Mat>(faceVideo.begin() + start, faceVideo.begin() + end),
+                                      doubleDownscalingLevel, level, bpm, fps));
 
     }
 
@@ -90,18 +96,36 @@ void BpmVideoProcessor::computeBpm(int computeType) {
 
 }
 
-void BpmVideoProcessor::setMaxPyramidLevel() {
-    // We want as many pyramid levels as possible
-    int width = faceVideo[0].cols;
+
+void BpmVideoProcessor::setDoubleDownscalingLevel() {
+    float width = this->faceVideo[0].cols;
     for (int i = 0; ; i++) {
-        width = (int) round(width / 2.0f);
+        if (width < IDEAL_WIDTH_FOR_AMPLIFICATION) {
+            this->doubleDownscalingLevel = (abs(IDEAL_WIDTH_FOR_AMPLIFICATION - width) < abs(IDEAL_WIDTH_FOR_AMPLIFICATION - (width * 2))) ?
+                i : i-1;
+            break;
+        }
+        width /= 2;
+    }
+}
+
+void BpmVideoProcessor::setMaxPyramidLevel() {
+
+    // Respect further downscaling of video
+    float width = faceVideo[0].cols;
+    for (int i = 0; i < doubleDownscalingLevel; i++) {
+        width /= 2;
+    }
+
+    // We want as many pyramid levels as possible with width bigger than constant
+    for (int i = 0; ; i++) {
+        width /= 2;
         // Minimal size of frame in pyramid
-        if ((int) round(width) <= MIN_WIDTH_IN_PYRAMID) {
+        if (width <= MIN_WIDTH_IN_PYRAMID) {
             // Update level - needed for upsizing
             this->level = i;
             break;
         }
-
     }
 }
 
