@@ -27,6 +27,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
     this->setVideoBuffer(videoBuffer);
 
     // Level for masking
+    // TODO: level omit
     int level = 6;
 
     // Resizing should be set according to face SIZE !!

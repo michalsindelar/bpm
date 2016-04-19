@@ -105,7 +105,7 @@
   * za jakých podmínek funguje dobře
 * Už teď mám spoustu nápadů, které by šly implementovat a tím chod aplikace zlepšít, ale nejsou úplně triviální
   * do budoucna bude co dělat :-)
------
+---
 ## Obrazová příloha
 * Zde jsou nápady co by bylo zajímavé v bakalářce zobrazit
 * Nápady se budou prolínat napříč celou prací
@@ -115,3 +115,8 @@
 * Oči
 * Čelo - ukázat i default při neúspěchu
 * Postranní strips - ground truth background
+
+---
+### Notes
+* While describing how many frames are necessary for correct compute of bpm we cannot say just thre more frames we have, the more precise results we got - probably because of some long terms freq changes present in video
+* discuss ffmpeg in opencv which significantly reduce performing grabbing frames operations from source video

@@ -27,7 +27,7 @@ void BpmVideoProcessor::computeAmplifiedMask() {
     // Set pyr down resizing
     // Set closest pyr down level value to ideal frame width for amplification
     // TODO: Control if video is big enough -> in bpm.cpp
-
+    setDoubleDownscalingLevel();
 
     // Init settings of amplification
     setMaxPyramidLevel();

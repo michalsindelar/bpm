@@ -170,48 +170,49 @@ int Bpm::runStaticVideoMode() {
     // Fill buffer from whole video
     Mat in;
 
-    // Detect face at first
-    while(!isFaceDetected(this->fullFace)) {
+    // We need to have both faces detected
+    while(!isFaceDetected(this->fullFace) || !isFaceDetected(this->fullFace)) {
         input >> in;
+
+        // Check full face detector
+        handleDetector(in, FULL_FACE);
+
+        // Resize captured frame
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
-        faceFullDetector.detectFace(in);
-        if (faceFullDetector.getFaces().size()) {
-            this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
-        }
+
+        // Check resized face detector
+        handleDetector(in, RESIZED_FACE);
     }
+
     // Reset video
     input.set(CV_CAP_PROP_POS_MSEC, 0);
 
+    // Buffer video frames
+    // TODO: ffmpeg || libancv library for faster buffering?
     int bufferFrames = 0;
-    while(in.cols != 0 && in.data) {
-        // Detect face in own thread
-
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
-
-        if (!faceFullDetector.isWorking()) {
-            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
-        }
-        if (faceFullDetector.getFaces().size()) {
-            // TODO: function get biggest face
-            this->updateFace(faceFullDetector.getBiggestFace(), this->resizedFace);
-        }
-
-        pushInputToBuffer(in);
-
+    while(true) {
         input >> in;
-        bufferFrames++;
 
+        // Check whether frame still exists
+        if (!in.cols || !in.data) {
+            break;
+        }
+
+        bufferFrames++;
+        pushInputToBuffer(in.clone());
         waitKey(1);
     }
 
+    // Update buffer frames
     this->bufferFrames = bufferFrames;
     bpmWorker.setBufferFrames(bufferFrames);
 
+    // Compute here thread here has no reason
     compute(false);
     this->bpmVisualization = this->bpmWorker.getVisualization();
     this->bpmWorker.clearVisualization();
 
-    // Reset video
+    // Set video to start
     input.set(CV_CAP_PROP_POS_MSEC, 0);
 
     for (int frame = 0; true; frame++) {
@@ -231,14 +232,7 @@ int Bpm::runStaticVideoMode() {
         // Output
         Mat out = Mat(in.rows, in.cols, in.type());
 
-        // Detect face in own thread
-        if (!faceFullDetector.isWorking()) {
-            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
-        }
-
-        // Show bpmVisualization video after initialization compute
-        // TODO: Check if this is performance ok
-        visualize(in, out, frame);
+        visualizeAmplified(in, out, frame);
 
         if (saveOutput) {
             output.write(out);
@@ -405,27 +399,7 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
                 Scalar(200, 200, 200), 2);
     }
     else if (state == VISUALIZATION_DETECTED) {
-        Mat visual = Mat::zeros(in.rows, in.cols, in.type());
-
-        // As we crop mask in own thread while amplification
-        // These steps are appli only if detected face positon has significantly changed
-        Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()),
-                              tmpFace.width - 2 * ERASED_BORDER_WIDTH);
-
-        // Important range check
-        Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
-        handleRoiPlacement(roi, frameSize, ERASED_BORDER_WIDTH);
-        roi.x = roi.y = 0;
-
-        // Crop in case mask would be outside frame
-        tmp = tmp(roi);
-
-        tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
-        out = in + this->beatVisibilityFactor * visual;
-
-        putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
-                Scalar(200, 200, 200), 2);
-
+        visualizeAmplified(in, out, index);
     }
     else {
         out = in.clone();
@@ -449,6 +423,30 @@ void Bpm::visualizeDetected(Mat &in) {
 
         printRectOnFrame(in, foreheadGlobal, Scalar(255,255,255));
     }
+}
+
+
+void Bpm::visualizeAmplified(Mat &in, Mat &out, int index) {
+    Mat visual = Mat::zeros(in.rows, in.cols, in.type());
+
+    // As we crop mask in own thread while amplification
+    // These steps are appli only if detected face positon has significantly changed
+    Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()),
+                          tmpFace.width - 2 * ERASED_BORDER_WIDTH);
+
+    // Important range check
+    Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
+    handleRoiPlacement(roi, frameSize, ERASED_BORDER_WIDTH);
+    roi.x = roi.y = 0;
+
+    // Crop in case mask would be outside frame
+    tmp = tmp(roi);
+
+    tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
+    out = in + this->beatVisibilityFactor * visual;
+
+    putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
+            Scalar(200, 200, 200), 2);
 }
 
 void Bpm::updateFace(Rect src, Rect& dst) {

@@ -184,10 +184,10 @@ class BpmVideoProcessor {
 
                 // Keep only red channel
                 // TODO: Do weights make sense?
-                amplifyChannels(outputFrame, 20.0, 0.5f, 0.5f);
+                amplifyChannels(outputFrame, 60.0, 0.1f, 0.1f);
 
                 // in range [0,255]
-                normalize(outputFrame, outputFrame, 0, 30, NORM_MINMAX );
+                normalize(outputFrame, outputFrame, 0, 20, NORM_MINMAX );
 
                 dst.push_back(outputFrame);
                 outputFrame.release();
@@ -197,7 +197,7 @@ class BpmVideoProcessor {
         static void bandpassFilter(vector<Mat> &temporalSpatial, float freq, int fps) {
 
             // Create mask based on strongest frequency
-
+            // TODO: Check if resizing to optimal size could cause some border problems
             int width = cv::getOptimalDFTSize(temporalSpatial[0].cols);
             int height = cv::getOptimalDFTSize(temporalSpatial[0].rows);
 
@@ -216,7 +216,7 @@ class BpmVideoProcessor {
                 cv::copyMakeBorder(frame, tmp,
                                    0, height - frame.rows,
                                    0, width - frame.cols,
-                                   cv::BORDER_REFLECT, cv::Scalar::all(0));
+                                   cv::BORDER_REPLICATE);
                 // apply DFT
                 cv::dft(tmp, tmp, cv::DFT_ROWS | cv::DFT_SCALE);
 
