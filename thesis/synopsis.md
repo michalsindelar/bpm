@@ -100,6 +100,9 @@
   * resolution - dokázat s daty
   * musí být detekován obličej
   * dostupné čelo bez vlasů
+  * hraniční body, kdy je algoritmus ještě korektní
+    * hlavně velikost videa ~ obličeje
+    * delka videa
 * zde bychom měli zhodnotit
   * zda je algoritmus použitelný
   * za jakých podmínek funguje dobře

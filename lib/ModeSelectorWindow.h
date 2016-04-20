@@ -12,7 +12,7 @@
 #include <QString>
 
 // Constants
-#include "./config.h"
+#include "constants.h"
 
 #include "./lib/imageOperation.h"
 #include <iostream>

@@ -11,7 +11,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Define current folder
 set(PROJECT_DIR "${CMAKE_SOURCE_DIR}")
-configure_file(config.h.in ${CMAKE_SOURCE_DIR}/config.h)
+configure_file(constants.h.in ${CMAKE_SOURCE_DIR}/constants.h)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
@@ -20,19 +20,17 @@ set(SOURCE_FILES
     bpm/main.cpp
     lib/imageOperation.cpp
     lib/imageOperation.h
-    skinDetect.cpp
-    skinDetect.h
-    Bpm.cpp
-    Bpm.h
-    lib/AmplificationWorker.cpp
-    lib/AmplificationWorker.h
+    lib/BpmWindow.cpp
+    lib/BpmWindow.h
+    lib/Middleware.cpp
+    lib/Middleware.h
     lib/Detector.cpp
     lib/Detector.h
     lib/BpmVideoProcessor.cpp
     lib/BpmVideoProcessor.h
     lib/logs/logs.cpp
-    ModeSelectorWindow.cpp
-    ModeSelectorWindow.h
+    lib/ModeSelectorWindow.cpp
+    lib/ModeSelectorWindow.h
 )
 
 add_executable(bpm ${SOURCE_FILES})

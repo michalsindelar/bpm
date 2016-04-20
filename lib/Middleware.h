@@ -13,7 +13,7 @@
 #include "./BpmVideoProcessor.h"
 
 // Configuration
-#include "./../config.h"
+#include "constants.h"
 #include <boost/thread.hpp>
 
 using namespace cv;

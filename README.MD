@@ -2,13 +2,23 @@
 This is experimental app trying to detect your pulse from fine video source or camera source. See __documentation__ for more information.
 
 ### Dependencies
-* OpenCv
 * C++
-* CMake
-* ffmpeg library (optional) for better video processing
+* OpenCv > 2
+  * --with-ffmpeg support
+  * --with-qt support
+* Qt5 framework
+* CMake > 3
 
 ### How to run
-Install all dependencies at first. App is compiled via CMake. Navigate to app folder then run:
+Install all dependencies at first. App is compiled via CMake. Navigate to app folder. Folder must be writable, you could run:
+
+`chmod 777 ./`
+
+The run following commands:
+
+`cmake`
+``
+
 
 ## OS X
 Prefered way via brew.

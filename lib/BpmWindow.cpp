@@ -2,7 +2,7 @@
 // Created by Michal on 08/02/16.
 //
 
-#include "Bpm.h"
+#include "BpmWindow.h"
 
 // Constructor
 
@@ -95,6 +95,7 @@ int Bpm::run() {
             return runRealVideoMode();
     }
 
+    return 0;
 }
 
 int Bpm::runRealVideoMode() {

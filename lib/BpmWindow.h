@@ -15,7 +15,7 @@
 #include <opencv2/imgproc/imgproc_c.h>
 
 // Classes
-#include "./lib/AmplificationWorker.h"
+#include "./lib/Middleware.h"
 #include "./lib/Detector.h"
 
 // Functions
@@ -23,8 +23,6 @@
 
 // Configuration
 #include "./config.h"
-
-#include "skinDetect.h"
 
 // Detectors
 #define FULL_FACE 10
@@ -48,7 +46,7 @@ class Bpm {
         int sourceMode;
 
         // DEFAULT VIDEO NAME - must be in repository
-        string videoFilePath = (string) VIDEO_SAMPLES_DIR + "/old/reference.mp4";
+        string videoFilePath;
 
         // FOURIER_MASK_MODE / FAKE_BEATING_MODE
         int maskMode;

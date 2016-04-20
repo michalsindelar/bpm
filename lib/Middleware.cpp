@@ -2,7 +2,7 @@
 // Created by Michal on 08/02/16.
 //
 
-#include "AmplificationWorker.h"
+#include "Middleware.h"
 
 AmplificationWorker::AmplificationWorker() {
     // Default fps

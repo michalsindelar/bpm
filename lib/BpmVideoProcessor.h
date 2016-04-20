@@ -16,7 +16,7 @@
 #include "Detector.h"
 
 // Configuration
-#include "./../config.h"
+#include "constants.h"
 
 
 class BpmVideoProcessor {
