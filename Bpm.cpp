@@ -146,7 +146,9 @@ int Bpm::runRealVideoMode() {
         // TODO: Check if this is performance ok
         visualize(in, out, index);
 
-        if (saveOutput) {
+
+        // Start to save file after visualization is detected
+        if (saveOutput && this->state == VISUALIZATION_DETECTED) {
             output.write(out);
         }
 
@@ -158,6 +160,8 @@ int Bpm::runRealVideoMode() {
         // Handling frame rate & time for closing window
         if (waitKey(1) >= 0) break;
     }
+
+    destroyAllWindows();
 
     return 0;
 }
