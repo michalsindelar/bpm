@@ -168,7 +168,7 @@ int Bpm::runStaticVideoMode() {
     Mat in;
 
     // We need to have both faces detected
-    while(!isFaceDetected(this->fullFace) || !isFaceDetected(this->fullFace)) {
+    while(!isFaceDetected(this->fullFace) || !isFaceDetected(this->resizedFace)) {
         input >> in;
 
         // Check full face detector
@@ -223,6 +223,13 @@ int Bpm::runStaticVideoMode() {
             input >> in;
         }
 
+        // In static mode we want to save full resolution image
+        if (saveOutput) {
+            Mat out = Mat(in.rows, in.cols, in.type());
+            visualizeAmplified(in, out, frame, true);
+            output.write(out);
+        }
+
         // Resize captured frame!
         in = resizeImage(in, RESIZED_FRAME_WIDTH);
 
@@ -230,10 +237,6 @@ int Bpm::runStaticVideoMode() {
         Mat out = Mat(in.rows, in.cols, in.type());
 
         visualizeAmplified(in, out, frame);
-
-        if (saveOutput) {
-            output.write(out);
-        }
 
         // Merge original + adjusted
         hconcat(out, in, window);
@@ -420,28 +423,36 @@ void Bpm::visualizeDetected(Mat &in) {
     }
 }
 
+void Bpm::visualizeAmplified(Mat &in, Mat &out, int index, bool origSize) {
+    // Orig full size vs Resized
+    Rect face = origSize ? this->fullFace : this->resizedFace;
+    Size frameSize = origSize ? this->origFrameSize : this->frameSize;
 
-void Bpm::visualizeAmplified(Mat &in, Mat &out, int index) {
     Mat visual = Mat::zeros(in.rows, in.cols, in.type());
-
     // As we crop mask in own THREAD while amplification
     // These steps are appli only if detected face positon has significantly changed
     Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()),
-                          tmpFace.width - 2 * ERASED_BORDER_WIDTH);
+                          face.width - 2 * ERASED_BORDER_WIDTH);
 
     // Important range check
-    Rect roi(tmpFace.x, tmpFace.y, tmp.cols, tmp.rows);
+    Rect roi(face.x, face.y, tmp.cols, tmp.rows);
     handleRoiPlacement(roi, frameSize, ERASED_BORDER_WIDTH);
     roi.x = roi.y = 0;
 
     // Crop in case mask would be outside frame
     tmp = tmp(roi);
 
-    tmp.copyTo(visual(Rect(tmpFace.x + ERASED_BORDER_WIDTH, tmpFace.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
+    tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
     out = in + this->beatVisibilityFactor * visual;
 
     putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
             Scalar(200, 200, 200), 2);
+}
+
+
+void Bpm::visualizeAmplified(Mat &in, Mat &out, int index) {
+    // Default face is tmp face
+    visualizeAmplified(in, out, index, false);
 }
 
 void Bpm::updateFace(Rect src, Rect& dst) {

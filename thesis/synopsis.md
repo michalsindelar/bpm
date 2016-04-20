@@ -117,6 +117,20 @@
 * Postranní strips - ground truth background
 
 ---
-### Notes
-* While describing how many frames are necessary for correct compute of bpm we cannot say just thre more frames we have, the more precise results we got - probably because of some long terms freq changes present in video
+## Notes - not part of synopsis
+### General reminders
+* While describing how many frames are necessary for correct compute of bpm we cannot say just the more frames we have, the more precise results we got - probably because of some long terms freq changes present in video
 * discuss ffmpeg in opencv which significantly reduce performing grabbing frames operations from source video
+* provide explanation why is setting of fps in camera mode so weird (unable to hard set fps to )
+
+### Data generating
+#### Options for
+* Real bpm vs computed bpm difference
+* Output amplified video
+* Intensities data
+  * global intensities
+  * detected forehead intensities
+  * channels differences (as we use only green channel we should provide data that it's really best )
+  * show mean vs average differences - maybe decide according to data analyze for better Options
+  * ** Graphs ** - should be illustrated via graphs
+  * before & after bandpass filtering

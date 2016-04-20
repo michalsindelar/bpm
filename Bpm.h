@@ -126,6 +126,7 @@ class Bpm {
 
         void visualize(Mat & in, Mat & out, int index);
         void visualizeDetected(Mat & in);
+        void visualizeAmplified(Mat & in, Mat & out, int index, bool origSize);
         void visualizeAmplified(Mat & in, Mat & out, int index);
 
         void handleDetector(Mat in, int type);
