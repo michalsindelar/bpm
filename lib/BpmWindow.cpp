@@ -8,7 +8,7 @@
 
 
 
-int Bpm::init(int sourceMode, int maskMode) {
+void Bpm::init(int sourceMode, int maskMode) {
 
     this->sourceMode = sourceMode;
     this->maskMode = maskMode;

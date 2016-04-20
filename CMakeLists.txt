@@ -17,7 +17,7 @@ include_directories(${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 
 set(SOURCE_FILES
-    bpm/main.cpp
+        main.cpp
     lib/imageOperation.cpp
     lib/imageOperation.h
     lib/BpmWindow.cpp

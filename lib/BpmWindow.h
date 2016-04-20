@@ -15,14 +15,14 @@
 #include <opencv2/imgproc/imgproc_c.h>
 
 // Classes
-#include "./lib/Middleware.h"
-#include "./lib/Detector.h"
+#include "./Middleware.h"
+#include "./Detector.h"
 
 // Functions
-#include "./lib/imageOperation.h"
+#include "./imageOperation.h"
 
 // Configuration
-#include "./config.h"
+#include "./../constants.h"
 
 // Detectors
 #define FULL_FACE 10
@@ -101,7 +101,7 @@ class Bpm {
         int workerIteration;
 
     public:
-        int init(int mode, int maskMode);
+        void init(int mode, int maskMode);
 
         // Runt modes
         int run();
