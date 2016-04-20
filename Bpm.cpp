@@ -44,10 +44,9 @@ int Bpm::init(int sourceMode, int maskMode) {
 
     }
 
+    this->origFrameSize = Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT));
     // COMPUTE RESIZED FRAME SIZE
-    this->frameSize = getResizedSize(
-            Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT)),
-            RESIZED_FRAME_WIDTH);
+    this->frameSize = getResizedSize(origFrameSize, RESIZED_FRAME_WIDTH);
 
     // INITALIZE MIDDLEWARE
     // TODO: Rename to middleware
@@ -55,12 +54,10 @@ int Bpm::init(int sourceMode, int maskMode) {
     this->bpmWorker.setFps(fps);
     this->bpmWorker.setBufferFrames(bufferFrames);
 
-    // TODO: Will be known from modes selector window gui
-    // TODO: Function
-    this->saveOutput = false;
+    // MAYBE OPEN OUTPUT FILE
     if (saveOutput) {
-        output.open((string) PROJECT_DIR + "/output/out.avi", CV_FOURCC('m', 'p', '4', 'v'), this->fps, Size(600, 400),
-                    true);
+        Size outputSize = (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) ? origFrameSize : frameSize;
+        output.open(this->outputFilePath, CV_FOURCC('M', 'J', 'P', 'G'), this->fps, outputSize, true);
     }
 
     this->measuringIteration = 20;
@@ -73,7 +70,7 @@ int Bpm::init(int sourceMode, int maskMode) {
         dataFile.close();
     }
 
-    // State
+    // Initial state
     this->state = DETECTING;
 
     // State notes
@@ -149,11 +146,11 @@ int Bpm::runRealVideoMode() {
         // TODO: Check if this is performance ok
         visualize(in, out, index);
 
-        if (false) {
+        if (saveOutput) {
             output.write(out);
         }
 
-        renderMainWindow(in, out);
+        renderMainWindow(in, out, index);
 
         // Put the image onto a screen
         imshow(this->OSWindowName, window);
@@ -390,8 +387,6 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
 
     if (state == FETCHING) {
         out = in.clone();
-        putText(out, "Needed more " + to_string(bufferFrames - index) + " frames", Point(20, out.rows - 30), FONT_HERSHEY_SIMPLEX,
-                1.0, Scalar(200, 200, 200), 2);
     }
     else if (state == BPM_DETECTED) {
         out = in.clone();
@@ -429,7 +424,7 @@ void Bpm::visualizeDetected(Mat &in) {
 void Bpm::visualizeAmplified(Mat &in, Mat &out, int index) {
     Mat visual = Mat::zeros(in.rows, in.cols, in.type());
 
-    // As we crop mask in own thread while amplification
+    // As we crop mask in own THREAD while amplification
     // These steps are appli only if detected face positon has significantly changed
     Mat tmp = resizeImage(this->bpmVisualization.at(index % this->bpmVisualization.size()),
                           tmpFace.width - 2 * ERASED_BORDER_WIDTH);
@@ -551,9 +546,9 @@ void Bpm::fillLoadingNotes() {
 }
 
 
-void Bpm::renderMainWindow(Mat &a, Mat &b) {
+void Bpm::renderMainWindow(Mat &a, Mat &b, int index) {
     // Render state note to state bar
-    renderStateBar();
+    renderStateBar(index);
     // Merge frames & status bar together
     mergeMainWindow(a, b);
 }
@@ -566,12 +561,14 @@ void Bpm::mergeMainWindow(Mat &a, Mat &b) {
     vconcat(window, stateBar, window);
 }
 
-void Bpm::renderStateBar() {
+void Bpm::renderStateBar(int index) {
     // Default bg background
+
     this->stateBar = Scalar(246,246,246);
     putText(
             this->stateBar,
-            this->stateNotes[this->state]+"...",
+            this->stateNotes[this->state]
+            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(bufferFrames - index) + " frames") : ""),
             Point(20, 20),
             FONT_HERSHEY_SIMPLEX,
             0.5f, // font scale

@@ -69,6 +69,7 @@ class Bpm {
 
         // Size of resized input
         Size frameSize;
+        Size origFrameSize;
 
         // Video objects
         VideoCapture input;
@@ -132,9 +133,9 @@ class Bpm {
         void fillLoadingNotes();
 
         // OS Window
-        void renderMainWindow(Mat &a, Mat &b);
+        void renderMainWindow(Mat &a, Mat &b, int main);
         void mergeMainWindow(Mat &a, Mat &b);
-        void renderStateBar();
+        void renderStateBar(int index);
 
         void setMode(int mode) {
             Bpm::maskMode = mode;

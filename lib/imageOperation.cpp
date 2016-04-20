@@ -10,10 +10,10 @@ Mat resizeImage (Mat image, const double width, int interpolation) {
     return image;
 }
 
-Size getResizedSize(Size origSize, const double width) {
+Size getResizedSize(const Size origSize, const double width) {
     // Keep aspect ratio
     double aspect = (double) origSize.width / origSize.height;
-    return Size(width, width / aspect);
+    return Size((int) round(width), (int) round(width / aspect));
 }
 
 Mat resizeImage(Mat image, const double width) {
