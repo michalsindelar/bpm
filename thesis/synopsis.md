@@ -3,6 +3,8 @@
 ## Shrnutí
 * shrnutí práce
 
+## Úvod
+
 ## Teoretický uvod & vymezení pojmů
 * Eulerian magnification
   * Image pyramid
@@ -97,6 +99,7 @@
 * zmínit požadavky na vstupní videa
   * bez velkých globálních světelných změn
   * SNR signal to noise ratio
+  * fps - zmínit nyquist fraquency
   * resolution - dokázat s daty
   * musí být detekován obličej
   * dostupné čelo bez vlasů
@@ -137,3 +140,27 @@
   * show mean vs average differences - maybe decide according to data analyze for better Options
   * ** Graphs ** - should be illustrated via graphs
   * before & after bandpass filtering
+
+### Others
+* Measure one super perfect video with good camera - e. g. only forehead and try to extract really good graph of intensities from it
+* Bandpassing eliminates phantoms in video such as repiration movements
+* Takto ocitovat
+  * H. Wu et al. Eulerian video magnification for revealing subtle
+changes in the world. ACM Trans. Graph. (Proceedings
+SIGGRAPH 2012), 31(4), 2012.
+---
+## TODO:
+### Must do
+* Dynamically compute fps of camera
+```
+  grabbedFrameTimes = [];
+  foreach inputStream as inputFrame
+    grabbedFrameTimes.push(currentTime);
+  end
+  avgDiff = computeAvgDiffrence();
+  fps = mapToFps(avgDiff);
+```
+### Nice to have
+* Better Qt gui
+* Global light changes supression
+  * Study resources
