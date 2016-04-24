@@ -101,11 +101,23 @@ Literatura: Hao-Yu Wu, Michael Rubinstein, Eugene Shih, John Guttag, Fredo Duran
 
 \chapter{Úvod}
 Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep se projevuje mnoha jevy v lidském těle.
+% TODO: Delší text
 
-TODO: Zde doplnit obecné texty okolo lidského tepu
+Cílem této aplikace je využití fyziologických vlastností, které se projevují díky proudění tepu v krvi, nejdříve určení tepové frekvence snímaného a následné vhodné vyobrazení detekovaného rytmu.
 
-\chapter{Požadavky na aplikaci}
-Zde napíšu co všechno má práce splňovat,
+Aplikace bude pracovat buď s vloženým záznamem, nebo pro záznam bude využívat přímo webkameru zařízení, na kterém poběží. Při snímání pomocí levnějších (běžných) webkamer se dají očekávat problémy s proměnlivou vzorkovací frekvencí a také s automatickou změnou expozice.
+
+Vytvoříme tedy celkem 3 různé režimy
+\begin{enumerate}
+	\item \emph{Statický} režim při dodaném záznamu \\
+    V tomto režimu uživatel dodá aplikaci hotový záznam. Ta bude zpracovávat záznam celý a výpočet skončí až po zpracování celého videa. Tento režim by měl (v závislosti na délce videa) vést k nejlepším výsledkům, zároveň je ale časově nejnáročnější a prodleva bez interakce s uživatelem je po celou dobu zpracování. Při implementaci se pokusím najít dostatečný počet zpracovávaných snímků z videa, které stačí pro stabilní detekci tepu a pro jeho zobrazení a zpracování videa rozdělit do více vláken pro urychlení výpočtu.
+    \item \emph{Reálný} \footnote{Slovem \emph{reálný} rozumějme situaci, kdy všechny výpočty probíhají paralelně se zobrazovaným výstupem uživateli. } režim webkamera \\
+    V tomto režimu bude aplikace přímo snímat záznam z webkamery. Snímaný obraz bude aplikace přímo zobrazovat a po výpočtu bude vhodně zobrazovat originální a zpracované video se zvýrazněnou fluktuací krve vedle sebe.
+	\item \emph{Reálný} režim při dodaném záznamu \\
+    Tento režim bude v velmi podobný předchozímu režimu se snímáním pomocí webkamery. Je vytvořen především kvůli jednoduššímu testování a hlavně kvůli tomu, aby simuloval chování pří zpracování online záznamu a nemusel se zaobírat případnými problémy se snímáním webkamerou.
+\end{enumerate}
+
+Všechny režimy budou mít možnost uložení výstupu. V případě \emph{statického} režimu to bude uložení celého zpracovaného záznamu. Ve zbývajících to potom bude ukládání výstupu, dokud uživatel program neukončí.
 
 \chapter{Aparáty pro realizaci práce}
 \section{Určení tepu}
@@ -137,7 +149,23 @@ Při proudění krve se přenáší metaloprotein červených krvinek hemoglobin
 Pro detekci tepu jsem si vybral tuto metodu, protože výsledky experimentů\cite{remote-plethysmographic} zkoumajících pletysmografické signály odpovídající tepu by měly být časově méně náročné (délka záznamu pleti) než přecházející metoda.
 
 \section {Vizualizace tepu}
-Pro vizualizaci tepu jsem se rozhodl využít \emph{Eulerian magnification} algoritmus.
+Pro vizualizaci tepu jsem se rozhodl využít algoritmus nazvaný \emph{Eulerian Video Magnification}\footfullcite{eulerian-magnification} algoritmus. Cílem tohoto algoritmu je odhalovat změny v optických záznamech, které je pouhým okem nemožné (nebo velmi těžce) pozorovat.
+
+Zaměřuje se na dva typy změn:
+\begin{itemize}
+	\item Zvýraznění malých pohybů
+    \item Zvýraznění barevných změn
+\end{itemize}
+
+V publikaci je přímo ukázané zvýraznění proudění krve v obličeji při známé tepové frekvenci a se zaměřením algoritmu právě na tuto frekvenci.
+
+Dostupný je implementovaný algoritmus v platformě MATLAB
+\footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s výbornou schopností vyjadřovat matematické výpočty. Blíže viz http://www.mathworks.com/products/matlab/.}.
+Implementovaný program funguje dobře, nicméně kvůli je příliš pomalý na to, aby byl použitelný v kontextu online zpracování. Zpracování videa při rozlišení
+%TODO: trvá nejméně
+
+
+
 
 \chapter{These are}
 \begin{otherlanguage}{czech}
