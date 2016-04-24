@@ -55,6 +55,8 @@
 * Zmínit psaní v ide JetBrains CLion?
 
 ## Návrh aplikace
+* Videa pro demonstraci, že postup funguje manuálně čelo, ruka apod.
+
 * Hrubý popis jak by měla aplikace fungovat (pohled uživatele)
 * Hlavni rozhrani
 * Detekce - lock pozice
@@ -84,6 +86,7 @@
   * intenzity v zeleném kanalu s detekovaným čelem
   * průměrné intenzity vs medián
   * potlačení globálních světelných změn - jako finální měření
+  * jestli budu video registrovat - toto by šlo implementovat alespoň do statistického módu
 
 ### Měření dat a porovnávání s Ground truth (tlakoměr)
 * generovat tabulky a porovnávat s gt
