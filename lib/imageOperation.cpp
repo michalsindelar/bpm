@@ -240,6 +240,10 @@ float freqToBpmMapper(int fps, int framesCount, int index) {
     return (int) (round((SECONDS_IN_MINUTE * (float) fps * (index+1)) / framesCount));
 }
 
+float findStrongestRowFreq(vector<double> row, int fps) {
+    findStrongestRowFreq(row, row.size(), fps);
+}
+
 float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
     // Create matrix from intensitySum
     float maxValue = 0;

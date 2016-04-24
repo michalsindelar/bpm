@@ -59,6 +59,7 @@ void normalizeVid(vector<Mat>& video, int min, int max, int type);
 
 // Frequency tools helpers
 float freqToBpmMapper(int fps, int framesCount, int index);
+float findStrongestRowFreq(vector<double> row, int fps);
 float findStrongestRowFreq(vector<double> row, int framesCount, int fps);
 float findStrongestRowFreq(Mat row, int framesCount, int fps);
 
