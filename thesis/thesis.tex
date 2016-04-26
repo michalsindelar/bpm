@@ -100,10 +100,47 @@ Literatura: Hao-Yu Wu, Michael Rubinstein, Eugene Shih, John Guttag, Fredo Duran
 \begin{document}
 
 \chapter{Úvod}
-Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep se projevuje mnoha jevy v lidském těle.
-% TODO: Delší text
+\section{Digitální zpracování obrazu}
+Digitální zpracování obrazu je vědní obor informatiky, který nabízí techniky pro zkoumání digitálního obrazu za účelem zisku informací, či vyprodukování \emph{vylepšeného} obrazu. Typickým odvětvím, ve kterém nachází digitální zpracování obrazu uplatnění je medicína.
 
-Cílem této aplikace je využití fyziologických vlastností, které se projevují díky proudění tepu v krvi, nejdříve určení tepové frekvence snímaného a následné vhodné vyobrazení detekovaného rytmu.
+V medicíné se využívá např. pro zobrazení výsledků rentgenu, magnetické rezonanzce a dalších. Tato práce se bude zabývat dalším potenciálním využitím digitálního zpracování obrazu konkrétně pro zkoumání tepové frekvence lidského těla z optického záznamu.
+
+\section{Tepová frekvence}
+Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep odpovídá počet úderů srdce za minutu Jeho hodnota se liší člověk od člověka.
+
+Klidová tepová frekvence je jedním ze základních rutinnách měření v medicínské péči. Tato frekvence, odpovídá situaci, kdy srdce vypuzuje minimální množství krve, člověk je zdravý a ve fyzickém i psychickém klidu.
+
+Pro určení rozmezí tepu, které má smysl zkoumat práce využívá \emph{Národní zdravotní statistické záznamy}\cite{national-health-statistics-reports} měřené v roce 2011 v USA. Klidový tep ovlivňuje více faktorů jako fyzická kondice, zdraví a především věk. Pro novorozence do jednoho roku je průměrná frekvence 129 tepů/min zatímco pro dospělé už jen 72 tepů/min.
+
+Obecně se srdeční frekvence nižší než 60 tepů považuje za abnormálně pomalou a označuje se jako bradykardie
+\cite{http://www.heart.org/HEARTORG/Conditions/Arrhythmia/AboutArrhythmia/Bradycardia-Slow-Heart-Rate_UCM_302016_Article.jsp}.
+Určení se ovšem vždy vztahuje i k věkové a výkonnostní kategorii, např. u sportovců je běžně mít sníženou klidovou frekvenci. Opakem bradykardie je tachykardie
+\cite{http://www.heart.org/HEARTORG/Conditions/Arrhythmia/AboutArrhythmia/Tachycardia-Fast-Heart-Rate_UCM_302018_Article.jsp} obvykle diagnostikována nad 100 tepů/min (u dospělých).
+
+Pro účel práce vyloučíme abnormální případy a zaměříme se na rozmzí 55-180 tepů/min, kterým pokryjeme až
+% TODO: Citovat něco z national statiscs document
+95\% všech případů. Tyto hraniční hodnoty budou stěžejní při odhalování výsledné frekvence z videa.
+
+Srdeční tep můžeme znázornit pomocí přístroje EKG. EKG je zkratka pro vyšetřovací metodu zvanou elektrokardiografie, který snímá elektrické srdeční aktivity. Zanáší je do grafu zvaného elektrokardiogram\ref{fig:electrocardiograph} a umožňuje hodnocení aktivity
+\footnote{Blíže viz \url{http://emedicine.medscape.com/article/1894014-overview>}}.
+
+Na grafu elektrokardiogramu\ref{fig:electrocardiograph} (zjednodušeně řečeno) odpovídají lokální minima jednotlivým úderům srdce.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=80mm]{images/electrocardiograph.png}
+  \end{center}
+  \caption{Příklad ideálního elektrokardiogramu. Převzato a následně upraveno z \url{<http://people.csail.mit.edu/balakg/cvpr2013_pulsepaper.pdf>}}
+  \label{fig:electrocardiograph}
+\end{figure}
+
+% TODO: Delší text
+% Podstatně prdloužit text, zde by mělo zaznít jaký má kdo tep
+% Vložit tabulku závislosti tepu na stáří
+% Vložit jak vypada ekg gram - souvislost
+
+\section{Cíle aplikace}
+Cílem této aplikace je využití fyziologických vlastností proudění krve v těle za účelem určení tepové frekvence pouze ze záznamu obličeje a následně jejím vhodným zobrazením uživateli.
 
 Aplikace bude pracovat buď s vloženým záznamem, nebo pro záznam bude využívat přímo webkameru zařízení, na kterém poběží. Při snímání pomocí levnějších (běžných) webkamer se dají očekávat problémy s proměnlivou vzorkovací frekvencí a také s automatickou změnou expozice.
 
@@ -119,37 +156,118 @@ Vytvoříme tedy celkem 3 různé režimy
 
 Všechny režimy budou mít možnost uložení výstupu. V případě \emph{statického} režimu to bude uložení celého zpracovaného záznamu. Ve zbývajících to potom bude ukládání výstupu, dokud uživatel program neukončí.
 
+\chapter{Teorie}
+V práci budeme využívat pojmy v kontextu digitálního obrazu:
+\section{Diskrétní obraz}
+\subsection{Diskrétní šedotónový obraz}
+Práce bude pracovat s definicí šedotónového obrazu jako intenzitní funkce $E$, která pro každý obrazový pixel $p = (x,y)$ přiřazuje příslušnou hodnotu $E(x,y)$, tedy
+\texttt{equation}
+\begin{equation}
+	E(p) = E(x,y)
+\end{equation}
+
+\begin {itemize}
+    \item $x,y$ označíme jako celočíselné souřadnice obrazu
+    \item $0 \leq x \leq M-1$, $0 \leq x \leq N-1$
+    \item $M, N$ odpovídá rozlišení obrazu
+	\item Šedotómové intenzity $u$ nabývají hodnot $0 \leq u \leq G_{max}$
+    \item Práce pracuje se standardním 8-bitovým obrazem, tedy  $G_{max} = 2^8 - 1 = 255$
+\end {itemize}
+
+\subsection {Diskrétní barevný obraz (se třemi kanály)}
+    Práce bude dále pracovat s definicí berevného obrazu jako  $C$ se třemi kanály.
+\texttt{equation}
+\begin{equation}
+	C(x,y) = (u_1(x,y), u_2(x,y), u_3(x,y))^T = (u_1, u_2, u_3)^T
+\end{equation}
+\begin{itemize}
+    \item souřadnice $x,y$ jsou definovány stejně jako v případě šedotónového obrazu
+    % $x \in {x_1, ... , x_{nx}}, x_i = x_{min}+(i-1)*\Delta x, x_i \in R, \Delta x \in R$ \\
+	% $y \in {y_1, ... , y_{ny}}, y_i = y_{min}+(i-1)*\Delta y, y_i \in R, \Delta y \in R$ \\
+\end{itemize}
+	Každý vektor $(u_1, u_2, u_3)^T$, kde $0 \leq (u_1, u_2, u_3) \leq G_{max} $ odpovídá konkrétní barvě v barevném prostoru. V práci práci bude nejvíce použit barevný prostor \emph{RGB}, kde můžeme pro lepší orientaci označit $(u_1, u_2, u_3) = (r,g,b)$ případně minoritně \emph{NTSC}.
+
+\subsection{Záznam}
+Za záznam se dále považuje pole $V$ diskrétních barevných obrazů v barevném prostoru \emph{RGB}. Potom i-tý snímek odpovídá:
+\begin{equation}
+	C_i = V(C,i)
+\end{equation}
+\begin{itemize}
+	\item $i$ je index snímku v poli $V$
+    \item $0 \leq i \leq K$
+    \item $K$ délka pole $V$
+\end{itemize}
+
+\section{Fourierova transformace}
+    Pro analýzu frekvencí budeme využívat Fourierovu transformaci. Která je difnovaná jako: \\
+    $\Phi(\omega_x)= \int_{-\infty}^{\infty} \! f(x)exp[-i\omega_xx]\, \mathrm{d}x, i =\sqrt{-1}$, kde: \\
+    \begin{itemize}
+    	\item proměnná $\omega_x$ se nazývá jako \emph{prostorová / časová} frekvence \\
+	    \item proměnné $x$ a $\omega_x$ stejně jako hodnoty funkce $f(x)$ jsou reálná čísla \\
+		\item hodnoty funkce $\Phi(\omega_x)$ jsou komplexní čísla \\
+	    \item hodnota funkce $\Phi(\omega_x)$ pro dané $\omega_x$ je závislá na všech hodnotách $f(x)$ pro všecha $x$\\
+	\end{itemize}
+    Podrobněji se Fourierově transformaci budeme věnovat přímo při popisu použití.
+
+
 \chapter{Aparáty pro realizaci práce}
+Lidské vidění má omezenou citlivost na prostorovo-časové změny \cite{eulerian-magnification}.
+Mnoho změn, které spadají mimo rozeznávací schopnosti nesou informace, které můžeme využívat pro různé účely. V kontextu této práce se budeme zabývat změnami, které jsou způsobené tepem (resp. prouděním krve). Takovéto změny jsou pro lidské oko nepostřehnutelné, ale pomocí záznamu kvalitní optickou soustavou a následným digitálním zpracováním obrazu je můžeme odhalit.
+
 \section{Určení tepu}
 Pro potřeby zkoumání pomocí optického záznamu se budeme zabývat tzv. neinvazními metodami.
-\subsection{Neinvazivní metody}
-Obecně v medicíně slovem \emph{neinvazivní} myslíme metody takové, při kterých není nutný zásah do lidského těla jako např. propíchnutí pleti v kontextu vyšetřovacích metod. My v kontextu práce samozřejmě eliminujeme i požadavek na připevnění jakéhokoli snímače na tělo snímané osoby.
 
-Pro účely této práce se nabízí dvě nejznámější neinvazivní vyšetřovací metody a to:
+\subsection{Neinvazivní metody}
+Obecně v medicíně spojením \emph{neinvazivní metody} myslíme taková vyšetření, při kterých není nutný zásah do lidského těla jako např. propíchnutí pleti v kontextu vyšetřovacích metod. My v kontextu práce samozřejmě eliminujeme i požadavek na připevnění jakéhokoli snímače na tělo snímané osoby.
+
+Pro účely této práce se nabízí dvě neinvazivní vyšetřovací metody a to:
 \begin{itemize}
-	\item Balistokardiografie \footnote{TODO: Publikace MIT }.
+	\item Balistokardiografie
+    	\cite{balistography-source}.
     \item Pletysmografie
-    	\footfullcite{remote-plethysmographic}.
+    	\cite{remote-plethysmographic}.
 \end{itemize}
 
 \subsubsection{Balistokardiografie}
 Balistokardiografie je neinvazivní metoda, která snímá pohyby částí těla činností kardiovaskulární aktivitou. Detekce tepu pomocí balistokardiografie spočívá v analýze pohybů obličeje s omezením na ty, které jsou odpovídají přílivu krve při každém úderu srdce.
 
-Využitím této metody se již zabývala skupina vědců z MIT\footfullcite{headmotion-detection}. Pro experimentální určení tepu z optického záznamu využívají videa obličeje o minimální délce 60 - 90 sekund. V algoritmu využívají sledování obličeje pomocí registrace obrazu. Následně změny promítají na 1D signál, ve kterém hledají vrcholy grafu, které odpovídají úderům srdce.
+Využitím této metody se již zabývala skupina vědců z MIT\cite{headmotion-detection}. Pro experimentální určení tepu z optického záznamu využívají videa obličeje o minimální délce 60 - 90 sekund. V algoritmu využívají sledování obličeje pomocí registrace obrazu. Následně změny promítají na 1D signál, ve kterém hledají vrcholy grafu, které odpovídají úderům srdce.
 
 Velkou výhodou jsou malé, resp. žádné nároky na viditelnost kůže. Např. v publikaci je dosaženo téměř stejných výsledků i v případě, že má snímaný na obličeji masku. Naopak největším problémem tohoto postupu je příliš velká časová náročnost, už jen samotné snímání podle autorů a jejich měření musí být minimálně minuta, tímto se postup stává pro účely této práce nevhodným.
 
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=80mm]{images/balistocardiography-alg.png}
+  \end{center}
+  \caption{Příklad vlastních vektorů při detekci tepu pomocí balistokardiografických pohybů obličeje. Každá bílá šipka odpovídá amplitudě a směru kontribuce příslušného registrovaného bodu k vlastnímu vektoru. Převzato z \url{<http://people.csail.mit.edu/balakg/cvpr2013_pulsepaper.pdf>}}
+  \label{fig:balistografie-princip}
+\end{figure}
+
 \subsubsection{Pletysmografie}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=100mm]{images/pletysmography-alg-pulse.png}
+  \end{center}
+  \caption{Zvýrazněný princip fotopletysmografie.}
+  \label{fig:pletysmography-princip}
+\end{figure}
+
 Pletysmografie obecně vychází z měření změn velikosti orgánů. Vyšetření je realizováno pomocí pletysmografu \footnote{Přístroj, který se používá při běžných vyšetřeních, např. při pletysmografii plic.}.
 
-Z této metody vychází fotopletysmografie (PPG). Tato disciplína byla představena v roce 1930 a využívá světelnou odrazivost či propustnost krve. Vycházi z principu krev absorbuje více světla než okolní tkáň \footfullcite{photo-plethysmographic}.
+Z této metody vychází fotopletysmografie (PPG). Tato disciplína byla představena v roce 1930 a využívá světelnou odrazivost či propustnost krve. Vycházi z principu krev absorbuje více světla než okolní tkáň \cite{photo-plethysmographic}.
 
-Při proudění krve se přenáší metaloprotein červených krvinek hemoglobin. Tato látka způsobuje fotopletysmografické signály, které se vyskytují ve všech barevných kanálech. Nejsilnější jsou změny v zeleném kanálu, neboť hemoglobin absorbuje zelené světlo než jiné \footfullcite{green-channel-strongest}.
+Při proudění krve se přenáší metaloprotein červených krvinek hemoglobin. Tato látka vytváří pletysmografické signály, které se vyskytují ve všech barevných kanálech při zaznaménání pokožky v závislosti na čase. Nejsilnější jsou změny v zeleném kanálu, neboť hemoglobin absorbuje zelenou složku světla více než jiné \cite{green-channel-strongest}. Z tohoto důvodu se zpravidla nejvíce zkoumají intenzity právě zeleného kanálu.
 
-Pro detekci tepu jsem si vybral tuto metodu, protože výsledky experimentů\cite{remote-plethysmographic} zkoumajících pletysmografické signály odpovídající tepu by měly být časově méně náročné (délka záznamu pleti) než přecházející metoda.
+Čím větší plochu ve snímcích záznamu zabírá pokožka, tím se dají změny zaznamenat přesněji. Nejstabilnější využití tohoto přístupu se zdá být v případě, že pokožka zabírá celou plochu záznamu
+\footnote{Tento postup využívá např. aplikace \emph{Instant Heart Rate} dostupná pro platformu Android z https://play.google.com/store/apps/details?id=si.modula.android.instantheartrate.}. V kontextu aplikace se budeme snažit extrahovat dostatešně množství pixelů ze záznamu obličeje.
+
+Ilustrace pricipu viz \ref{fig:pletysmography-princip}. V závistlosti na čase se mění průměrná intenzita v barevných kanálech v kůži. Tyto změny by měly odpovídat tepové frekvenci srdce, která je znázorněná elektrokardiografem pod obrázkem.
+
+Pro detekci tepu jsem si vybral tuto metodu, protože výsledky experimentů\cite{remote-plethysmographic} zkoumajících pletysmografické signály odpovídající tepu by měly být časově méně náročné (délka záznamu i samotné zpracování) a stabilnější než přecházející metoda.
 
 \section {Vizualizace tepu}
-Pro vizualizaci tepu jsem se rozhodl využít algoritmus nazvaný \emph{Eulerian Video Magnification}\footfullcite{eulerian-magnification} algoritmus. Cílem tohoto algoritmu je odhalovat změny v optických záznamech, které je pouhým okem nemožné (nebo velmi těžce) pozorovat.
+Pro vizualizaci tepu jsem se rozhodl využít algoritmus nazvaný \emph{Eulerian Video Magnification}\cite{eulerian-magnification} algoritmus. Cílem tohoto algoritmu je odhalovat změny v optických záznamech, které je pouhým okem nemožné (nebo velmi těžce) pozorovat.
 
 Zaměřuje se na dva typy změn:
 \begin{itemize}
@@ -157,16 +275,106 @@ Zaměřuje se na dva typy změn:
     \item Zvýraznění barevných změn
 \end{itemize}
 
-V publikaci je přímo ukázané zvýraznění proudění krve v obličeji při známé tepové frekvenci a se zaměřením algoritmu právě na tuto frekvenci.
+Postup pro zváýraznění barevných změn funguje na principu zvýrazňování frekvencí v časové frekvenční doméně.
+V publikaci je přímo ukázané zvýraznění proudění krve v obličeji za předpokladu, že dopředu známe tepovou frekvenci, kterou bude algoritmus zvýrazňovat.
 
-Dostupný je implementovaný algoritmus v platformě MATLAB
-\footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s výbornou schopností vyjadřovat matematické výpočty. Blíže viz http://www.mathworks.com/products/matlab/.}.
-Implementovaný program funguje dobře, nicméně kvůli je příliš pomalý na to, aby byl použitelný v kontextu online zpracování. Zpracování videa při rozlišení
+Dostupný je implementovaný algoritmus
+\footnote{Implementace v MATLABu i spustielný program je dostupný z webových stránek projektu \url{<http://people.csail.mit.edu/mrub/evm/>}}
+v platformě MATLAB
+\footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s výbornou schopností vyjadřovat matematické výpočty. Blíže viz \url{<http://www.mathworks.com/products/matlab/.>}}.
+Implementace v MATLABu funguje dobře, nicméně je příliš pomalý na to, aby byl použitelný v kontextu online zpracování. Zpracování celého videa při rozlišení
 %TODO: trvá nejméně
 
+Proto jsem se rozhodl algoritmus reimplementovat, podrobněji prozkoumat, případně upravit, aby byl použitelný i pro toto využití.
+
+\chapter{Použité technologie}
+Cíle této práce kladou velké nároky na výkon implementace. Aplikace bude zpracovávat náročný vstup v podobě optického záznamu, na který budou kladeny požadavky o minimálním rozlišení a kvalitě.
+
+Po stanovení cílů aplikace jsem se pro implementaci rozhodl využít kompilovaný jazyk C++, který je pro svou rychlost vhodným pro tuto práci. Pro operace zpracování zpracování obrazu budu využívat knihovnu OpenCV
+\footnote{OpenCV (\emph{Open source computer vision}) je volně šířitelná knihovna navržená pro efektivní výpočty se silným důrazem na real-time práci. Dostupné z: \url{<http://opencv.org/>}.}.
+Pro jednoduché uživatelské rozhraní bude využit framework Qt\footnote{Qt je multiplatformní framework pro tvorbu uživatelského rozhraní. Dostupné z \url{<https://www.qt.io/>}}.
+
+Pro nároky na výkon je nutné využívat vícevláknové programování, které citelně sníží časové nároky na zpracování. Pro tyto účely využiji část knihovny Boost
+\footnote{Boost poskytuje volné šířitelné, přenositelné knihovny pro C++. Dostupné z: \url{<http://www.boost.org/>}}
+pro C++.
+
+Vizualizace dat (generování grafů) bude provedeno v MATLABu\footnote{TODO:}. Ostatní použité technologie budou popsány přímo v části popisu aplikace a její demonstrace.
+
+Aplikace bude vyvíjena na operačním systému OS X, ale díky povaze všech použitých technologií bude spustitelná na UNIXových distribucích i na systému Windows.
+
+\section{Konfigurace hardware}
+Aplikaci je vyvíjena na notebooku MacBook Pro v konfiguraci Intel Core i5 2.7GHz Broadwell, RAM 8GB a integrovanou grafickou kartou Intel Iris Graphics 6100.
+
+Pro pořizování záznamů jsem používal různé přístroje of poloprofesionální zrcadlovky Canon 60D, přes běžný kompakt Nikon
+% TODO: Napsat typ
+, až po integravanou webkameru v notebooku. Dále v části hodnocení dle naměřených hodnot budu diskutovat požadavky na kvalitu a rozlišení vstupního videa.
+
+% TODO: Konfigurace hw
+\chapter{Postup}
+\section{Určení tepu}
+\begin{figure}
+  \begin{minipage}{.5\textwidth}
+    \includegraphics[width=\textwidth]{images/forehead_simple_sm.png}
+  \end{minipage}
+  \begin{minipage}{.5\textwidth}
+    \includegraphics[width=\textwidth]{images/forehead_time_sm.png}
+  \end{minipage}
+  \caption{Záznam čela a manuálně určená maska pro zpracování.}
+  \label{fig:initial-proof-forehead}
+\end{figure}
+V první řadě jsem se rozhodl určit, zda metoda pro určení tepu opravdu funguje, tedy zda je pro práci použitelná a co je potřeba zaručit pro stabilitu algoritmu. Začal jsem tedy nahrávat různé záznamy kůže a vyvíjet postup, pomocí kterého je možno extrahovat potřebné informace.
+
+Pro objektivní určení tepu jsem nejdříve používal pouhé počítání úderů srdce za časovou jednotku přiloženým prstem na žíle na zápěstí. Následně jsem vždy údery přepočítal na výsledným tep. Pro zpřesnění jsem za tzv. \emph{objektivní pravdu}
+%TODO: Zlepšit definici
+\footnote{Pojmem \emph{objektivní pravda} (z angl. \emph{ground truth}) považujeme hodnotu určenou přímým pozorováním / měřením oproti hodnotě určené experimentem. }
+zvolil běžně dostupný tlakoměr, který při měření tlaku měří i tep. U běžně dostupných tlakoměrů (včetně v práci používaného) se běžně udává chyba měření tepu +/- 5\% \footnote{Tlakoměr Sencor SBP 690 udává chybu +/- 5\%. Viz stránka produktu \url{<http://www.sencor.cz/tlakomer/sbp-690>}}.
+
+Základní postup demonstrujme na záznamu čela obličeje viz \ref{fig:initial-proof-forehead}. Tento záznam je pořízen v situaci, kdy snímaný leží na zemi a zároveň si měří tep pomocí tlakoměru.
+
+V této fázi pro ověření určímě manuálně masku kůže, kterou budeme dále snímat. Zvolíme ji tak, aby kůže pokrývala celou plochu viz \ref{fig:initial-proof-forehead} vpravo. V takto označené ploše se budou zkoumat intenzity v závislosti na čase.
+
+Vytvoříme pole, kde i-tá hodnota bude charakterizovat i-tý snímek ze záznamu. Máme více možností na co se v každém snímku zaměřit:
+\begin{enumerate}
+  \item{Suma intenzit všech kanálů}
+  \begin{equation}
+  	\sum_{x=0}^M \sum_{y=0}^N r(x,y) + g(x,y) + b(x,y)
+  \end{equation}
+
+  \item{Suma intenzit zeleného kanálu}
+  \begin{equation}
+  	\sum_{x=0}^M \sum_{y=0}^N g(x,y)
+  \end{equation}
+
+  \item{Medián intenzit zeleného kanálu}
+  \begin{equation}
+  	median(g(x,y)), x \in [0, M-1], \ \in [0, N-1]
+  \end{equation}
+
+\end{enumerate}
+
+% Popsat ze je fourierka robustni na globalni svetelne zmeny, ale citliva na promenlivou frekvenci :/
+% Teď zobrazit 3 grafy
+% - mediany orig,
+% - mediany cutoff freq,
+% - mediany exact filter podle detekovaneho tepu + jedno srovnat kdybych bral intezity odkudkoli - snad vyjde blbě
+% diskutovat jake dalsi frekvence se vyskytuji ve videu - nejaka publikace
+% diskutovat proc jsou dulezite cut-off frekvence urcene pomoci oblasti zajmu pro zkoumani tepu - z frekvenci vytvorit lemma ?
+
+% TODO: Zde by mělo být i video novorozence a ověření, že alg funguje i na rychlém
+% Nezapomenout ocitovat odkud je video prevzit z mit
+
+% TODO: Video dlaně pro ilustraci, že opravdu funguje na kůži
 
 
 
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% END OF WRITTEN PART %
+% TEMPLATE STARTS HERE %
+%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{These are}
 \begin{otherlanguage}{czech}
 Říká se, že závěrečné práce jsou vyvrcholením studia a tak jsem se
@@ -563,3 +771,4 @@ the index will be ill-sorted.
 Here you can insert the appendices of your thesis.
 
 \end{document}
+
