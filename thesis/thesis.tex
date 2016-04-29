@@ -97,13 +97,14 @@ Literatura: Hao-Yu Wu, Michael Rubinstein, Eugene Shih, John Guttag, Fredo Duran
 \usepackage{amsfonts}
 \usepackage{url}
 \usepackage{menukeys}
+
 \begin{document}
 
 \chapter{Úvod}
 \section{Digitální zpracování obrazu}
 Digitální zpracování obrazu je vědní obor informatiky, který nabízí techniky pro zkoumání digitálního obrazu za účelem zisku informací, či vyprodukování \emph{vylepšeného} obrazu. Typickým odvětvím, ve kterém nachází digitální zpracování obrazu uplatnění je medicína.
 
-V medicíné se využívá např. pro zobrazení výsledků rentgenu, magnetické rezonanzce a dalších. Tato práce se bude zabývat dalším potenciálním využitím digitálního zpracování obrazu konkrétně pro zkoumání tepové frekvence lidského těla z optického záznamu.
+V medicíně se využívá např. pro zobrazení výsledků rentgenu, magnetické rezonance a dalších. Tato práce se bude zabývat dalším potenciálním využitím digitálního zpracování obrazu konkrétně pro zkoumání tepové frekvence lidského těla z optického záznamu.
 
 \section{Tepová frekvence}
 Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep odpovídá počet úderů srdce za minutu Jeho hodnota se liší člověk od člověka.
@@ -120,6 +121,11 @@ Určení se ovšem vždy vztahuje i k věkové a výkonnostní kategorii, např.
 Pro účel práce vyloučíme abnormální případy a zaměříme se na rozmzí 55-180 tepů/min, kterým pokryjeme až
 % TODO: Citovat něco z national statiscs document
 95\% všech případů. Tyto hraniční hodnoty budou stěžejní při odhalování výsledné frekvence z videa.
+
+\begin{center}
+	Za rozmezí tepových frekvencí považujme 55-180 tepů/minm, které pokryje až 95\% všech případů.
+    \label{freq-range}
+\end{center}
 
 Srdeční tep můžeme znázornit pomocí přístroje EKG. EKG je zkratka pro vyšetřovací metodu zvanou elektrokardiografie, který snímá elektrické srdeční aktivity. Zanáší je do grafu zvaného elektrokardiogram\ref{fig:electrocardiograph} a umožňuje hodnocení aktivity
 \footnote{Blíže viz \url{http://emedicine.medscape.com/article/1894014-overview>}}.
@@ -170,7 +176,7 @@ Práce bude pracovat s definicí šedotónového obrazu jako intenzitní funkce 
     \item $x,y$ označíme jako celočíselné souřadnice obrazu
     \item $0 \leq x \leq M-1$, $0 \leq x \leq N-1$
     \item $M, N$ odpovídá rozlišení obrazu
-	\item Šedotómové intenzity $u$ nabývají hodnot $0 \leq u \leq G_{max}$
+	\item Šedotónové intenzity $u$ nabývají hodnot $0 \leq u \leq G_{max}$
     \item Práce pracuje se standardním 8-bitovým obrazem, tedy  $G_{max} = 2^8 - 1 = 255$
 \end {itemize}
 
@@ -191,23 +197,29 @@ Práce bude pracovat s definicí šedotónového obrazu jako intenzitní funkce 
 Za záznam se dále považuje pole $V$ diskrétních barevných obrazů v barevném prostoru \emph{RGB}. Potom i-tý snímek odpovídá:
 \begin{equation}
 	C_i = V(C,i)
+\label{video}
 \end{equation}
 \begin{itemize}
 	\item $i$ je index snímku v poli $V$
     \item $0 \leq i \leq K$
-    \item $K$ délka pole $V$
+    \item $n$ délka pole $V$
+    \item $fps$ vzorkovací frekvence záznamu udávána v jednotce $Hz$
 \end{itemize}
 
 \section{Fourierova transformace}
-    Pro analýzu frekvencí budeme využívat Fourierovu transformaci. Která je difnovaná jako: \\
-    $\Phi(\omega_x)= \int_{-\infty}^{\infty} \! f(x)exp[-i\omega_xx]\, \mathrm{d}x, i =\sqrt{-1}$, kde: \\
-    \begin{itemize}
+    Pro analýzu frekvencí budeme využívat Fourierovu transformaci. Která je difnovaná jako:
+    \begin{equation}
+    \Phi(\omega_x)= \int_{-\infty}^{\infty} \! f(x)exp[-i\omega_xx]\, \mathrm{d}x, i =\sqrt{-1}
+	\label{fourier-equation}
+	\end{equation}
+
+	\begin{itemize}
     	\item proměnná $\omega_x$ se nazývá jako \emph{prostorová / časová} frekvence \\
 	    \item proměnné $x$ a $\omega_x$ stejně jako hodnoty funkce $f(x)$ jsou reálná čísla \\
 		\item hodnoty funkce $\Phi(\omega_x)$ jsou komplexní čísla \\
 	    \item hodnota funkce $\Phi(\omega_x)$ pro dané $\omega_x$ je závislá na všech hodnotách $f(x)$ pro všecha $x$\\
 	\end{itemize}
-    Podrobněji se Fourierově transformaci budeme věnovat přímo při popisu použití.
+    Podrobněji se Fourierově transformaci príce věnuje při popisu použití.
 
 
 \chapter{Aparáty pro realizaci práce}
@@ -260,9 +272,9 @@ Z této metody vychází fotopletysmografie (PPG). Tato disciplína byla předst
 Při proudění krve se přenáší metaloprotein červených krvinek hemoglobin. Tato látka vytváří pletysmografické signály, které se vyskytují ve všech barevných kanálech při zaznaménání pokožky v závislosti na čase. Nejsilnější jsou změny v zeleném kanálu, neboť hemoglobin absorbuje zelenou složku světla více než jiné \cite{green-channel-strongest}. Z tohoto důvodu se zpravidla nejvíce zkoumají intenzity právě zeleného kanálu.
 
 Čím větší plochu ve snímcích záznamu zabírá pokožka, tím se dají změny zaznamenat přesněji. Nejstabilnější využití tohoto přístupu se zdá být v případě, že pokožka zabírá celou plochu záznamu
-\footnote{Tento postup využívá např. aplikace \emph{Instant Heart Rate} dostupná pro platformu Android z https://play.google.com/store/apps/details?id=si.modula.android.instantheartrate.}. V kontextu aplikace se budeme snažit extrahovat dostatešně množství pixelů ze záznamu obličeje.
+\footnote{Tento postup využívá např. aplikace \emph{Instant Heart Rate} dostupná pro platformu Android z https://play.google.com/store/apps/details?id=si.modula.android.instantheartrate.}. V kontextu aplikace se budeme snažit extrahovat dostatečně množství pixelů ze záznamu obličeje.
 
-Ilustrace pricipu viz \ref{fig:pletysmography-princip}. V závistlosti na čase se mění průměrná intenzita v barevných kanálech v kůži. Tyto změny by měly odpovídat tepové frekvenci srdce, která je znázorněná elektrokardiografem pod obrázkem.
+Ilustrace principu viz \ref{fig:pletysmography-princip}. V závislosti na čase se mění průměrná intenzita v barevných kanálech v kůži. Tyto změny by měly odpovídat tepové frekvenci srdce, která je znázorněná elektrokardiografem pod obrázkem.
 
 Pro detekci tepu jsem si vybral tuto metodu, protože výsledky experimentů\cite{remote-plethysmographic} zkoumajících pletysmografické signály odpovídající tepu by měly být časově méně náročné (délka záznamu i samotné zpracování) a stabilnější než přecházející metoda.
 
@@ -279,7 +291,7 @@ Postup pro zváýraznění barevných změn funguje na principu zvýrazňování
 V publikaci je přímo ukázané zvýraznění proudění krve v obličeji za předpokladu, že dopředu známe tepovou frekvenci, kterou bude algoritmus zvýrazňovat.
 
 Dostupný je implementovaný algoritmus
-\footnote{Implementace v MATLABu i spustielný program je dostupný z webových stránek projektu \url{<http://people.csail.mit.edu/mrub/evm/>}}
+\footnote{Implementace v MATLABu i spustitelný program je dostupný z webových stránek projektu \url{<http://people.csail.mit.edu/mrub/evm/>}}
 v platformě MATLAB
 \footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s výbornou schopností vyjadřovat matematické výpočty. Blíže viz \url{<http://www.mathworks.com/products/matlab/.>}}.
 Implementace v MATLABu funguje dobře, nicméně je příliš pomalý na to, aby byl použitelný v kontextu online zpracování. Zpracování celého videa při rozlišení
@@ -295,7 +307,7 @@ Po stanovení cílů aplikace jsem se pro implementaci rozhodl využít kompilov
 Pro jednoduché uživatelské rozhraní bude využit framework Qt\footnote{Qt je multiplatformní framework pro tvorbu uživatelského rozhraní. Dostupné z \url{<https://www.qt.io/>}}.
 
 Pro nároky na výkon je nutné využívat vícevláknové programování, které citelně sníží časové nároky na zpracování. Pro tyto účely využiji část knihovny Boost
-\footnote{Boost poskytuje volné šířitelné, přenositelné knihovny pro C++. Dostupné z: \url{<http://www.boost.org/>}}
+\footnote{Boost poskytuje volně šiřitelné, přenositelné knihovny pro C++. Dostupné z: \url{<http://www.boost.org/>}}
 pro C++.
 
 Vizualizace dat (generování grafů) bude provedeno v MATLABu\footnote{TODO:}. Ostatní použité technologie budou popsány přímo v části popisu aplikace a její demonstrace.
@@ -303,7 +315,7 @@ Vizualizace dat (generování grafů) bude provedeno v MATLABu\footnote{TODO:}. 
 Aplikace bude vyvíjena na operačním systému OS X, ale díky povaze všech použitých technologií bude spustitelná na UNIXových distribucích i na systému Windows.
 
 \section{Konfigurace hardware}
-Aplikaci je vyvíjena na notebooku MacBook Pro v konfiguraci Intel Core i5 2.7GHz Broadwell, RAM 8GB a integrovanou grafickou kartou Intel Iris Graphics 6100.
+Aplikaci je vyvíjena na notebooku MacBook Pro v konfiguraci Intel Core i5 2.7 GHz Broadwell, RAM 8GB a integrovanou grafickou kartou Intel Iris Graphics 6100.
 
 Pro pořizování záznamů jsem používal různé přístroje of poloprofesionální zrcadlovky Canon 60D, přes běžný kompakt Nikon
 % TODO: Napsat typ
@@ -311,6 +323,9 @@ Pro pořizování záznamů jsem používal různé přístroje of poloprofesion
 
 % TODO: Konfigurace hw
 \chapter{Postup}
+\section{Objektivní pravda}
+Pojmem \emph{objektivní pravda} (z angl. \emph{ground truth}) považujeme hodnotu určenou přímým pozorováním / měřením oproti hodnotě určené experimentem. V rané fázi práce byla jako objektivní pravda použito počítání tepů srdce pomocí prstu přiloženého na zápěstí za časovou jednotku a následné přepočítání na výsledný tep. Ovšem pro zpřesnění výsledků byla nahrazena měřením pomocí tlakoměru. Zvolen byl běžně dostupný tlakoměr, který při měření tlaku měří i tep. U běžně dostupných tlakoměrů se udává chyba měření tepu +/- 5\% \footnote{Použitý tlakoměr Sencor SBP 690 udává chybu +/- 5\%. Viz stránka produktu \url{<http://www.sencor.cz/tlakomer/sbp-690>}}.
+
 \section{Určení tepu}
 \begin{figure}
   \begin{minipage}{.5\textwidth}
@@ -322,37 +337,117 @@ Pro pořizování záznamů jsem používal různé přístroje of poloprofesion
   \caption{Záznam čela a manuálně určená maska pro zpracování.}
   \label{fig:initial-proof-forehead}
 \end{figure}
-V první řadě jsem se rozhodl určit, zda metoda pro určení tepu opravdu funguje, tedy zda je pro práci použitelná a co je potřeba zaručit pro stabilitu algoritmu. Začal jsem tedy nahrávat různé záznamy kůže a vyvíjet postup, pomocí kterého je možno extrahovat potřebné informace.
+Nejprve práce testuje, zda metoda pro určení tepu opravdu funguje, zda je pro práci použitelná a co je potřeba zaručit pro stabilitu algoritmu. Bylo třeba začít nahrávat různé záznamy kůže a vyvíjet postup, pomocí kterého je možno extrahovat potřebné informace k určení tepu.
 
-Pro objektivní určení tepu jsem nejdříve používal pouhé počítání úderů srdce za časovou jednotku přiloženým prstem na žíle na zápěstí. Následně jsem vždy údery přepočítal na výsledným tep. Pro zpřesnění jsem za tzv. \emph{objektivní pravdu}
-%TODO: Zlepšit definici
-\footnote{Pojmem \emph{objektivní pravda} (z angl. \emph{ground truth}) považujeme hodnotu určenou přímým pozorováním / měřením oproti hodnotě určené experimentem. }
-zvolil běžně dostupný tlakoměr, který při měření tlaku měří i tep. U běžně dostupných tlakoměrů (včetně v práci používaného) se běžně udává chyba měření tepu +/- 5\% \footnote{Tlakoměr Sencor SBP 690 udává chybu +/- 5\%. Viz stránka produktu \url{<http://www.sencor.cz/tlakomer/sbp-690>}}.
+\subsubsection{Ilustrace postupu}
+Základní postup bude demonstrován na záznamu čela obličeje viz \ref{fig:initial-proof-forehead}. Tento záznam je pořízen v situaci, kdy snímaný leží na zemi a zároveň si měří tep pomocí tlakoměru.
 
-Základní postup demonstrujme na záznamu čela obličeje viz \ref{fig:initial-proof-forehead}. Tento záznam je pořízen v situaci, kdy snímaný leží na zemi a zároveň si měří tep pomocí tlakoměru.
+V této fázi pro ověření byla maska kůže pro snímání určena manuálně. Maska je zvolena tak, aby kůže pokrývala celou plochu viz \ref{fig:initial-proof-forehead} vpravo. Právě v této ploše se ukrývají informace, které chceme použít, konkrétně se budou zkoumat intenzity v závislosti na čase.
 
-V této fázi pro ověření určímě manuálně masku kůže, kterou budeme dále snímat. Zvolíme ji tak, aby kůže pokrývala celou plochu viz \ref{fig:initial-proof-forehead} vpravo. V takto označené ploše se budou zkoumat intenzity v závislosti na čase.
-
-Vytvoříme pole, kde i-tá hodnota bude charakterizovat i-tý snímek ze záznamu. Máme více možností na co se v každém snímku zaměřit:
+Do pole budou vloženy hodnoty, kde i-tá hodnota pole bude charakterizovat i-tý snímek ze záznamu. Máme více možností na co se v každém snímku zaměřit:
 \begin{enumerate}
   \item{Suma intenzit všech kanálů}
   \begin{equation}
   	\sum_{x=0}^M \sum_{y=0}^N r(x,y) + g(x,y) + b(x,y)
+    \label{suma-all-channels}
   \end{equation}
 
   \item{Suma intenzit zeleného kanálu}
   \begin{equation}
   	\sum_{x=0}^M \sum_{y=0}^N g(x,y)
+    \label{suma-green-channel}
   \end{equation}
 
   \item{Medián intenzit zeleného kanálu}
   \begin{equation}
   	median(g(x,y)), x \in [0, M-1], \ \in [0, N-1]
+    \label{median-green-values}
   \end{equation}
 
 \end{enumerate}
 
+V tomto případě rozdíly mezi možnostmi zaměření zájmu na různé hodnoty jsou minimální. Zkoumaný záznam je téměř ideální pro extrakci informací, zkoumaná kůže je stabilizovaná (snímaný má opřenou hlavu o zem), kůže zabírá většinu záběru, záznam je ve vysokém rozlišení (1920 x 1080) a ve vzorkovací frekvenci 30 snímků/s. Dále budou rozdíly ilustrovány na méně kvalitních vzorcích.
+
+Pro ilustrační účely nyní bude jako charakteristika zvolena např. \emph{medián intenzit zeleného kanálu} měřena v určené masce čela. Pole zobrazme pomocí grafu\ref{fig:median-original}. Už v tomto neupraveném grafu jsou viditelné periodické frekvence.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/median-original.pdf}
+  \end{center}
+  \caption{Originální hodnoty mediánu intenzit zeleného kanálu v jednotlivých snímcích záznamu.}
+  \label{fig:median-original}
+\end{figure}
+
+V analyzovaném poli se nachází intenzity $F$
+\begin{equation}
+F \in [0, (n-1) / n * fps]
+\end{equation}
+
+Nejdříve je pole převedeno pomocí Fourierovy transformace do frekvenční domény. Na grafu je zobrazená reálná složka frekvenční domény, kde jsou na ose x označeny přítomné frekvence (v jednotce Hz) a na ose y jejich hodnoty. Pro omezení frekvencí na ty, které jsou pro tento účel informačně přínosné využijeme lemma o rozmezí tepu pro většinu lidí\ref{fig:req-range}. Na základě této informace použijeme lineární filtr \emph{pásmová propust} ve frekvenční doméně. Jako rozmezí tomuto filtru jsou nastaveny hodnoty 55 resp. 180 tepů/min převedeny do jednotky Hz, tedy (55/60) Hz a (180/60) Hz. Frekvenční doména dohromady s filtrem pásmová propust zobrazeny viz \ref{fig:frequency-mask}.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/frequency-mask.pdf}
+  \end{center}
+  \caption{Frekvenční doména naměřených intenzit spolu s maskou filtru pásmová propust.}
+  \label{fig:frequency-mask}
+\end{figure}
+
+Graf změn mediánu v závislosti na čase je vidět viz \ref{fig:median-cutoff-masked}.  V tomto případě byl v původním grafu vidět celkový nárust hodnot mediánu v čase stejně jako příliš rychlé změny způsobené šumem, nebo malými posuny záběru. Jak pomalé, tak příliš rychlé změny byly filtrem odstraněny. Nyní po filtraci zbyly už jen frekvence, které potenciálně můžou odpovídat tepu. Nejsilnější z nich bude potom odpovídat výslednému tepu.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/median-cutoff-masked.pdf}
+  \end{center}
+  \caption{Hodnoty mediánu intenzit zeleného kanálu jednotlivých snímcích záznamu po filtraci.}
+  \label{fig:median-cutoff-masked}
+\end{figure}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/frequencies_cutoff_masked.pdf}
+  \end{center}
+  \caption{Frekvenční doména naměřených intenzit po filtraci.}
+  \label{fig:frequencies-cutoff-masked}
+\end{figure}
+
+Na grafu viz \ref{fig:median-cutoff-masked} po aplikování filtru je vidět potlačení nerelevantních frekvencí popsaných v minulém odstavci. V grafu \ref{fig:frequencies-cutoff-masked}frekvenční domény po je znatelně vidět nejsilnější obsažená frekvence 0.8696 Hz, po přepočtení 69 tepů/min. Skutečná hodnota tepu pro tento záznam je 67 tepů/min, při udávané chybě měření 5\% jsou tedy hodnoty v rozmezí 63.25 - 70.75 tepů/min považovány za korektní. Vypočítaný tep potom potom do rozmezí spadá.
+
+\subsubsection{Určení ideální délky záznamu}
+Pro stabilní určování tepu pro různé případy je nutné správně určit ideální délku záznamu. Tento problém se řešil po celou dobu implementace. Z různorodých záznamů vyplynulo, že nejstabilnější délkou záznamu je 425 snímků při vzorkovací frekvenci 30 snímků/s.
+
+\subsubsection{Limitace postupu}
+Filtrování ve frekvenční doméně má nesmírnou výhodu v podobě zaměření se na potřebné frekvence. Analýza frekvencí je imunní vůči globálním změnám světla. Globální změna světla je změna intenzit v závislosti na čase - důležité je, že tato změna se musí týkat všech pixelů v obraze. V případě, že by na analyzovanou pozici ve snímcích v pravidelné frekvenci blikal dostatečně silný zdroj světla, algoritmus skončí nekorektními výsledky, kdy výsledná hodnota domnělého tepu bude odpovídat právě blikající frekvenci. Do jisté míry je robustní i vůči šumu, který se při analýze projevuje jako velmi rychlé frekvence
+\footnote{%TODO: Šum se většinou mění snímek od snímku.}.
+
+Hledání nejsilnější frekvence ve frekvenční doméně selhává v případě velmi nepravidelné frekvence. Vzhledem k tomu, že se zaměřujeme na klidovou tepovou frekvenci, tak by tento problém neměl vadit. Z testovacích videí vyplynulo, že se během nahrávání po dobu cca 15 vteřin nezmění tep natolik, aby změna způsobila selhání.
+
+
+\subsubsection{Iniciální ověření na záznamech}
+Mimo předchozího záznamu pro iniciální ověření bylo potřeba analyzovat různorodá videa. Jako netradiční případ se nabízí tep dítěte, který je podstatně vyšší než tep dospělého. Další atypický záznam může být obličej snědého člověka. Jako poslední záznam pro iniciální testování je nasnímaná ruka na podlaze. Náhledy jsou zobrazeny v \ref{fig:edge_examples}.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/edge_examples.png}
+  \end{center}
+  \caption{Další různorodá videa pro ověření.}
+  \label{fig:edge_examples}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
 % Popsat ze je fourierka robustni na globalni svetelne zmeny, ale citliva na promenlivou frekvenci :/
+% a = sin(x.*[0.1:0.1:100]); - zrychlujici se graf
 % Teď zobrazit 3 grafy
 % - mediany orig,
 % - mediany cutoff freq,
@@ -371,8 +466,13 @@ Vytvoříme pole, kde i-tá hodnota bude charakterizovat i-tý snímek ze zázna
 
 
 
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%
-% END OF WRITTEN PART %
+% END OF WRITTEN PART  %
 % TEMPLATE STARTS HERE %
 %%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{These are}
