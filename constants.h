@@ -49,7 +49,7 @@
 
 // INITIAL CUT-OFF FREQ
 #define CUTOFF_FL 55
-#define CUTOFF_FH 150
+#define CUTOFF_FH 200
 
 // COLORS
 #define BLUE_CHANNEL 0
