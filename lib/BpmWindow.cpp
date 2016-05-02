@@ -139,12 +139,10 @@ int Bpm::runRealVideoMode() {
         // Check full face detector
         handleDetector(in, FULL_FACE);
 
-        // Start cropping frames to face after init & face detected
         pushInputToBuffer(in, index);
 
-        // Resize captured frame
-        for (int i = 0; i < doubleDownscalingLevel; i++) pyrDown(in, in);
-
+        // Resizing without interpolation -> downscaling 2n x
+        resize(in, in, this->frameSize, 0, 0);
 
         // Check resized face detector
         handleDetector(in, RESIZED_FACE);
