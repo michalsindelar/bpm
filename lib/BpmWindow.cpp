@@ -143,7 +143,7 @@ int Bpm::runRealVideoMode() {
         pushInputToBuffer(in, index);
 
         // Resize captured frame
-        pyrDown(in, in, this->frameSize);
+        for (int i = 0; i < doubleDownscalingLevel; i++) pyrDown(in, in);
 
 
         // Check resized face detector
