@@ -68,6 +68,7 @@ class Bpm {
         // Size of resized input
         Size frameSize;
         Size origFrameSize;
+        int doubleDownscalingLevel;
 
         // Video objects
         VideoCapture input;

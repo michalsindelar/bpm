@@ -23,7 +23,7 @@ void Bpm::init(int sourceMode, int maskMode) {
         // Open Video Camera
         this->input = VideoCapture(0);
         if (!input.isOpened()) cout << "Unable to open Video Camera";
-        this->fps = FPS;
+        this->fps = 0;
         this->bufferFrames = BUFFER_FRAMES;
     }
 
@@ -37,16 +37,15 @@ void Bpm::init(int sourceMode, int maskMode) {
         if (this->sourceMode == VIDEO_REAL_SOURCE_MODE) {
             this->bufferFrames = BUFFER_FRAMES;
         }
-        else if (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) {
-            // TODO: All frames - will be devided in class to threads
-//            this->bufferFrames = BUFFER_FRAMES;
-        }
-
     }
 
     this->origFrameSize = Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT));
+
+    // GET DOUBLE DOWNSCALING LEVEL
+    this->doubleDownscalingLevel = setDoubleDownscalingLevel(origFrameSize.width, RESIZED_FRAME_WIDTH);
+
     // COMPUTE RESIZED FRAME SIZE
-    this->frameSize = getResizedSize(origFrameSize, RESIZED_FRAME_WIDTH);
+    this->frameSize = getResizedSize(origFrameSize, origFrameSize.width / (pow(2,doubleDownscalingLevel)));
 
     // INITALIZE MIDDLEWARE
     // TODO: Rename to middleware
@@ -100,6 +99,8 @@ int Bpm::run() {
 
 int Bpm::runRealVideoMode() {
 
+    clock_t prevGrabTime, currGrabTime;
+
     for (int index = 0; true; index++) {
 
         // Exit measuring
@@ -112,6 +113,17 @@ int Bpm::runRealVideoMode() {
         input >> in; // type: CV_8UC3 (16)
 
         if (index < CAMERA_INIT) continue;
+
+        // Computing current fps of camera
+        if (this->sourceMode == CAMERA_SOURCE_MODE && index > CAMERA_INIT) {
+            prevGrabTime = currGrabTime;
+            currGrabTime = clock();
+            double elapsedTime = double(currGrabTime - prevGrabTime) / (CLOCKS_PER_SEC / 1000);
+            this->fps = (int) round((this->fps + 1000/elapsedTime) / 2.0f);
+
+        } else if (index == CAMERA_INIT) {
+            currGrabTime = clock();
+        }
 
         // Reset video when video ends
         if (!in.data) {
@@ -131,7 +143,8 @@ int Bpm::runRealVideoMode() {
         pushInputToBuffer(in, index);
 
         // Resize captured frame
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+        pyrDown(in, in, this->frameSize);
+
 
         // Check resized face detector
         handleDetector(in, RESIZED_FACE);

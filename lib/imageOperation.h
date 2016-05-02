@@ -26,6 +26,7 @@ Mat resizeImage (Mat image, const double width);
 Mat resizeImage (Mat image, const double width, int interpolation);
 Mat resizeImage (Mat image, const double width);
 Size getResizedSize(Size origSize, const double width);
+int setDoubleDownscalingLevel(int origWidth, int resultWidth);
 
 // Blurring
 void pyrUpVideo(vector<Mat>& video, Size size, int level);

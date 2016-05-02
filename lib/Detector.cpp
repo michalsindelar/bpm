@@ -25,7 +25,9 @@ void Detector::detectFace(Mat frame) {
     faceCascade.detectMultiScale( frame, faces, 1.3, 2, 0|CV_HAAR_SCALE_IMAGE);
 
     // Determine biggest face
-    this->biggestFace = this->determineBiggestFace();
+    if (this->faces.size()) {
+        this->biggestFace = this->determineBiggestFace();
+    }
 
     // Check whether detection successful
     if (!this->faces.size()) {

@@ -97,7 +97,6 @@ class BpmVideoProcessor {
         void computeBpmFromPyramid();
         void computeAmplifiedMask();
         void setMaxPyramidLevel();
-        void setDoubleDownscalingLevel();
 
         // Could be static
         void getForeheadSkinArea();

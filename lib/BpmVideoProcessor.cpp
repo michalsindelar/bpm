@@ -27,7 +27,7 @@ void BpmVideoProcessor::computeAmplifiedMask() {
     // Set pyr down resizing
     // Set closest pyr down level value to ideal frame width for amplification
     // TODO: Control if video is big enough -> in bpm.cpp
-    setDoubleDownscalingLevel();
+    this->doubleDownscalingLevel = setDoubleDownscalingLevel(this->faceVideo[0].cols, IDEAL_WIDTH_FOR_AMPLIFICATION);
 
     // Init settings of amplification
     setMaxPyramidLevel();
@@ -95,20 +95,6 @@ void BpmVideoProcessor::computeBpm(int computeType) {
      }
 
 }
-
-
-void BpmVideoProcessor::setDoubleDownscalingLevel() {
-    float width = this->faceVideo[0].cols;
-    for (int i = 0; ; i++) {
-        if (width < IDEAL_WIDTH_FOR_AMPLIFICATION) {
-            this->doubleDownscalingLevel = (abs(IDEAL_WIDTH_FOR_AMPLIFICATION - width) < abs(IDEAL_WIDTH_FOR_AMPLIFICATION - (width * 2))) ?
-                i : i-1;
-            break;
-        }
-        width /= 2;
-    }
-}
-
 void BpmVideoProcessor::setMaxPyramidLevel() {
 
     // Respect further downscaling of video

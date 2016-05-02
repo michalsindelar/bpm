@@ -26,7 +26,7 @@
 #define RESIZED_FRAME_WIDTH_FOR_PROCESSING 300
 
 // Resize input video
-#define RESIZED_FRAME_WIDTH 500
+#define RESIZED_FRAME_WIDTH 480
 
 // Erased border width
 #define ERASED_BORDER_WIDTH 10

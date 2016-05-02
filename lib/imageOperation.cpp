@@ -16,6 +16,20 @@ Size getResizedSize(const Size origSize, const double width) {
     return Size((int) round(width), (int) round(width / aspect));
 }
 
+int setDoubleDownscalingLevel(int origWidth, int resultWidth) {
+    int doubleDownscalingLevel = 0;
+    for (int i = 0; ; i++) {
+        if (origWidth < resultWidth) {
+            doubleDownscalingLevel = (abs(resultWidth - origWidth) < abs(resultWidth - (origWidth * 2))) ?
+                                     i : i-1;
+            break;
+        }
+        origWidth /= 2;
+    }
+    return doubleDownscalingLevel;
+}
+
+
 Mat resizeImage(Mat image, const double width) {
     return resizeImage(image, width, INTER_LINEAR);
 }
