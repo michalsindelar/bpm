@@ -56,7 +56,7 @@ class Middleware {
             return bpm;
         }
 
-        void setFps(int fps) {
+        void setFps(double fps) {
             Middleware::fps = fps;
         }
 

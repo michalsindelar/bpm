@@ -250,11 +250,11 @@ void cvtColor2(Mat src, Mat & dst, int code) {
     }
 }
 
-float freqToBpmMapper(int fps, int framesCount, int index) {
+float freqToBpmMapper(double fps, int framesCount, int index) {
     return (int) (round((SECONDS_IN_MINUTE * (float) fps * (index+1)) / framesCount));
 }
 
-float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
+float findStrongestRowFreq(vector<double> row, int framesCount, double fps) {
     // Create matrix from intensitySum
     float maxValue = 0;
     float minValue = 0;
@@ -275,7 +275,7 @@ float findStrongestRowFreq(vector<double> row, int framesCount, int fps) {
     return findStrongestRowFreq(rowMat, framesCount, fps);
 }
 
-float findStrongestRowFreq(Mat row, int framesCount, int fps) {
+float findStrongestRowFreq(Mat row, int framesCount, double fps) {
     // DFT of intensities
     float maxFreq = 0;
     int maxFreqLoc = 0;
@@ -315,7 +315,7 @@ float findStrongestRowFreq(Mat row, int framesCount, int fps) {
 }
 
 
-Mat generateFreqMask(float freq, int framesCount, int fps) {
+Mat generateFreqMask(float freq, int framesCount, double fps) {
     float halfRange = FREQ_MASK_WIDTH / 2.0f;
     float fl, fh;
 
@@ -336,7 +336,7 @@ Mat generateFreqMask(float freq, int framesCount, int fps) {
     return maskingCoeffs(framesCount,  fl, fh, fps);
 }
 
-Mat maskingCoeffs(int width, float fl, float fh, int fps) {
+Mat maskingCoeffs(int width, float fl, float fh, double fps) {
     Mat row(1, width, CV_32FC1);
 
     // Create row 0.25 - 0.5 ----- FRAME RATE
@@ -520,7 +520,7 @@ void generateTemporalSpatialImages(vector<vector<Mat> > temporalSpatialStack) {
     }
 }
 
-void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file) {
+void printIterationRow(vector<Mat> video, int framesCount, double fps, int realBpm, ofstream &file) {
     vector<int> bpms(4);
     // [red, greeb, blue, rgb]
     bpms[0] = (int) round(findStrongestRowFreq(countIntensities(video, 1, 0, 0), framesCount, fps));

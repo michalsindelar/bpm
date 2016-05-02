@@ -50,7 +50,6 @@ void Bpm::init(int sourceMode, int maskMode) {
     this->frameSize = getResizedSize(origFrameSize, origFrameSize.width / (pow(2,doubleDownscalingLevel)));
 
     // INITALIZE MIDDLEWARE
-    // TODO: Rename to middleware
     this->bpmWorker = Middleware();
     this->bpmWorker.setFps(fps);
     this->bpmWorker.setBufferFrames(bufferFrames);
@@ -389,8 +388,11 @@ void Bpm::controlMiddleWare(int index) {
 
     // Start computing when buffer filled
     if (shouldCompute) {
-        // If still fetching update to computing
+        // If still fetching update state to computing
         this->state = (this->state == FETCHING) ? COMPUTING : this->state;
+
+        // In camera mode fps is computed dynamically
+        this->bpmWorker.setFps(fps);
         compute();
     }
 }

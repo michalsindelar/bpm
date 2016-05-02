@@ -59,13 +59,13 @@ void amplifyChannels(Mat& frame, float r, float g, float b);
 void normalizeVid(vector<Mat>& video, int min, int max, int type);
 
 // Frequency tools helpers
-float freqToBpmMapper(int fps, int framesCount, int index);
-float findStrongestRowFreq(vector<double> row, int framesCount, int fps);
-float findStrongestRowFreq(Mat row, int framesCount, int fps);
+float freqToBpmMapper(double fps, int framesCount, int index);
+float findStrongestRowFreq(vector<double> row, int framesCount, double fps);
+float findStrongestRowFreq(Mat row, int framesCount, double fps);
 
 // TODO: rename according to numpy
-Mat generateFreqMask(float freq, int framesCount, int fps);
-Mat maskingCoeffs(int width, float fl, float fh, int fps);
+Mat generateFreqMask(float freq, int framesCount, double fps);
+Mat maskingCoeffs(int width, float fl, float fh, double fps);
 
 // Intensities compute
 vector<double> countIntensities(vector<Mat> video);
@@ -78,7 +78,7 @@ vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, fl
 
 
 // Printing data
-void printIterationRow(vector<Mat> video, int framesCount, int fps, int realBpm, ofstream &file);
+void printIterationRow(vector<Mat> video, int framesCount, double fps, int realBpm, ofstream &file);
 void printIterationHead(ofstream &file);
 
 

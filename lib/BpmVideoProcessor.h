@@ -67,7 +67,7 @@ class BpmVideoProcessor {
 
             public:
 
-                void amplifyVideo(vector<Mat> &video, int doubleDownscalingLevel, int level, int bpm, int fps) {
+                void amplifyVideo(vector<Mat> &video, int doubleDownscalingLevel, int level, int bpm, double fps) {
                     BpmVideoProcessor::amplifyVideo(video, result, doubleDownscalingLevel, level, bpm, fps);
                 }
 
@@ -76,7 +76,7 @@ class BpmVideoProcessor {
                     int i = 0;
                 }
 
-                void computeAmplificationPyramidLevel (vector<Mat> src, float bpm, int fps) {
+                void computeAmplificationPyramidLevel (vector<Mat> src, float bpm, double fps) {
                     vector<Mat> temporalSpatial;
                     BpmVideoProcessor::amplifyFrequencyInLevel(src, temporalSpatial, result, bpm, fps);
                     temporalSpatial.clear();
@@ -92,7 +92,7 @@ class BpmVideoProcessor {
         };
 
     public:
-        BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount, Rect faceRoi);
+        BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, double fps, int framesCount, Rect faceRoi);
         void computeBpm(int computeType = AVG_COMPUTE);
         void computeBpmFromPyramid();
         void computeAmplifiedMask();
@@ -127,7 +127,7 @@ class BpmVideoProcessor {
             }
         }
 
-        static void amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm, int fps) {
+        static void amplifyFrequencyInLevel(vector<Mat> src, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm, double fps) {
             // Keep only green channel
             amplifyVideoChannels(src, 0, 1, 0);
 
@@ -190,7 +190,7 @@ class BpmVideoProcessor {
             }
         }
 
-        static void bandpassFilter(vector<Mat> &temporalSpatial, float freq, int fps) {
+        static void bandpassFilter(vector<Mat> &temporalSpatial, float freq, double fps) {
 
             // Create mask based on strongest frequency
             // TODO: Check if resizing to optimal size could cause some border problems
@@ -282,7 +282,7 @@ class BpmVideoProcessor {
             }
         }
 
-        static void amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm, int level, int fps) {
+        static void amplifyFrequencyInPyramid(vector<vector<Mat> > &pyramid, vector<Mat> &temporalSpatial, vector<Mat> &dst, float bpm, int level, double fps) {
             vector<boost::thread *> z;
             vector <ThreadWorker> workerParts;
             // Initialize workers
@@ -339,7 +339,7 @@ class BpmVideoProcessor {
             normalizeVid(dst, 0, 50, NORM_MINMAX );
         }
 
-        static void amplifyVideo(vector<Mat> &video, vector<Mat> &out, int doubleDownscalingLevel, int level, int bpm, int fps) {
+        static void amplifyVideo(vector<Mat> &video, vector<Mat> &out, int doubleDownscalingLevel, int level, int bpm, double fps) {
             // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
             // TODO: process all but in threads
 

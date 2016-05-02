@@ -4,7 +4,7 @@
 
 #include "BpmVideoProcessor.h"
 
-BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, int fps, int framesCount, Rect faceRoi) {
+BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, double fps, int framesCount, Rect faceRoi) {
 
     this->origVideo = video;
     cropToVideo(video, this->faceVideo, faceRoi);
