@@ -23,6 +23,8 @@ void Bpm::init(int sourceMode, int maskMode) {
         // Open Video Camera
         this->input = VideoCapture(0);
         if (!input.isOpened()) cout << "Unable to open Video Camera";
+
+        // FPS is dynamically set during grabbing frames
         this->fps = 0;
         this->bufferFrames = BUFFER_FRAMES;
     }
@@ -49,7 +51,7 @@ void Bpm::init(int sourceMode, int maskMode) {
 
     // INITALIZE MIDDLEWARE
     // TODO: Rename to middleware
-    this->bpmWorker = AmplificationWorker();
+    this->bpmWorker = Middleware();
     this->bpmWorker.setFps(fps);
     this->bpmWorker.setBufferFrames(bufferFrames);
 
@@ -119,7 +121,7 @@ int Bpm::runRealVideoMode() {
             prevGrabTime = currGrabTime;
             currGrabTime = clock();
             double elapsedTime = double(currGrabTime - prevGrabTime) / (CLOCKS_PER_SEC / 1000);
-            this->fps = (int) round((this->fps + 1000/elapsedTime) / 2.0f);
+            this->fps = (this->fps + 1000/elapsedTime) / 2.0f;
 
         } else if (index == CAMERA_INIT) {
             currGrabTime = clock();
@@ -395,7 +397,7 @@ void Bpm::controlMiddleWare(int index) {
 
 void Bpm::compute(bool thread) {
     if (thread) {
-        boost::thread workerThread(&AmplificationWorker::compute, &bpmWorker, videoBuffer);
+        boost::thread workerThread(&Middleware::compute, &bpmWorker, videoBuffer);
         mergeFaces();
     } else {
         bpmWorker.compute(videoBuffer);
@@ -595,7 +597,7 @@ void Bpm::renderStateBar(int index) {
     putText(
             this->stateBar,
             this->stateNotes[this->state]
-            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(bufferFrames - index) + " frames") : ""),
+            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(max(bufferFrames - index, 0)) + " frames") : ""),
             Point(20, 20),
             FONT_HERSHEY_SIMPLEX,
             0.5f, // font scale

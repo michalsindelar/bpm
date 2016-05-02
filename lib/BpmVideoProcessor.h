@@ -45,7 +45,7 @@ class BpmVideoProcessor {
     float fl, fh;
 
     // FPS of input
-    int fps;
+    double fps;
 
     // Number of frames in face buffer
     int framesCount;

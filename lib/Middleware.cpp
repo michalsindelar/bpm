@@ -4,7 +4,7 @@
 
 #include "Middleware.h"
 
-AmplificationWorker::AmplificationWorker() {
+Middleware::Middleware() {
     // Default fps
     this->fps = FPS;
 
@@ -14,7 +14,7 @@ AmplificationWorker::AmplificationWorker() {
     this->bpmDetected = false;
 };
 
-void AmplificationWorker::compute(vector<Mat> videoBuffer){
+void Middleware::compute(vector<Mat> videoBuffer){
     // Just to be extra sure worker is ready
     if (this->working) return;
 
@@ -53,7 +53,7 @@ void AmplificationWorker::compute(vector<Mat> videoBuffer){
 
 };
 
-void AmplificationWorker::updateBpm(int bpm) {
+void Middleware::updateBpm(int bpm) {
     // Prevent big changes
     this->bpm = this->bpm ? (this->bpm + bpm) / 2 : bpm;
     this->bpmDetected = true;

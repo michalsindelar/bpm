@@ -59,7 +59,7 @@ class Bpm {
         float beatVisibilityFactor;
 
         // Input videoreader information
-        int fps;
+        double fps;
         int bufferFrames;
 
         // Detected faces
@@ -86,7 +86,7 @@ class Bpm {
         string OSWindowName;
 
         // Worker for computing
-        AmplificationWorker bpmWorker;
+        Middleware bpmWorker;
 
         // Worker for computing
         Detector faceFullDetector;

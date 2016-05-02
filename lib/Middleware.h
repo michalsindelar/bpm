@@ -19,9 +19,9 @@
 using namespace cv;
 using namespace std;
 
-class AmplificationWorker {
+class Middleware {
     int bpm;
-    int fps;
+    double fps;
 
     bool working;
     bool bpmDetected;
@@ -37,7 +37,7 @@ class AmplificationWorker {
     Rect faceRoi;
 
     public:
-        AmplificationWorker();
+        Middleware();
         void compute(vector<Mat> videoBuffer);
         void updateBpm(int bpm);
 
@@ -57,11 +57,11 @@ class AmplificationWorker {
         }
 
         void setFps(int fps) {
-            AmplificationWorker::fps = fps;
+            Middleware::fps = fps;
         }
 
         void setBufferFrames(int bufferFrames) {
-            AmplificationWorker::bufferFrames = bufferFrames;
+            Middleware::bufferFrames = bufferFrames;
         }
 
         void setVideoBuffer(vector<Mat> videoBuffer) {
@@ -73,7 +73,7 @@ class AmplificationWorker {
         }
 
         void setResizedFaceSize(const Size &resizedFace) {
-            AmplificationWorker::resizedFace = resizedFace;
+            Middleware::resizedFace = resizedFace;
         }
 
         bool isBpmDetected() const {
@@ -81,7 +81,7 @@ class AmplificationWorker {
         }
 
         void setFaceRoi(const Rect &faceRoi) {
-            AmplificationWorker::faceRoi = faceRoi;
+            Middleware::faceRoi = faceRoi;
         }
 
         const Rect &getFaceRoi() const {
