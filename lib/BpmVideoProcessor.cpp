@@ -19,6 +19,8 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
     // Detect forehead
     this->getForeheadSkinArea();
+
+
 }
 
 
@@ -70,6 +72,11 @@ void BpmVideoProcessor::computeAmplifiedMask() {
 }
 
 void BpmVideoProcessor::computeBpm(int computeType) {
+
+    // Stabilize forehead
+    // TODO: Compare results
+    stabilizeVideo(this->forehead);
+
     switch (computeType) {
         case AVG_COMPUTE:
             this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);

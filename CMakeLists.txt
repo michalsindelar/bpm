@@ -31,7 +31,7 @@ set(SOURCE_FILES
     lib/logs/logs.cpp
     lib/ModeSelectorWindow.cpp
     lib/ModeSelectorWindow.h
-)
+    lib/stabilization.cpp lib/stabilization.h)
 
 add_executable(bpm ${SOURCE_FILES})
 

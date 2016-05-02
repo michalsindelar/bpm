@@ -14,6 +14,7 @@
 #include <boost/thread.hpp>
 #include "imageOperation.h"
 #include "Detector.h"
+#include "stabilization.h"
 
 // Configuration
 #include "constants.h"
