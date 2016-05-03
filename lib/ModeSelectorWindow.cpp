@@ -8,35 +8,41 @@
 ModeSelectorWindow::ModeSelectorWindow(QWidget *parent)
         : QWidget(parent) {
 
+    // Don't save output by default
+    this->saveOutput = false;
+
     // Default camera
     this->mode = CAMERA_SOURCE_MODE;
 
-    Size buttonSize = Size(150, 50);
+    this->inputFilePath = QString();
+    this->outputFolderPath = QString();
 
-    QPushButton *modeCameraButton = new QPushButton("Mode Camera Real", this);
-    modeCameraButton->setGeometry(20, 40, buttonSize.width, buttonSize.height);
+    QSize buttonSize = QSize(150, 50);
 
-    QPushButton *modeVideoRealButton = new QPushButton("Mode Video Real", this);
-    modeVideoRealButton->setGeometry(180, 40, buttonSize.width, buttonSize.height);
+    modeCameraButton = new QPushButton("Mode Camera Real", this);
+    modeCameraButton->setGeometry(QRect(QPoint(20, 40), buttonSize));
 
-    QPushButton *modeVideoStaticButton = new QPushButton("Mode Video Static", this);
-    modeVideoStaticButton->setGeometry(340, 40, buttonSize.width, buttonSize.height);
+    modeVideoRealButton = new QPushButton("Mode Video Real", this);
+    modeVideoRealButton->setGeometry(QRect(QPoint(180, 40), buttonSize));
 
-    QPushButton *fileDialogButton = new QPushButton("Choose video file", this);
-    fileDialogButton->setGeometry(180, 95, buttonSize.width, buttonSize.height - 15);
+    modeVideoStaticButton = new QPushButton("Mode Video Static", this);
+    modeVideoStaticButton->setGeometry(QRect(QPoint(340, 40), buttonSize));
 
-    QPushButton *fileDialogButtonCopy = new QPushButton("Choose video file", this);
-    fileDialogButtonCopy->setGeometry(340, 95, buttonSize.width, buttonSize.height - 15);
+    fileDialogButton = new QPushButton("Choose video file", this);
+    fileDialogButton->setGeometry(180, 95, buttonSize.width(), buttonSize.height() - 15);
 
-    QPushButton *saveButton = new QPushButton("Save output", this);
-    saveButton->setGeometry(20, 150, buttonSize.width, buttonSize.height);
+    fileDialogButtonCopy = new QPushButton("Choose video file", this);
+    fileDialogButtonCopy->setGeometry(340, 95, buttonSize.width(), buttonSize.height() - 15);
 
-    QPushButton *saveDialogButton = new QPushButton("Choose output folder", this);
-    saveDialogButton->setGeometry(180, 150, buttonSize.width, buttonSize.height);
+    saveButton = new QPushButton("Save output", this);
+    saveButton->setGeometry(QRect(QPoint(20, 150), buttonSize));
+
+    saveDialogButton = new QPushButton("Choose output folder", this);
+    saveDialogButton->setGeometry(QRect(QPoint(180, 150), buttonSize));
     connect(saveDialogButton, SIGNAL(clicked()), this, SLOT(handleOutputFileDialog()));
 
-    QPushButton *runButton = new QPushButton("Run app!", this);
-    runButton->setGeometry(180, 250, buttonSize.width, buttonSize.height);
+    runButton = new QPushButton("Run app!", this);
+    runButton->setGeometry(180, 250, buttonSize.width(), buttonSize.height() - 15);
 
     connect(modeCameraButton, SIGNAL(clicked()), this, (SLOT(handleCameraSourceMode())));
     connect(modeVideoRealButton, SIGNAL(clicked()), this, SLOT(handleVideoRealMode()));
@@ -49,41 +55,90 @@ ModeSelectorWindow::ModeSelectorWindow(QWidget *parent)
 
     // Run button will exit mode selector window and init execution of main app
     connect(runButton, SIGNAL(clicked()), qApp, SLOT(quit()));
-}
 
+    // Reset border stylesA
+    resetStyle();
+}
+void ModeSelectorWindow::resetStyle() {
+    // Reset at first
+    modeCameraButton->setStyleSheet("border: 2px solid #aaaaaa;");
+    modeVideoRealButton->setStyleSheet("border: 2px solid #aaaaaa;");
+    modeVideoStaticButton->setStyleSheet("border: 2px solid #aaaaaa;");
+    saveButton->setStyleSheet("border: 2px solid #aaaaaa;");
+
+
+    // Active state - mode
+    switch (this->mode) {
+        case CAMERA_SOURCE_MODE:
+            modeCameraButton->setStyleSheet("border: 2px solid #008800;");
+            break;
+        case VIDEO_REAL_SOURCE_MODE:
+            modeVideoRealButton->setStyleSheet("border: 2px solid #008800;");
+            break;
+        case VIDEO_STATIC_SOURCE_MODE:
+            modeVideoStaticButton->setStyleSheet("border: 2px solid #008800;");
+            break;
+        default:
+            break;
+    }
+
+
+    if (this->mode == VIDEO_REAL_SOURCE_MODE || this->mode == VIDEO_STATIC_SOURCE_MODE) {
+        if (this->inputFilePath.isEmpty()) {
+            this->fileDialogButton->setStyleSheet("border: 2px solid #880000;");
+            this->fileDialogButtonCopy->setStyleSheet("border: 2px solid #880000;");
+        } else {
+            this->fileDialogButton->setStyleSheet("border: 2px solid #aaaaaa;");
+            this->fileDialogButtonCopy->setStyleSheet("border: 2px solid #aaaaaa;");
+        }
+    }
+
+    if (this->saveOutput) {
+        saveButton->setStyleSheet("border: 2px solid #008800;");
+        if (this->outputFolderPath.isEmpty()) {
+            this->saveDialogButton->setStyleSheet("border: 2px solid #880000;");
+        } else {
+            this->saveDialogButton->setStyleSheet("border: 2px solid #aaaaaa;");
+        }
+    }
+}
 
 void ModeSelectorWindow::handleCameraSourceMode() {
     this->mode = CAMERA_SOURCE_MODE;
+    resetStyle();
 }
 
 void ModeSelectorWindow::handleVideoRealMode() {
     this->mode = VIDEO_REAL_SOURCE_MODE;
+    resetStyle();
 }
 
 void ModeSelectorWindow::handleVideoStaticMode() {
     this->mode = VIDEO_STATIC_SOURCE_MODE;
+    resetStyle();
 }
 
-
 void ModeSelectorWindow::handleInputFileDialog() {
-    this->inputFilePath = new QString(QFileDialog::getOpenFileName(
+    this->inputFilePath = (QFileDialog::getOpenFileName(
             this,
             tr("Open Video"),
             QString::fromStdString(PROJECT_DIR),
             tr("Video Files (*.avi *.mpg *.mp4 *.mov)")));
+    resetStyle();
 }
 
-
 void ModeSelectorWindow::handleOutputFileDialog() {
-    this->outputFolderPath = new QString(QFileDialog::getExistingDirectory (
+    this->outputFolderPath = (QFileDialog::getExistingDirectory (
             this,
             tr("Open Directory"),
             QString::fromStdString(PROJECT_DIR),
             QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks));
+    resetStyle();
 }
 
 void ModeSelectorWindow::handleSaveButton() {
     this->saveOutput = !this->saveOutput;
+    resetStyle();
 }
 
 #include "moc_ModeSelectorWindow.cpp"

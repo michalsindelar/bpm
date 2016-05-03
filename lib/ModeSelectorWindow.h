@@ -2,8 +2,8 @@
 // Created by Michal on 15/04/16.
 //
 
-#ifndef BPM_MYBUTTON_H
-#define BPM_MYBUTTON_H
+#ifndef BPM_MODESELECTORWINDOW_H
+#define BPM_MODESELECTORWINDOW_H
 
 #include <QApplication>
 #include <QFileDialog>
@@ -23,27 +23,43 @@ class ModeSelectorWindow : public QWidget {
 private:
     int mode;
     bool saveOutput;
-    QString *inputFilePath;
-    QString *outputFolderPath;
+    QString inputFilePath;
+
+    // Modes
+    QPushButton *modeCameraButton, *modeVideoRealButton, *modeVideoStaticButton;
+
+    // Run
+    QPushButton *runButton;
+
+    // Files dialog
+    QPushButton *fileDialogButton, *fileDialogButtonCopy;
+
+    // Save
+    QPushButton *saveButton, *saveDialogButton;
+
+    QString outputFolderPath;
 
 public:
-    ModeSelectorWindow(QWidget *parent = 0);
+    explicit ModeSelectorWindow(QWidget *parent = 0);
+
 
     int getMode() const {
         return mode;
     }
 
-    QString *getFileName() const {
+    QString getFileName() const {
         return inputFilePath;
     }
 
-    QString *getOutputFolder() const {
+    QString getOutputFolder() const {
         return outputFolderPath;
     }
 
     bool getSaveOutput() const {
         return saveOutput;
     }
+
+    void resetStyle();
 
 public slots:
     void handleCameraSourceMode();
@@ -56,4 +72,4 @@ public slots:
 };
 
 
-#endif //BPM_MYBUTTON_H
+#endif //BPM_MODESELECTORWINDOW_H
