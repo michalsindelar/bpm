@@ -78,7 +78,7 @@
 * společné chování pro camera mode a video real mode x rozdílné pro static mode
 * diskutovat minimální počet snímků pro vizualizaci - podložit přílohou
 
-### Grafy rozdílných (čím dál více pokročilých) přístupů
+#### Grafy rozdílných (čím dál více pokročilých) přístupů
 * V této části postupovat od naivního iniciálního měření (bez detekovaného obličej) až po konečné řešení s detekovaným čelem a potlačení globálních světelných změn - podložit reálnými daty
   * intenzity celého obrazu
   * intenzity s detekovanym oblicejem

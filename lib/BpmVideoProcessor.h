@@ -94,7 +94,7 @@ class BpmVideoProcessor {
 
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, double fps, int framesCount, Rect faceRoi);
-        void computeBpm(int computeType = AVG_COMPUTE);
+        void computeBpm(int computeType = MEAN_COMPUTE);
         void computeBpmFromPyramid();
         void computeAmplifiedMask();
         void setMaxPyramidLevel();

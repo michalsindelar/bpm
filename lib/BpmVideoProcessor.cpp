@@ -95,6 +95,11 @@ void BpmVideoProcessor::computeBpm(int computeType) {
 
     this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
 
+//    stabilizeVideo(this->forehead);
+
+//    vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
+//suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
+
 
     if (DATA_LOGGING) {
         saveIntensities(this->foreheadIntensities, (string) DATA_DIR+"/localIntensities.txt");
