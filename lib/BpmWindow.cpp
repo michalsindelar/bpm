@@ -41,12 +41,18 @@ void Bpm::init(int sourceMode, int maskMode) {
         }
     }
 
+    // STORE ORIGINAL DIMENSION
     this->origFrameSize = Size(this->input.get(CV_CAP_PROP_FRAME_WIDTH), this->input.get(CV_CAP_PROP_FRAME_HEIGHT));
 
     // GET DOUBLE DOWNSCALING LEVEL
-    this->doubleDownscalingLevel = setDoubleDownscalingLevel(origFrameSize.width, RESIZED_FRAME_WIDTH);
+    // according to orientation
+    if (origFrameSize.width > origFrameSize.height) {
+        this->doubleDownscalingLevel = setDoubleDownscalingLevel(origFrameSize.width, RESIZED_FRAME_WIDTH);
+    } else {
+        this->doubleDownscalingLevel = setDoubleDownscalingLevel(origFrameSize.height, RESIZED_FRAME_WIDTH);
+    }
 
-    // COMPUTE RESIZED FRAME SIZE
+    // COMPUTE RESIZED FRAME SIZE according to orientatin
     this->frameSize = getResizedSize(origFrameSize, origFrameSize.width / (pow(2,doubleDownscalingLevel)));
 
     // INITALIZE MIDDLEWARE
@@ -100,22 +106,21 @@ int Bpm::run() {
 
 int Bpm::runRealVideoMode() {
 
+    // Timestamps
     clock_t prevGrabTime, currGrabTime;
+
+    // In frame
+    Mat in;
 
     for (int index = 0; true; index++) {
 
-        // Exit measuring
-        if (false && (workerIteration > this->measuringIteration)) {
-            break;
-        };
+        // Grab frame from input stream
+        input >> in; // type: CV_8UC3 (constant 16)
 
-        // Grab video frame
-        Mat in;
-        input >> in; // type: CV_8UC3 (16)
-
+        // Skip initial frames because possible artefacts in video
         if (index < CAMERA_INIT) continue;
 
-        // Computing current fps of camera
+        // Experimental computing current fps in camera mode
         if (this->sourceMode == CAMERA_SOURCE_MODE && index > CAMERA_INIT) {
             prevGrabTime = currGrabTime;
             currGrabTime = clock();
@@ -263,87 +268,6 @@ int Bpm::runStaticVideoMode() {
 
         // Handling frame rate & time for closing window
         if (waitKey(1) >= 0) break;
-    }
-
-    return 0;
-}
-
-int Bpm::runCameraMode() {
-
-    for (int frame = 0; true; frame++) {
-
-        // Measuring elapsed time
-        // TODO: clock_gettime() -- this one!, (gettimeofday())
-        clock_t begin = clock();
-
-        // Grab video frame
-        Mat in;
-        input >> in; // type: CV_8UC3 (16)
-
-        // Handle ending video
-        if (!in.data) {
-            return 1;
-        }
-
-        if (frame < CAMERA_INIT) continue;
-
-        // Resize captured frame
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
-
-        // Output
-        Mat out = Mat(in.rows, in.cols, in.type());
-
-        // Detect face in own thread
-        if (!faceFullDetector.isWorking()) {
-            boost::thread workerThread(&Detector::detectFace, &faceFullDetector, in);
-        }
-
-        if (faceFullDetector.getFaces().size()) {
-            this->updateFace(faceFullDetector.getBiggestFace(), this->fullFace);
-        }
-
-        // Keep maximum BUFFER_FRAMES size
-        if (this->isBufferFull()) {
-            // Erase first frame
-            videoBuffer.erase(videoBuffer.begin());
-        }
-
-        // Start cropping frames to face only after init
-        // TODO: Can't run without face!
-        // Or can be choosen center of image
-        pushInputToBuffer(in, frame);
-
-        // Update bpm once bpmWorker ready
-        controlMiddleWare(frame);
-
-        // Start computing when buffer filled
-        compute(true);
-
-        // Show bpmVisualization video after initialization compute
-        // TODO: Check if this is performance ok
-        visualize(in, out, frame);
-
-        if (saveOutput) {
-            output.write(out);
-        }
-
-        // Merge original + adjusted
-        hconcat(out, in, window);
-
-        // Put the image onto a screen
-        imshow(this->OSWindowName, window);
-
-        // Handling frame rate & time for closing window
-        if (waitKey(1) >= 0) break;
-
-        // Stop measuring loop time
-        clock_t end = clock();
-
-        // Experimental fps settings
-        // TODO: Check if working
-        double elapsedMus = double(end - begin) / CLOCKS_PER_SEC * 1000000;
-        int extraWaitMus = (elapsedMus > (CLOCKS_PER_SEC / this->fps)) ? 0 : int(LOOP_WAIT_TIME_MUS - elapsedMus + 0.5);
-        usleep(extraWaitMus);
     }
 
     return 0;
