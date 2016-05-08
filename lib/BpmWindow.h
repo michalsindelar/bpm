@@ -13,6 +13,7 @@
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc_c.h>
+#include <chrono>
 
 // Classes
 #include "./Middleware.h"
@@ -103,34 +104,37 @@ class Bpm {
 
     public:
         void init(int mode, int maskMode);
+        void initLoadingNotes();
 
-        // Runt modes
+        // Run modes
         int run();
         int runCameraMode();
         int runRealVideoMode();
         int runStaticVideoMode();
 
-        void updateFace(Rect src, Rect & dst);
-        void updateTmpFace(Rect src);
-        void mergeFaces();
-        bool isFaceDetected(Rect face);
-        bool isForeheadDetected();
-        bool isBufferFull();
-
+        // Buffer
         void pushInputToBuffer(Mat frame, int index);
         void pushInputToBuffer(Mat in);
-        void controlMiddleWare(int index);
+        bool isBufferFull();
 
+        // Middleware control
+        void controlMiddleWare(int index);
         void compute(bool thread = true);
 
+        // Visualization
         void visualize(Mat & in, Mat & out, int index);
         void visualizeDetected(Mat & in);
         void visualizeAmplified(Mat & in, Mat & out, int index, bool origSize);
         void visualizeAmplified(Mat & in, Mat & out, int index);
 
+        // Detectors control
         void handleDetector(Mat in, int type);
-
-        void fillLoadingNotes();
+        bool isFaceDetected(Rect face);
+        bool isForeheadDetected();
+        void updateFace(Rect src, Rect & dst);
+        void updateTmpFace(Rect src);
+        void mergeFaces();
+        void updateFps(std::chrono::time_point<std::chrono::high_resolution_clock> & prev, int index);
 
         // OS Window
         void renderMainWindow(Mat &a, Mat &b, int main);

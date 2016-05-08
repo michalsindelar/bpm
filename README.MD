@@ -41,4 +41,8 @@ The run following commands:
 
 `./bpm`
 
+For better performance you could try increasing priority of process (especially when using webcamera).
+
+`$ nice -n -10 ./bpm`
+
 Enjoy!

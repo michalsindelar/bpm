@@ -80,7 +80,7 @@ void Bpm::init(int sourceMode, int maskMode) {
     this->state = DETECTING;
 
     // State notes
-    fillLoadingNotes();
+    initLoadingNotes();
 
     // State bar with white bg
     this->stateBar = Mat((int) round(frameSize.height * 0.1), 2*frameSize.width, CV_8UC3);
@@ -107,7 +107,7 @@ int Bpm::run() {
 int Bpm::runRealVideoMode() {
 
     // Timestamps
-    clock_t prevGrabTime, currGrabTime;
+    auto prevGrabTime = std::chrono::steady_clock::now();
 
     // In frame
     Mat in;
@@ -120,15 +120,9 @@ int Bpm::runRealVideoMode() {
         // Skip initial frames because possible artefacts in video
         if (index < CAMERA_INIT) continue;
 
-        // Experimental computing current fps in camera mode
-        if (this->sourceMode == CAMERA_SOURCE_MODE && index > CAMERA_INIT) {
-            prevGrabTime = currGrabTime;
-            currGrabTime = clock();
-            double elapsedTime = double(currGrabTime - prevGrabTime) / (CLOCKS_PER_SEC / 1000);
-            this->fps = (this->fps + 1000/elapsedTime) / 2.0f;
-
-        } else if (index == CAMERA_INIT) {
-            currGrabTime = clock();
+        // Dynamically updating fps in camera mode
+        if (this->sourceMode == CAMERA_SOURCE_MODE) {
+            updateFps(prevGrabTime, index);
         }
 
         // Reset video when video ends
@@ -492,7 +486,7 @@ void Bpm::handleDetector(Mat in, int type) {
     }
 }
 
-void Bpm::fillLoadingNotes() {
+void Bpm::initLoadingNotes() {
     this->stateNotes.push_back("Detecting face and forehead.");
     this->stateNotes.push_back("Please don't move.");
     this->stateNotes.push_back("Trying to compute your bpm.");
@@ -523,11 +517,23 @@ void Bpm::renderStateBar(int index) {
     putText(
             this->stateBar,
             this->stateNotes[this->state]
-            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(max(bufferFrames - index, 0)) + " frames") : ""),
+            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(this->fps) + " frames") : ""),
             Point(20, 20),
             FONT_HERSHEY_SIMPLEX,
             0.5f, // font scale
             Scalar(0,0,0), // color
             1 // thickness
     );
+}
+
+void Bpm::updateFps(std::chrono::time_point<std::chrono::high_resolution_clock> & prev, int index) {
+    if (index == CAMERA_INIT) {
+        prev = std::chrono::steady_clock::now();
+    } else if (this->sourceMode == CAMERA_SOURCE_MODE && index > CAMERA_INIT) {
+        auto curr = chrono::steady_clock::now();
+        auto duration = chrono::duration_cast< std::chrono::milliseconds> (curr - prev);
+        double currFps = 1000.0f / duration.count();
+        this->fps = (this->fps == 0) ? currFps : (this->fps + currFps) / 2.0f;
+        prev = curr;
+    }
 }
