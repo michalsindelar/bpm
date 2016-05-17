@@ -1,0 +1,689 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% I, the copyright holder of this work, release this work into the
+%% public domain. This applies worldwide. In some countries this may
+%% not be legally possible; if so: I grant anyone the right to use
+%% this work for any purpose, without any conditions, unless such
+%% conditions are required by law.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[
+  digital, %% This option enables the default options for the
+           %% digital version of a document. Replace with `printed`
+           %% to enable the default options for the printed version
+           %% of a document.
+  table,   %% Causes the coloring of tables. Replace with `notable`
+           %% to restore plain tables.
+% * <michalsindelar03@gmail.com> 2016-04-19T17:32:28.735Z:
+%
+% ^.
+  lof,     %% Prints the List of Figures. Replace with `nolof` to
+           %% hide the List of Figures.
+  lot,     %% Prints the List of Tables. Replace with `nolot` to
+           %% hide the List of Tables.
+  %% More options are listed in the user guide at
+  %% <http://mirrors.ctan.org/macros/latex/contrib/fithesis/guide/mu/fi.pdf>.
+]{fithesis3}
+%% The following section sets up the locales used in the thesis.
+\usepackage[resetfonts]{cmap} %% We need to load the T2A font encoding
+\usepackage[T1,T2A]{fontenc}  %% to use the Cyrillic fonts with Russian texts.
+\usepackage[
+  main=czech, %% By using `czech` or `slovak` as the main locale
+                %% instead of `english`, you can typeset the thesis
+                %% in either Czech or Slovak, respectively.
+  english, german, russian, slovak %% The additional keys allow
+]{babel}        %% foreign texts to be typeset as follows:
+%%
+%%   \begin{otherlanguage}{german}  ... \end{otherlanguage}
+%%   \begin{otherlanguage}{russian} ... \end{otherlanguage}
+%%   \begin{otherlanguage}{czech}   ... \end{otherlanguage}
+%%   \begin{otherlanguage}{slovak}  ... \end{otherlanguage}
+%%
+%% For non-Latin scripts, it may be necessary to load additional
+%% fonts:
+\usepackage{paratype}
+\def\textrussian#1{{\usefont{T2A}{PTSerif-TLF}{m}{rm}#1}}
+%%
+%% The following section sets up the metadata of the thesis.
+\thesissetup{
+    date          = \the\year/\the\month/\the\day,
+    university    = mu,
+    faculty       = fi,
+    type          = bc,
+    author        = Michal Šindelář,
+    gender        = m,
+    advisor       = RNDr. Vladimír Ulman\, Ph.D.,
+    title         = {Optické měření srdečního pulsu z krátkého kamerového záznamu},
+    TeXtitle      = {Optické měření srdečního pulsu z krátkého kamerového záznamu},
+    keywords      = {Digitální zpracování obrazu, určení tepu z optického záznamu, Eulerian magnification},
+    TeXkeywords   = {Digitální zpracování obrazu, určení tepu z optického záznamu, Eulerian magnification},
+}
+\thesislong{abstract}{
+	Cílem projektu je vytvořit aplikaci, která nabídne vytvoření krátkého kamerového záznamu obličeje, přehrání záznamu a současně vyobrazení srdečního tepu (například poblikávání ikonky v detekovaném rytmu). Srdeční tep bude detekován pouze na základě analýzy obrazu z kamery. Metoda je založena na zdůraznění slabé, okem těžko pozorovatelné fluktuace barevného odstínu kůže vlivem přítomnosti nebo nepřítomnosti krve.
+
+Těžiště práce je nalezení a zrealizovaní procedury zachycení a zpracování snímků videa. Konkrétně bude potřeba programově zajistit stabilní snímací podmínky, optimalizovat snímané video pro další zpracování, spustit existující program na zesílení barevných fluktuací (nebo ho vytvořit znovu), detekovat pulsování barev ve zpracované sekvenci a určit tepovou rychlost. Vše se potom zabalí do GUI aplikace. Ideální výsledek práce je online zpracování videa, to je však poměrně ambiciózní.
+
+Práce buď využije hotovou implementaci původních autorů této techniky a vloží ji do hotové aplikace, nebo celý postup naprogramuje samostatně (s přihlédnutím na kontext aplikace) v libovolném programovacím jazyku.
+
+
+\begin{otherlanguage}{english}
+Literatura: Hao-Yu Wu, Michael Rubinstein, Eugene Shih, John Guttag, Fredo Durand and William T. Freeman. Eulerian Video Magnification for Revealing Subtle Changes in the World. In ACM Transactions on Graphics (Proc. SIGGRAPH 2012), 31, 4. 2012.
+\end{otherlanguage}
+
+}
+\thesislong{thanks}{
+    This is the acknowledgement for my thesis, which can
+
+    span multiple paragraphs.
+}
+%% The following section sets up the bibliography.
+\usepackage{csquotes}
+\usepackage[              %% When typesetting the bibliography, the
+  backend=biber,          %% `numeric` style will be used for the
+  style=numeric,          %% entries and the `numeric-comp` style
+  citestyle=numeric-comp, %% for the references to the entries. The
+  sorting=none,           %% entries will be sorted in cite order.
+  sortlocale=auto         %% For more unformation about the available
+]{biblatex}               %% `style`s and `citestyles`, see:
+%% <http://mirrors.ctan.org/macros/latex/contrib/biblatex/doc/biblatex.pdf>.
+\addbibresource{example.bib} %% The bibliograpic database within
+\addbibresource{resources.bib} %% The bibliograpic database within
+                          %% the file `example.bib` will be used.
+\usepackage{makeidx}      %% The `makeidx` package contains
+\makeindex                %% helper commands for index typesetting.
+%% These additional packages are used within the document:
+\usepackage{paralist}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{url}
+\usepackage{menukeys}
+\begin{document}
+
+\chapter{Úvod}
+\section{Digitální zpracování obrazu}
+Digitální zpracování obrazu je vědní obor informatiky, který nabízí techniky pro zkoumání digitálního obrazu za účelem zisku informací, či vyprodukování \emph{vylepšeného} obrazu. Typickým odvětvím, ve kterém nachází digitální zpracování obrazu uplatnění je medicína.
+
+V medicíné se využívá např. pro zobrazení výsledků rentgenu, magnetické rezonanzce a dalších. Tato práce se bude zabývat dalším potenciálním využitím digitálního zpracování obrazu konkrétně pro zkoumání tepové frekvence lidského těla z optického záznamu.
+
+\section{Tepová frekvence}
+Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep se projevuje mnoha jevy v lidském těle.
+
+% TODO: Delší text
+% Podstatně prdloužit text, zde by mělo zaznít jaký má kdo tep
+% Vložit tabulku závislosti tepu na stáří
+
+\section{Cíle aplikace}
+Cílem této aplikace je využití fyziologických vlastností proudění krve v těle. V prvé řadě se bude práce zabývat odhalením tepové frekvence pouze ze záznamu obličeje a následně jejím vhodným zobrazením.
+
+Aplikace bude pracovat buď s vloženým záznamem, nebo pro záznam bude využívat přímo webkameru zařízení, na kterém poběží. Při snímání pomocí levnějších (běžných) webkamer se dají očekávat problémy s proměnlivou vzorkovací frekvencí a také s automatickou změnou expozice.
+
+Vytvoříme tedy celkem 3 různé režimy
+\begin{enumerate}
+	\item \emph{Statický} režim při dodaném záznamu \\
+    V tomto režimu uživatel dodá aplikaci hotový záznam. Ta bude zpracovávat záznam celý a výpočet skončí až po zpracování celého videa. Tento režim by měl (v závislosti na délce videa) vést k nejlepším výsledkům, zároveň je ale časově nejnáročnější a prodleva bez interakce s uživatelem je po celou dobu zpracování. Při implementaci se pokusím najít dostatečný počet zpracovávaných snímků z videa, které stačí pro stabilní detekci tepu a pro jeho zobrazení a zpracování videa rozdělit do více vláken pro urychlení výpočtu.
+    \item \emph{Reálný} \footnote{Slovem \emph{reálný} rozumějme situaci, kdy všechny výpočty probíhají paralelně se zobrazovaným výstupem uživateli. } režim webkamera \\
+    V tomto režimu bude aplikace přímo snímat záznam z webkamery. Snímaný obraz bude aplikace přímo zobrazovat a po výpočtu bude vhodně zobrazovat originální a zpracované video se zvýrazněnou fluktuací krve vedle sebe.
+	\item \emph{Reálný} režim při dodaném záznamu \\
+    Tento režim bude v velmi podobný předchozímu režimu se snímáním pomocí webkamery. Je vytvořen především kvůli jednoduššímu testování a hlavně kvůli tomu, aby simuloval chování pří zpracování online záznamu a nemusel se zaobírat případnými problémy se snímáním webkamerou.
+\end{enumerate}
+
+Všechny režimy budou mít možnost uložení výstupu. V případě \emph{statického} režimu to bude uložení celého zpracovaného záznamu. Ve zbývajících to potom bude ukládání výstupu, dokud uživatel program neukončí.
+
+\chapter{Teorie}
+V práci budeme využívat pojmy v kontextu digitálního obrazu:
+\begin{itemize}
+	\item Diskrétní barevný obraz \\
+    Za diskrétní barevný obraz budeme považovat funkci intenzity $I$ definovanou jako: \\
+	$I(x,y,\lambda)$, kde \\
+	$x \in {x_1, ... , x_{nx}}, x_i = x_{min}+(i-1)*\Delta x, x_i \in R, \Delta x \in R$ \\	 	 	 $y \in {y_1, ... , y_{ny}}, y_i = y_{min}+(i-1)*\Delta y, y_i \in R, \Delta y \in R$ \\
+	$\lambda \in [\lambda_{min}, \lambda_{max}] \subseteq R$
+	$I \in [I_{min}, I_{max}] \subseteq R$
+
+    \item Diskrétní časově-proměnlivý barevný obraz \\
+    Za vstup aplikace povyžujme diskrétní časově-proměnlivý barevný obraz, ve kterém přechozí definici diskrétního barevného obrazu rozšíříme o časovout složku $t$. Definicí je znovu intensitní funkce $I$: \\
+
+	$I(x,y,\lambda, t)$, kde \\
+    $x \in {x_1, ... , x_{nx}}, x_i = x_{min}+(i-1)*\Delta x, x_i \in R, \Delta x \in R$ \\	 	 	 $y \in {y_1, ... , y_{ny}}, y_i = y_{min}+(i-1)*\Delta y, y_i \in R, \Delta y \in R$ \\
+	$\lambda \in [\lambda_{min}, \lambda_{max}] \subseteq R$
+    $t \in [t_{min}, t_{max}] \subseteq R$
+
+    \item{Fourierova transformace} \\
+    Pro analýzu frekvencí budeme využívat Fourierovu transformaci. Která je difnovaná jako: \\
+    $\Phi(\omega_x)= \int_{-\infty}^{\infty} \! f(x)exp[-i\omega_xx]\, \mathrm{d}x, i =\sqrt{-1}$, kde: \\
+    \begin{itemize}
+    	\item proměnná $\omega_x$ se nazývá jako \emph{prostorová / časová} frekvence \\
+	    \item proměnné $x$ a $\omega_x$ stejně jako hodnoty funkce $f(x)$ jsou reálná čísla \\
+		\item hodnoty funkce $\Phi(\omega_x)$ jsou komplexní čísla \\
+	    \item hodnota funkce $\Phi(\omega_x)$ pro dané $\omega_x$ je závislá na všech hodnotách $f(x)$ pro všecha $x$\\
+	\end{itemize}
+    Podrobněji se Fourierově transformaci budeme věnovat přímo při popisu použití.
+\end{itemize}
+
+\chapter{Aparáty pro realizaci práce}
+Lidské vidění má omezenou citlivost na prostorovo-časové změny \cite{eulerian-magnification}.
+Mnoho změn, které spadají mimo rozeznávací schopnosti nesou informace, které můžeme využívat pro různé účely. V kontextu této práce se budeme zabývat změnami, které jsou způsobené tepem (resp. prouděním krve). Takovéto změny jsou pro lidské oko nepostřehnutelné, ale pomocí záznamu kvalitní optickou soustavou a následným digitálním zpracováním obrazu je můžeme odhalit.
+
+\section{Určení tepu}
+Pro potřeby zkoumání pomocí optického záznamu se budeme zabývat tzv. neinvazními metodami.
+
+\subsection{Neinvazivní metody}
+Obecně v medicíně spojením \emph{neinvazivní metody} myslíme taková vyšetření, při kterých není nutný zásah do lidského těla jako např. propíchnutí pleti v kontextu vyšetřovacích metod. My v kontextu práce samozřejmě eliminujeme i požadavek na připevnění jakéhokoli snímače na tělo snímané osoby.
+
+Pro účely této práce se nabízí dvě neinvazivní vyšetřovací metody a to:
+\begin{itemize}
+	\item Balistokardiografie
+    	\cite{balistography-source}.
+    \item Pletysmografie
+    	\cite{remote-plethysmographic}.
+\end{itemize}
+
+\subsubsection{Balistokardiografie}
+Balistokardiografie je neinvazivní metoda, která snímá pohyby částí těla činností kardiovaskulární aktivitou. Detekce tepu pomocí balistokardiografie spočívá v analýze pohybů obličeje s omezením na ty, které jsou odpovídají přílivu krve při každém úderu srdce.
+
+Využitím této metody se již zabývala skupina vědců z MIT\cite{headmotion-detection}. Pro experimentální určení tepu z optického záznamu využívají videa obličeje o minimální délce 60 - 90 sekund. V algoritmu využívají sledování obličeje pomocí registrace obrazu. Následně změny promítají na 1D signál, ve kterém hledají vrcholy grafu, které odpovídají úderům srdce.
+
+Velkou výhodou jsou malé, resp. žádné nároky na viditelnost kůže. Např. v publikaci je dosaženo téměř stejných výsledků i v případě, že má snímaný na obličeji masku. Naopak největším problémem tohoto postupu je příliš velká časová náročnost, už jen samotné snímání podle autorů a jejich měření musí být minimálně minuta, tímto se postup stává pro účely této práce nevhodným.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=80mm]{images/balistocardiography-alg.png}
+  \end{center}
+  \caption{Příklad vlastních vektorů při detekci tepu pomocí balistokardiografických pohybů obličeje. Každá bílá šipka odpovídá amplitudě a směru kontribuce příslušného registrovaného bodu k vlastnímu vektoru. Převzato z \url{<http://people.csail.mit.edu/balakg/cvpr2013_pulsepaper.pdf>}}
+  \label{fig:balistografie-princip}
+\end{figure}
+
+\subsubsection{Pletysmografie}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=100mm]{images/pletysmography-alg-pulse.png}
+  \end{center}
+  \caption{Zvýrazněný princip fotopletysmografie.}
+  \label{fig:pletysmography-princip}
+\end{figure}
+
+Pletysmografie obecně vychází z měření změn velikosti orgánů. Vyšetření je realizováno pomocí pletysmografu \footnote{Přístroj, který se používá při běžných vyšetřeních, např. při pletysmografii plic.}.
+
+Z této metody vychází fotopletysmografie (PPG). Tato disciplína byla představena v roce 1930 a využívá světelnou odrazivost či propustnost krve. Vycházi z principu krev absorbuje více světla než okolní tkáň \cite{photo-plethysmographic}.
+
+Při proudění krve se přenáší metaloprotein červených krvinek hemoglobin. Tato látka vytváří pletysmografické signály, které se vyskytují ve všech barevných kanálech při zaznaménání pokožky v závislosti na čase. Nejsilnější jsou změny v zeleném kanálu, neboť hemoglobin absorbuje zelenou složku světla více než jiné \cite{green-channel-strongest}. Z tohoto důvodu se zpravidla nejvíce zkoumají intenzity právě zeleného kanálu.
+
+Čím větší plochu ve snímcích záznamu zabírá pokožka, tím se dají změny zaznamenat přesněji. Nejstabilnější využití tohoto přístupu se zdá být v případě, že pokožka zabírá celou plochu záznamu
+\footnote{Tento postup využívá např. aplikace \emph{Instant Heart Rate} dostupná pro platformu Android z https://play.google.com/store/apps/details?id=si.modula.android.instantheartrate.}. V kontextu aplikace se budeme snažit extrahovat dostatešně množství pixelů ze záznamu obličeje.
+
+Ilustrace pricipu viz \ref{fig:pletysmography-princip}. V závistlosti na čase se mění průměrná intenzita v barevných kanálech v kůži. Tyto změny by měly odpovídat tepové frekvenci srdce, která je znázorněná černým grafem EKG
+\footnote{EKG je zkratka pro vyšetřovací metodu zvanou elektrokardiografie, který snímá elektrické srdeční aktivity. Zanáší je do grafu a umožňuje hodnocení aktivity. Blíže viz \url{http://emedicine.medscape.com/article/1894014-overview>}.} pod obrázkem.
+
+Pro detekci tepu jsem si vybral tuto metodu, protože výsledky experimentů\cite{remote-plethysmographic} zkoumajících pletysmografické signály odpovídající tepu by měly být časově méně náročné (délka záznamu i samotné zpracování) a stabilnější než přecházející metoda.
+
+\section {Vizualizace tepu}
+Pro vizualizaci tepu jsem se rozhodl využít algoritmus nazvaný \emph{Eulerian Video Magnification}\cite{eulerian-magnification} algoritmus. Cílem tohoto algoritmu je odhalovat změny v optických záznamech, které je pouhým okem nemožné (nebo velmi těžce) pozorovat.
+
+Zaměřuje se na dva typy změn:
+\begin{itemize}
+	\item Zvýraznění malých pohybů
+    \item Zvýraznění barevných změn
+\end{itemize}
+
+Postup pro zváýraznění barevných změn funguje na principu zvýrazňování frekvencí v časové frekvenční doméně.
+V publikaci je přímo ukázané zvýraznění proudění krve v obličeji za předpokladu, že dopředu známe tepovou frekvenci, kterou bude algoritmus zvýrazňovat.
+
+Dostupný je implementovaný algoritmus
+\footnote{Implementace v MATLABu i spustielný program je dostupný z webových stránek projektu \url{<http://people.csail.mit.edu/mrub/evm/>}}
+v platformě MATLAB
+\footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s výbornou schopností vyjadřovat matematické výpočty. Blíže viz \url{<http://www.mathworks.com/products/matlab/.>}}.
+Implementace v MATLABu funguje dobře, nicméně je příliš pomalý na to, aby byl použitelný v kontextu online zpracování. Zpracování celého videa při rozlišení
+%TODO: trvá nejméně
+
+Proto jsem se rozhodl algoritmus reimplementovat, podrobněji prozkoumat, případně upravit, aby byl použitelný i pro toto využití.
+
+\chapter{Použité technologie}
+Cíle této práce kladou velké nároky na výkon implementace. Aplikace bude zpracovávat náročný vstup v podobě optického záznamu, na který budou kladeny požadavky o minimálním rozlišení a kvalitě.
+
+Po stanovení cílů aplikace jsem se pro implementaci rozhodl využít kompilovaný jazyk C++, který je pro svou rychlost vhodným pro tuto práci. Pro operace zpracování zpracování obrazu budu využívat knihovnu OpenCV
+\footnote{OpenCV (\emph{Open source computer vision}) je volně šířitelná knihovna navržená pro efektivní výpočty se silným důrazem na real-time práci. Dostupné z: \url{<http://opencv.org/>}.}.
+Pro jednoduché uživatelské rozhraní bude využit framework Qt\footnote{Qt je multiplatformní framework pro tvorbu uživatelského rozhraní. Dostupné z \url{<https://www.qt.io/>}}.
+
+Pro nároky na výkon je nutné využívat vícevláknové programování, které citelně sníží časové nároky na zpracování. Pro tyto účely využiji část knihovny Boost
+\footnote{Boost poskytuje volné šířitelné, přenositelné knihovny pro C++. Dostupné z: \url{<http://www.boost.org/>}}
+pro C++.
+
+Vizualizace dat (generování grafů) bude provedeno v MATLABu\footnote{TODO:}. Ostatní použité technologie budou popsány přímo v části popisu aplikace a její demonstrace.
+
+Aplikace bude vyvíjena na operačním systému OS X, ale díky povaze všech použitých technologií bude spustitelná na UNIXových distribucích i na systému Windows.
+
+\section{Konfigurace hardware}
+Aplikaci je vyvíjena na notebooku MacBook Pro v konfiguraci Intel Core i5 2.7GHz Broadwell, RAM 8GB a integrovanou grafickou kartou Intel Iris Graphics 6100.
+
+Pro pořizování záznamů jsem používal různé přístroje of poloprofesionální zrcadlovky Canon 60D, přes běžný kompakt Nikon
+% TODO: Napsat typ
+, až po integravanou webkameru v notebooku. Dále v části hodnocení dle naměřených hodnot budu diskutovat požadavky na kvalitu a rozlišení vstupního videa.
+
+% TODO: Konfigurace hw
+\chapter{Postup}
+\section{Určení tepu}
+V první řadě jsem se rozhodl určit, zda metoda pro určení tepu opravdu funguje, tedy zda je pro práci použitelná a co je potřeba zaručit pro stabilitu algoritmu. Začal jsem tedy nahrávat různé záznamy kůže a vyvíjet postup, pomocí kterého je možno extrahovat potřebné informace.
+
+Pro objektivní určení tepu jsem nejdříve používal pouhé počítání úderů srdce za časovou jednotku přiloženým prstem na žíle na zápěstí. Následně jsem vždy údery přepočítal na výsledným tep. Pro zpřesnění jsem za tzv. \emph{objektivní pravdu}
+%TODO: Zlepšit definici
+\footnote{Pojmem \emph{objektivní pravda} (z angl. \emph{ground truth}) považujeme hodnotu určenou přímým pozorováním / měřením oproti hodnotě určené experimentem. }
+zvolil běžně dostupný tlakoměr, který při měření tlaku měří i tep. U běžně dostupných tlakoměrů (včetně v práci používaného) se běžně udává chyba měření tepu +/- 5\% \footnote{Tlakoměr Sencor SBP 690 udává chybu +/- 5\%. Viz stránka produktu \url{<http://www.sencor.cz/tlakomer/sbp-690>}}.
+
+Základní postup demonstrujme na záznamu čela obličeje viz \ref{fig:initial-proof-forehead}. Tento záznam je pořízen v situaci, kdy snímaný leží na zemi a zároveň si měří tep pomocí tlakoměru.
+
+V této fázi pro ověření určímě manuálně masku kůže, kterou budeme dále snímat. Zvolíme ji tak, aby kůže pokrývala celou plochu viz \ref{fig:initial-proof-forehead} vpravo. V takto označené ploše zkoumáme intenzity v závislosti na čase.
+
+% Teď zobrazit 3 grafy - mediany orig, mediany cutoff freq, mediany exact filter podle detekovaneho tepu + jedno srovnat kdybych bral intezity odkudkoli - snad vyjde blbě
+
+% TODO: Zde by mělo být i video novorozence a ověření, že alg funguje i na rychlém
+% Nezapomenout ocitovat odkud je video
+
+\begin{figure}
+  \begin{minipage}{.5\textwidth}
+    \includegraphics[width=\textwidth]{images/forehead_simple_sm.png}
+  \end{minipage}
+  \begin{minipage}{.5\textwidth}
+    \includegraphics[width=\textwidth]{images/forehead_time_sm.png}
+  \end{minipage}
+  \caption{Záznam čela a manuálně určená maska pro zpracování.}
+  \label{fig:initial-proof-forehead}
+\end{figure}
+
+
+
+\chapter{These are}
+\begin{otherlanguage}{czech}
+Říká se, že závěrečné práce jsou vyvrcholením studia a tak jsem se
+rozhodl jednu také napsat. Pokud vše půjde podle plánu, odnesu si
+na konci semestru diplom. Držte mi palce!
+\end{otherlanguage}
+
+Říká se, že takto můžu psát další sloupec a nestarat se o formátování.
+
+\begin{otherlanguage}{german}
+Man munkelt, dass die Dissertation die Krönung der Ausbildung ist.
+Deshalb habe ich mich beschlossen meine eigene zu schreiben. Wenn
+alles gut geht, bekomme ich bald ein Diplom. Wünsch mir Glück!
+\end{otherlanguage}
+
+\begin{otherlanguage}{russian}\textrussian{%
+Говорят, что тезис -- это кульминация обучения. Поэтому я и решил
+написать собственный тезис. Если всё сработает по плану, я скоро
+получу диплом. Желайте мне удачи!
+}\end{otherlanguage}
+
+
+\section{the available}
+\subsection{sectioning}
+\subsubsection{commands.}
+\paragraph{Paragraphs and}
+\subparagraph{subparagraphs are available as well.}
+Inside the text, you can also use unnumbered lists,
+\begin{itemize}
+  \item such as
+  \item this one
+  \begin{itemize}
+    \item     and they can be nested as well.
+    \item[>>] You can even turn the bullets into something fancier,
+    \item[\S] if you so desire.
+  \end{itemize}
+\end{itemize}
+Numbered lists are
+\begin{enumerate}
+  \item very
+  \begin{enumerate}
+    \item similar
+  \end{enumerate}
+\end{enumerate}
+and so are description lists:
+\begin{description}
+  \item[Description list]
+    A list of terms with a description of each term
+\end{description}
+The spacing of these lists is geared towards paragraphs of text.
+For lists of words and phrases, the \textsf{paralist} package
+offers commands
+\begin{compactitem}
+  \item that
+  \begin{compactitem}
+    \item are
+    \begin{compactitem}
+      \item better
+      \begin{compactitem}
+        \item suited
+      \end{compactitem}
+    \end{compactitem}
+  \end{compactitem}
+\end{compactitem}
+\begin{compactenum}
+  \item to
+  \begin{compactenum}
+    \item this
+    \begin{compactenum}
+      \item kind of
+      \begin{compactenum}
+        \item content.
+      \end{compactenum}
+    \end{compactenum}
+  \end{compactenum}
+\end{compactenum}
+The \textsf{amsthm} package provides the commands necessary for the
+typesetting of mathematical definitions, theorems, lemmas and
+proofs.
+
+%% We will define several mathematical sectioning commands.
+\newtheorem{theorem}{Theorem}[section] %% The numbering of theorems
+                               %% will be reset after each section.
+\newtheorem{lemma}[theorem]{Lemma}     %% The numbering of lemmas
+\newtheorem{corr}[theorem]{Corrolary}  %% and corrolaries will
+                                %% share the counter with theorems.
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\begin{theorem}
+  This is a theorem that offers a profound insight into the
+  mathematical sectioning commands.
+\end{theorem}
+\begin{theorem}[Another theorem]
+  This is another theorem. Unlike the first one, this theorem has
+  been endowed with a name.
+\end{theorem}
+\begin{lemma}
+  Let us suppose that $x^2+y^2=z^2$. Then
+  \begin{equation}
+    \biggl\langle u\biggm|\sum_{i=1}^nF(e_i,v)e_i\biggr\rangle
+    =F\biggl(\sum_{i=1}^n\langle e_i|u\rangle e_i,v\biggr).
+  \end{equation}
+\end{lemma}
+\begin{proof}
+  $\nabla^2 f(x,y)=\frac{\partial^2f}{\partial x^2}+
+   \frac{\partial^2f}{\partial y^2}$.
+\end{proof}
+\begin{corr}
+  This is a corrolary.
+\end{corr}
+\begin{remark}
+  This is a remark.
+\end{remark}
+
+\chapter{Floats and references}
+\begin{figure}
+  \begin{center}
+    %% PNG and JPG images can be inserted into the document as well,
+    %% but their resolution needs to be adequate. The minimum is
+    %% about 250 pixels per 1 centimeter. That means that a JPG or
+    %% PNG image typeset at 40 × 40 mm should be 1000 × 1000 px
+    %% large at minimum.
+    \includegraphics[width=40mm]{fithesis/logo/mu/fithesis-base.pdf}
+  \end{center}
+  \caption{The logo of the Masaryk University at 40\,mm}
+  \label{fig:mulogo1}
+\end{figure}
+
+\begin{figure}
+  \begin{minipage}{.66\textwidth}
+    \includegraphics[width=\textwidth]{fithesis/logo/mu/fithesis-base.pdf}
+  \end{minipage}
+  \begin{minipage}{.33\textwidth}
+    \includegraphics[width=\textwidth]{fithesis/logo/mu/fithesis-base.pdf} \\
+    \includegraphics[width=\textwidth]{fithesis/logo/mu/fithesis-base.pdf}
+  \end{minipage}
+  \caption{The logo of the Masaryk University at $\frac23$ and
+    $\frac13$ of text width}
+  \label{fig:mulogo2}
+\end{figure}
+
+\begin{table}
+  \begin{tabularx}{\textwidth}{lllX}
+    \toprule
+    Day & Min Temp & Max Temp & Summary \\
+    \midrule
+    Monday & $13^{\circ}\mathrm{C}$ & $21^\circ\mathrm{C}$ & A
+    clear day with low wind and no adverse current advisories. \\
+    Tuesday & $11^{\circ}\mathrm{C}$ & $17^\circ\mathrm{C}$ & A
+    trough of low pressure will come from the northwest. \\
+    Wednesday & $10^{\circ}\mathrm{C}$ &
+    $21^\circ\mathrm{C}$ & Rain will spread to all parts during the
+    morning. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{A weather forecast}
+  \label{tab:weather}
+\end{table}
+
+The logo of the Masaryk University is shown in Figure
+\ref{fig:mulogo1} and Figure \ref{fig:mulogo2} at pages
+\pageref{fig:mulogo1} and \pageref{fig:mulogo2}. The weather
+forecast is shown in Table \ref{tab:weather} at page
+\pageref{tab:weather}. The following chapter is Chapter
+\ref{chap:matheq} and starts at page \pageref{chap:matheq}.
+Items \ref{item:star1}, \ref{item:star2}, and
+\ref{item:star3} are starred in the following list:
+\begin{compactenum}
+  \item some text
+  \item some other text
+  \item $\star$ \label{item:star1}
+  \begin{compactenum}
+    \item some text
+    \item $\star$ \label{item:star2}
+    \item some other text
+    \begin{compactenum}
+      \item some text
+      \item some other text
+      \item yet another piece of text
+      \item $\star$ \label{item:star3}
+    \end{compactenum}
+    \item yet another piece of text
+  \end{compactenum}
+  \item yet another piece of text
+\end{compactenum}
+If your reference points to a place that has not yet been typeset,
+the \verb"\ref" command will expand to \textbf{??} during the first
+run of
+\texttt{pdflatex \jobname.tex}
+and a second run is going to be needed for the references to
+resolve. With online services -- such as Overleaf -- this is
+performed automatically.
+
+\chapter{Mathematical equations}
+\label{chap:matheq}
+\TeX{} comes pre-packed with the ability to typeset inline
+equations, such as $\mathrm{e}^{ix}=\cos x+i\sin x$, and display
+equations, such as \[
+  \mathbf{A}^{-1} = \begin{bmatrix}
+  a & b \\ c & d \\
+  \end{bmatrix}^{-1} =
+  \frac{1}{\det(\mathbf{A})} \begin{bmatrix}
+  \,\,\,d & \!\!-b \\ -c & \,a \\
+  \end{bmatrix} =
+  \frac{1}{ad - bc} \begin{bmatrix}
+  \,\,\,d & \!\!-b \\ -c & \,a \\
+  \end{bmatrix}.
+\] \LaTeX{} defines the automatically numbered \texttt{equation}
+environment:
+\begin{equation}
+  \gamma Px = PAx = PAP^{-1}Px.
+\end{equation}
+The package \textsf{amsmath} provides several additional
+environments that can be used to typeset complex equations:
+\begin{enumerate}
+  \item An equation can be spread over multiple lines using the
+    \texttt{multline} environment:
+    \begin{multline}
+      a + b + c + d + e + f + b + c + d + e + f + b + c + d + e +
+f \\
+      + f + g + h + i + j + k + l + m + n + o + p + q
+    \end{multline}
+
+  \item Several aligned equations can be typeset using the
+    \texttt{align} environment:
+    \begin{align}
+              a + b &= c + d     \\
+                  u &= v + w + x \\[1ex]
+      i + j + k + l &= m
+    \end{align}
+
+  \item The \texttt{alignat} environment is similar to
+    \texttt{align}, but it doesn't insert horizontal spaces between
+    the individual columns:
+    \begin{alignat}{2}
+      a + b + c &+ d       &   &= 0 \\
+              e &+ f + g   &   &= 5
+    \end{alignat}
+
+  \item Much like chapter, sections, tables, figures, or list
+    items, equations -- such as \eqref{eq:first} and
+    \eqref{eq:mine} -- can also be labeled and referenced:
+    \begin{alignat}{4}
+      b_{11}x_1 &+ b_{12}x_2  &  &+ b_{13}x_3  &  &             &
+        &= y_1,                   \label{eq:first} \\
+      b_{21}x_1 &+ b_{22}x_2  &  &             &  &+ b_{24}x_4  &
+        &= y_2. \tag{My equation} \label{eq:mine}
+    \end{alignat}
+
+  \item The \texttt{gather} environment makes it possible to
+    typeset several equations without any alignment:
+    \begin{gather}
+      \psi = \psi\psi, \\
+      \eta = \eta\eta\eta\eta\eta\eta, \\
+      \theta = \theta.
+    \end{gather}
+
+  \item Several cases can be typeset using the \texttt{cases}
+    environment:
+    \begin{equation}
+      |y| = \begin{cases}
+        \phantom-y & \text{if }z\geq0, \\
+                -y & \text{otherwise}.
+      \end{cases}
+    \end{equation}
+\end{enumerate}
+For the complete list of environments and commands, consult the
+\textsf{amsmath} package manual\footnote{
+  See \url{http://mirrors.ctan.org/macros/latex/required/amslatex/math/amsldoc.pdf}.
+  The \texttt{\textbackslash url} command is provided by the
+  package \textsf{url}.
+}.
+
+\chapter{\textnormal{We \textsf{have} \texttt{several} \textsc{fonts}
+  \textit{at} \textbf{disposal}}}
+The serified roman font is used for the main body of the text.
+\textit{Italics are typically used to denote emphasis or
+quotations.} \texttt{The teletype font is typically used for source
+code listings.} The \textbf{bold}, \textsc{small-caps} and
+\textsf{sans-serif} variants of the base roman font can be used to
+denote specific types of information.
+
+\tiny We \scriptsize can \footnotesize also \small change \normalsize
+the \large font \Large size, \LARGE although \huge it \Huge
+is \huge usually \LARGE not \Large necessary.\normalsize
+
+A wide variety of mathematical fonts is also available, such as: \[
+  \mathrm{ABC}, \mathcal{ABC}, \mathbf{ABC}, \mathsf{ABC},
+  \mathit{ABC}, \mathtt{ABC}
+\] By loading the \textsf{amsfonts} packages, several additional
+fonts will become available: \[
+  \mathfrak{ABC}, \mathbb{ABC}
+\] Many other mathematical fonts are available\footnote{
+  See \url{http://tex.stackexchange.com/a/58124/70941}.
+}.
+
+\chapter{Inserting the bibliography}
+After loading the \texttt{biblatex} package and linking a
+bibliography data\-base file to the document using the
+\verb"\addbibresource" command, you can start citing the entries.
+This is just dummy text \cite{inbook-full} lightly sprinkled with
+citations \cite[p.~123]{incollection-full}.  Several sources can be
+cited at once \cite{whole-collection, manual-minimal,manual-full}.
+\citetitle{inbook-full} was written by \citeauthor{inbook-full} in
+\citeyear{inbook-full}. We can also produce \textcite{inbook-full}
+or%% Let us define a compound command:
+\def\citeauthoryear#1{(\textcite{#1},~\citeyear{#1})}
+\citeauthoryear{inbook-full}. The full bibliographic citation is:
+\emph{\fullcite{inbook-full}}. We can easily insert a bibliographic
+citation into the footnote\footfullcite{inbook-full}.
+
+The \verb"\nocite" command will not generate any
+output\nocite{booklet-full}, but it will insert its argument into
+the bibliography. The \verb"\nocite{*}" command will insert all the
+records in the bibliography database file into the bibliography.
+Try uncommenting the command
+%% \nocite{*}
+and watch the bibliography section come apart at the seams.
+
+When typesetting the document for the first time, citing a
+\texttt{work} will expand to [\textbf{work}] and the
+\verb"\printbibliography" command will produce no output. It is now
+necessary to generate the bibliography by running \texttt{biber
+\jobname.bcf} from the command line and then by typesetting the
+document again twice. During the first run, the bibliography
+section and the citations will be typeset, and in the second run,
+the bibliography section will appear in the table of contents.
+
+The \texttt{biber} command needs to be executed from within the
+directory, where the \LaTeX\ source file is located. In Windows,
+the command line can be opened in a directory by holding down the
+\keys{Shift} key and by clicking the right mouse button while
+hovering the cursor over a directory.  Select the \menu{Open
+Command Window Here} option in the context menu that opens shortly
+afterwards.
+
+With online services -- such as Overleaf -- all commands are
+executed automatically.
+
+{\csname captions\languagename\endcsname %% Temporarily override
+%% the BibLaTeX localization with the original babel definitions.
+\makeatletter %% Use the correct localization of the quotations.
+  \thesis@selectLocale{\thesis@locale}\makeatother
+\printbibliography[heading=bibintoc]} %% Print the bibliography.
+
+\chapter{Inserting the index}
+After using the \verb"\makeindex" macro and loading the
+\texttt{makeidx} package that provides additional indexing
+commands, index entries can be created by issuing the \verb"\index"
+command. \index{dummy text|(}It is possible to create ranged index
+entries, which will encompass a span of text.\index{dummy text|)}
+To insert complex typographic material -- such as $\alpha$
+\index{alpha@$\alpha$} or \TeX{} \index{TeX@\TeX} --
+into the index, you need to specify a text string, which will
+determine how the entry will be sorted. It is also possible to
+create hierarchal entries. \index{vehicles!trucks}
+\index{vehicles!speed cars}
+
+After typesetting the document, it is necessary to generate the
+index by running
+\begin{center}%
+  \texttt{texindy -I latex -C utf8 -L }$\langle$\textit{locale}%
+  $\rangle$\texttt{ \jobname.idx}
+\end{center}
+from the command line, where $\langle$\textit{locale}$\rangle$
+corresponds to the main locale of your thesis -- such as
+\texttt{english}, and then typesetting the document again.
+
+The \texttt{texindy} command needs to be executed from within the
+directory, where the \LaTeX\ source file is located. In Windows,
+the command line can be opened in a directory by holding down the
+\keys{Shift} key and by clicking the right mouse button while
+hovering the cursor over a directory. Select the \menu{Open Command
+Window Here} option in the context menu that opens shortly
+afterwards.
+
+With online services -- such as Overleaf -- the commands are
+executed automatically, although the locale may be erroneously
+detected, or the \texttt{makeindex} tool (which is only able to
+sort entries that contain digits and letters of the English
+alphabet) may be used instead of \texttt{texindy}. In either case,
+the index will be ill-sorted.
+
+\makeatletter\thesis@blocks@clear\makeatother
+\phantomsection %% Print the index and insert it into the
+\addcontentsline{toc}{chapter}{\indexname} %% table of contents.
+\printindex
+
+\appendix %% Start the appendices.
+\chapter{An appendix}
+Here you can insert the appendices of your thesis.
+
+\end{document}
