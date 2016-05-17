@@ -73,11 +73,6 @@
 * Popsat chybu měření v závislosti na počtu zpracovávaných snímku (např. při 100 snímcích rozdíl mezi dvěma index je až 10bpm - při 400 už podstatně zredukováno)
 * minimalni pocet buffer frames - podlozit daty
 
-### Demonstrace na konkrétním postupu
-* hodně doprovázet obrazovou přílohou a podrobně vysvětlit chování částí aplikace
-* společné chování pro camera mode a video real mode x rozdílné pro static mode
-* diskutovat minimální počet snímků pro vizualizaci - podložit přílohou
-
 #### Grafy rozdílných (čím dál více pokročilých) přístupů
 * V této části postupovat od naivního iniciálního měření (bez detekovaného obličej) až po konečné řešení s detekovaným čelem a potlačení globálních světelných změn - podložit reálnými daty
   * intenzity celého obrazu
@@ -87,6 +82,15 @@
   * průměrné intenzity vs medián
   * potlačení globálních světelných změn - jako finální měření
   * jestli budu video registrovat - toto by šlo implementovat alespoň do statistického módu
+
+## Část popisu aplikace
+
+### Popsat jestli fungují vylepšení
+* supress global lightning
+* stabilization - diskutovat interpolace
+
+### Demonstrace na konkrétním postupu
+* hodně doprovázet obrazovou přílohou a podrobně vysvětlit chování částí aplikace
 
 ### Měření dat a porovnávání s Ground truth (tlakoměr)
 * generovat tabulky a porovnávat s gt
@@ -154,7 +158,7 @@ SIGGRAPH 2012), 31(4), 2012.
 ---
 ## TODO:
 ### Must do
-* Dynamically compute fps of camera
+[x] Dynamically compute fps of camera
 ```
   grabbedFrameTimes = [];
   foreach inputStream as inputFrame
@@ -167,3 +171,20 @@ SIGGRAPH 2012), 31(4), 2012.
 * Better Qt gui
 * Global light changes supression
   * Study resources
+
+### Testing table
+
+| Video | 200 | 300 | 400 | 425 | 450 | 475 | 500 |
+| - | - |
+| rgb | val | val | val | val | val | val | val |
+| rgb-fail | val | val | val | val | val | val | val |
+| green-avg | val | val | val | val | val | val | val |
+| green-avg-fail | val | val | val | val | val | val | val |
+| green-median | val | val | val | val | val | val | val |
+| green-median-fail | val | val | val | val | val | val | val |
+
+
+
+
+
+---

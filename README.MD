@@ -29,7 +29,7 @@ Prefered way via brew.
 
 ---
 
-App is compiled via CMake. Navigate to app folder. Folder must be writable, you could run:
+App is compiled via CMake. Navigate to app folder. Folder must be *writable* (sudo permission needed otherwise), you could run:
 
 `chmod 777 ./`
 
@@ -37,7 +37,9 @@ The run following commands:
 
 `cmake .`
 
-`make`
+`make bpm_automoc`
+
+`sudo make`
 
 `./bpm`
 

@@ -36,6 +36,8 @@ class Middleware {
 
     Rect faceRoi;
 
+    string outputFilePath;
+
     public:
         Middleware();
         void compute(vector<Mat> videoBuffer);
@@ -86,6 +88,10 @@ class Middleware {
 
         const Rect &getFaceRoi() const {
             return faceRoi;
+        }
+
+        void setOutputFilePath(const string &outputFilePath) {
+            Middleware::outputFilePath = outputFilePath;
         }
 };
 

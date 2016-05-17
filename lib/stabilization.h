@@ -8,7 +8,7 @@
 using namespace std;
 using namespace cv;
 
-
+// Slightly improved version from http://nghiaho.com/?p=2093
 int stabilizeVideo(vector<Mat>& src);
 
 #endif //BPM_STABILIZATION_H

@@ -258,16 +258,16 @@ float findStrongestRowFreq(vector<double> row, int framesCount, double fps) {
     // Create matrix from intensitySum
     float maxValue = 0;
     float minValue = 0;
-    for (int i = 0; i < row.size(); i++) {
+    for (int i = 0; i < framesCount; i++) {
         maxValue = (row[i] > maxValue) ? row[i] : maxValue;
         minValue = (row[i] < minValue) ? row[i] : minValue;
     }
     maxValue += minValue;
 
-    Mat rowMat = Mat::zeros(1, row.size(), CV_32F);
+    Mat rowMat = Mat::zeros(1, framesCount, CV_32F);
 
     // Normalization
-    for (int i = 0; i < row.size(); i++) {
+    for (int i = 0; i < framesCount; i++) {
         rowMat.at<float>(i) += minValue;
         rowMat.at<float>(i) = row[i] / maxValue;
     }
@@ -424,11 +424,11 @@ vector<double> countIntensities(vector<Mat> video) {
 vector<double> countIntensities(vector<Mat> video, float r, float g, float b) {
     vector <double> intensities(video.size());
     for (int i = 0; i < video.size(); i ++) {
-        Scalar frameSum = sum(video[i]);
+        Scalar means = mean(video[i]);
         intensities.at(i) =
-            r * frameSum[RED_CHANNEL] +
-            g * frameSum[GREEN_CHANNEL] +
-            b * frameSum[BLUE_CHANNEL];
+            r * means[RED_CHANNEL] +
+            g * means[GREEN_CHANNEL] +
+            b * means[BLUE_CHANNEL];
     }
     return intensities;
 }
@@ -474,10 +474,44 @@ vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, fl
 vector<double> countMeanValues(vector<Mat> video, int channel) {
     vector <double> values(video.size());
     for (int i = 0; i < video.size(); i++) {
-        Scalar color = mean(video[i]);
-        values.at(i) = color[channel];
+        values.at(i) = median(video[i], channel);
     }
     return values;
+}
+
+
+double median(Mat input, int channel) {
+    int nVals = input.cols * input.rows;
+
+    vector<Mat> channels;
+
+    // Real & imag part
+    split(input, channels);
+    input = channels[channel];
+
+
+    // COMPUTE HISTOGRAM OF SINGLE CHANNEL MATRIX
+    float range[] = { 0, nVals };
+    const float* histRange = { range };
+    bool uniform = true; bool accumulate = false;
+    cv::Mat hist;
+    calcHist(&input, 1, 0, cv::Mat(), hist, 1, &nVals, &histRange, uniform, accumulate);
+
+    // COMPUTE CUMULATIVE DISTRIBUTION FUNCTION (CDF)
+    cv::Mat cdf;
+    hist.copyTo(cdf);
+    for (int i = 1; i <= nVals-1; i++){
+        cdf.at<float>(i) += cdf.at<float>(i - 1);
+    }
+    cdf /= input.total();
+
+    // COMPUTE MEDIAN
+    double medianVal;
+    for (int i = 0; i <= nVals-1; i++){
+        if (cdf.at<float>(i) >= 0.5) { medianVal = i;  break; }
+    }
+
+    return medianVal;
 }
 
 void saveIntensities(vector<double> intensities, string filename) {

@@ -34,7 +34,7 @@ void Middleware::compute(vector<Mat> videoBuffer){
     BpmVideoProcessor bpmVideoProcessor = BpmVideoProcessor(videoBuffer, CUTOFF_FL, CUTOFF_FH, level, fps, bufferFrames, faceRoi);
 
     // Compute bpm at first
-    bpmVideoProcessor.computeBpm();
+    bpmVideoProcessor.computeBpm(220, outputFilePath);
     updateBpm(bpmVideoProcessor.getBpm());
 
 

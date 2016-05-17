@@ -38,10 +38,10 @@ ModeSelectorWindow::ModeSelectorWindow(QWidget *parent)
     saveButton->setGeometry(QRect(QPoint(20, 150), buttonSize));
 
     saveDialogButton = new QPushButton("Choose output folder", this);
-    saveDialogButton->setGeometry(QRect(QPoint(180, 150), buttonSize));
+    saveDialogButton->setGeometry(180, 150, buttonSize.width(), buttonSize.height() - 15);
     connect(saveDialogButton, SIGNAL(clicked()), this, SLOT(handleOutputFileDialog()));
 
-    runButton = new QPushButton("Run app!", this);
+    runButton = new QPushButton("Start application!", this);
     runButton->setGeometry(180, 250, buttonSize.width(), buttonSize.height() - 15);
 
     connect(modeCameraButton, SIGNAL(clicked()), this, (SLOT(handleCameraSourceMode())));
@@ -56,7 +56,7 @@ ModeSelectorWindow::ModeSelectorWindow(QWidget *parent)
     // Run button will exit mode selector window and init execution of main app
     connect(runButton, SIGNAL(clicked()), qApp, SLOT(quit()));
 
-    // Reset border stylesA
+    // Reset border styles
     resetStyle();
 }
 void ModeSelectorWindow::resetStyle() {
@@ -64,6 +64,7 @@ void ModeSelectorWindow::resetStyle() {
     modeCameraButton->setStyleSheet("border: 2px solid #aaaaaa;");
     modeVideoRealButton->setStyleSheet("border: 2px solid #aaaaaa;");
     modeVideoStaticButton->setStyleSheet("border: 2px solid #aaaaaa;");
+    saveDialogButton->setStyleSheet("border: 2px solid #aaaaaa;");
     saveButton->setStyleSheet("border: 2px solid #aaaaaa;");
 
 

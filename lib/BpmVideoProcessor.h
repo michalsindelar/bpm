@@ -94,7 +94,7 @@ class BpmVideoProcessor {
 
     public:
         BpmVideoProcessor(vector<Mat> video, float fl, float fh, int level, double fps, int framesCount, Rect faceRoi);
-        void computeBpm(int computeType = MEAN_COMPUTE);
+        void computeBpm(int computeType = MEAN_COMPUTE, string outputFilePath = "");
         void computeBpmFromPyramid();
         void computeAmplifiedMask();
         void setMaxPyramidLevel();
@@ -134,6 +134,16 @@ class BpmVideoProcessor {
 
             // Create temporal spatial video
             createTemporalSpatial(src, temporalSpatial);
+
+            if (DATA_LOGGING) {
+                // TODO: mkdir in output file
+                for (int i = 0; i < 10; i++) {
+                    Mat tmp = temporalSpatial[i].clone();
+                    cvtColor(tmp, tmp, CV_GRAY2BGR);
+                    tmp.convertTo(tmp, CV_8U, 255);
+                    imwrite( (string) PROJECT_DIR+"/images/temporal/"+to_string(i)+".jpg", tmp);
+                }
+            }
 
             // Bandpass temporal video
             bandpassFilter(temporalSpatial, bpm, fps);

@@ -12,7 +12,7 @@ void Bpm::init(int sourceMode, int maskMode) {
 
     this->sourceMode = sourceMode;
     this->maskMode = maskMode;
-    this->beatVisibilityFactor = 0.4f;
+    this->beatVisibilityFactor = 0.5f;
 
     this->OSWindowName = "Bpm";
     this->workerIteration = 0;
@@ -60,10 +60,12 @@ void Bpm::init(int sourceMode, int maskMode) {
     this->bpmWorker.setFps(fps);
     this->bpmWorker.setBufferFrames(bufferFrames);
 
+
     // MAYBE OPEN OUTPUT FILE
     if (saveOutput) {
         Size outputSize = (this->sourceMode == VIDEO_STATIC_SOURCE_MODE) ? origFrameSize : frameSize;
         output.open(this->outputFilePath, CV_FOURCC('M', 'J', 'P', 'G'), this->fps, outputSize, true);
+        this->bpmWorker.setOutputFilePath(this->outputFolderPath);
     }
 
     this->measuringIteration = 20;
@@ -170,11 +172,14 @@ int Bpm::runRealVideoMode() {
         imshow(this->OSWindowName, window);
 
         // Handling frame rate & time for closing window
-        if (waitKey(1) >= 0) break;
+        if (waitKey(1) == 27) break;
+    }
+
+    if (saveOutput) {
+        output.release();
     }
 
     destroyAllWindows();
-
     return 0;
 }
 
@@ -182,16 +187,24 @@ int Bpm::runStaticVideoMode() {
 
     // Fill buffer from whole video
     Mat in;
+    int stddev = 00;
 
     // We need to have both faces detected
     while(!isFaceDetected(this->fullFace) || !isFaceDetected(this->resizedFace)) {
+        // imGray is the grayscale of the input image
         input >> in;
+
+        // Add noise
+        cv::Mat noise = Mat(in.size(),CV_8UC3);
+        cv::randn(noise, 0, stddev);
+        in = in + noise;
+        normalize(in, in, 0, 255, CV_MINMAX, CV_8UC3);
 
         // Check full face detector
         handleDetector(in, FULL_FACE);
 
         // Resize captured frame
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+        in = resizeImage(in, this->frameSize.width);
 
         // Check resized face detector
         handleDetector(in, RESIZED_FACE);
@@ -205,6 +218,12 @@ int Bpm::runStaticVideoMode() {
     int bufferFrames = 0;
     while(true) {
         input >> in;
+
+        // Add noise
+        cv::Mat noise = Mat(in.size(),CV_8UC3);
+        cv::randn(noise, 0, stddev);
+        in = in + noise;
+        normalize(in, in, 0, 255, CV_MINMAX, CV_8UC3);
 
         // Check whether frame still exists
         if (!in.cols || !in.data) {
@@ -233,10 +252,21 @@ int Bpm::runStaticVideoMode() {
         // Grab video frame
         input >> in; // type: CV_8UC3 (16)
 
+        // Add noise
+        cv::Mat noise = Mat(in.size(),CV_8UC3);
+        cv::randn(noise, 0, stddev);
+        in = in + noise;
+        normalize(in, in, 0, 255, CV_MINMAX, CV_8UC3);
+
         // Reset video
         if (!in.data) {
             input.set(CV_CAP_PROP_POS_MSEC, 0);
+            // TODO: Uncomment
+            return 0;
             input >> in;
+
+            this->saveOutput = false;
+            this->output.release();
         }
 
         // In static mode we want to save full resolution image
@@ -247,7 +277,7 @@ int Bpm::runStaticVideoMode() {
         }
 
         // Resize captured frame!
-        in = resizeImage(in, RESIZED_FRAME_WIDTH);
+        in = resizeImage(in, this->frameSize.width);
 
         // Output
         Mat out = Mat(in.rows, in.cols, in.type());
@@ -383,7 +413,7 @@ void Bpm::visualizeAmplified(Mat &in, Mat &out, int index, bool origSize) {
     tmp.copyTo(visual(Rect(face.x + ERASED_BORDER_WIDTH, face.y + ERASED_BORDER_WIDTH, tmp.cols, tmp.rows)));
     out = in + this->beatVisibilityFactor * visual;
 
-    putText(out, to_string(this->bpmWorker.getBpm()), Point(220, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
+    putText(out, to_string(this->bpmWorker.getBpm()), Point(out.cols - out.cols * 0.3, out.rows - 30), FONT_HERSHEY_SIMPLEX, 2.0,
             Scalar(200, 200, 200), 2);
 }
 
@@ -517,7 +547,7 @@ void Bpm::renderStateBar(int index) {
     putText(
             this->stateBar,
             this->stateNotes[this->state]
-            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(this->fps) + " frames") : ""),
+            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(max(bufferFrames - index, 0)) + " frames") : ""),
             Point(20, 20),
             FONT_HERSHEY_SIMPLEX,
             0.5f, // font scale

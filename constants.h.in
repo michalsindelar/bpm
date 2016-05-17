@@ -8,8 +8,8 @@
 #define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 425
-#define FRAMES_FOR_VISUALIZATION 200
+#define BUFFER_FRAMES 400
+#define FRAMES_FOR_VISUALIZATION 400
 
 // Experimental settings of fps
 #define FPS 30
@@ -49,7 +49,7 @@
 
 // INITIAL CUT-OFF FREQ
 #define CUTOFF_FL 55
-#define CUTOFF_FH 150
+#define CUTOFF_FH 180
 
 // COLORS
 #define BLUE_CHANNEL 0
@@ -57,7 +57,7 @@
 #define RED_CHANNEL 2
 
 // FREQ MASK
-#define FREQ_MASK_WIDTH 20
+#define FREQ_MASK_WIDTH 10
 
 // FRAME DIMENSIONS FOR AMPLIFICATION
 #define MIN_WIDTH_IN_PYRAMID 10
@@ -68,6 +68,6 @@
 #define MEAN_COMPUTE 220
 
 // Generate app data (images)
-#define DATA_LOGGING false
+#define DATA_LOGGING true
 
 #endif // CONFIG_H

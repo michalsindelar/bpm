@@ -55,6 +55,7 @@ class Bpm {
         // Bool save output
         bool saveOutput;
         string outputFilePath;
+        string outputFolderPath;
 
         // Visibility factor of pulse ampliufication mask
         float beatVisibilityFactor;
@@ -152,6 +153,10 @@ class Bpm {
         void setOutputFilePath(const string &outputFilePath) {
             Bpm::outputFilePath = outputFilePath;
             Bpm::saveOutput = true;
+        }
+
+        void setOutputFolderPath(const string &outputFilePath) {
+            Bpm::outputFolderPath = outputFilePath;
         }
 };
 

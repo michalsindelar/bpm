@@ -1,7 +1,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "stabilization.h"
 
-// This video stablisation smooths the global trajectory using a sliding average window
+// This video stablization smooths the global trajectory using a sliding average window
 
 const int SMOOTHING_RADIUS = 30; // In frames. The larger the more stable the video, but less reactive to sudden panning
 const int HORIZONTAL_BORDER_CROP = 20; // In pixels. Crops the border to reduce the black borders from stabilisation being too noticeable.

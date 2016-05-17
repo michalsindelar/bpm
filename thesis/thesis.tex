@@ -52,17 +52,17 @@
     author        = Michal Šindelář,
     gender        = m,
     advisor       = RNDr. Vladimír Ulman\, Ph.D.,
-    title         = {Optické měření srdečního pulsu z krátkého kamerového záznamu},
-    TeXtitle      = {Optické měření srdečního pulsu z krátkého kamerového záznamu},
-    keywords      = {Digitální zpracování obrazu, určení tepu z optického záznamu, Eulerian magnification},
-    TeXkeywords   = {Digitální zpracování obrazu, určení tepu z optického záznamu, Eulerian magnification},
+    title         = {Optické měření srdečního pulsu z~krátkého kamerového záznamu},
+    TeXtitle      = {Optické měření srdečního pulsu z~krátkého kamerového záznamu},
+    keywords      = {Digitální zpracování obrazu, určení tepu z~optického záznamu, Eulerian magnification, fotopletysmografie},
+    TeXkeywords   = {Digitální zpracování obrazu, určení tepu z~optického záznamu, Eulerian magnification},
 }
 \thesislong{abstract}{
-	Cílem projektu je vytvořit aplikaci, která nabídne vytvoření krátkého kamerového záznamu obličeje, přehrání záznamu a současně vyobrazení srdečního tepu (například poblikávání ikonky v detekovaném rytmu). Srdeční tep bude detekován pouze na základě analýzy obrazu z kamery. Metoda je založena na zdůraznění slabé, okem těžko pozorovatelné fluktuace barevného odstínu kůže vlivem přítomnosti nebo nepřítomnosti krve.
+  Cílem projektu je vytvořit aplikaci, která nabídne vytvoření krátkého kamerového záznamu obličeje, přehrání záznamu a současně vyobrazení srdečního tepu (například poblikávání ikonky v~detekovaném rytmu). Srdeční tep bude detekován pouze na základě analýzy obrazu z~kamery. Metoda je založena na zdůraznění slabé, okem těžko pozorovatelné fluktuace barevného odstínu kůže vlivem přítomnosti nebo nepřítomnosti krve.
 
 Těžiště práce je nalezení a zrealizovaní procedury zachycení a zpracování snímků videa. Konkrétně bude potřeba programově zajistit stabilní snímací podmínky, optimalizovat snímané video pro další zpracování, spustit existující program na zesílení barevných fluktuací (nebo ho vytvořit znovu), detekovat pulsování barev ve zpracované sekvenci a určit tepovou rychlost. Vše se potom zabalí do GUI aplikace. Ideální výsledek práce je online zpracování videa, to je však poměrně ambiciózní.
 
-Práce buď využije hotovou implementaci původních autorů této techniky a vloží ji do hotové aplikace, nebo celý postup naprogramuje samostatně (s přihlédnutím na kontext aplikace) v libovolném programovacím jazyku.
+Práce buď využije hotovou implementaci původních autorů této techniky a vloží ji do hotové aplikace, nebo celý postup naprogramuje samostatně (s~přihlédnutím na kontext aplikace) v~libovolném programovacím jazyku.
 
 
 \begin{otherlanguage}{english}
@@ -71,9 +71,9 @@ Literatura: Hao-Yu Wu, Michael Rubinstein, Eugene Shih, John Guttag, Fredo Duran
 
 }
 \thesislong{thanks}{
-    This is the acknowledgement for my thesis, which can
+Rád bych především poděkoval RNDr. Vladimíru Ulmanovi\, Ph.D. za vedení mé bakalářské práce, odborné rady a ochotu.
 
-    span multiple paragraphs.
+Dále děkuji rodině, kamarádům a všem, kteří mě při studiu a tvorbě práce podporovali. Především potom rodičům, kteří navíc souhlasili se zveřejněním fotografií demonstrující měření využitá v~práci.
 }
 %% The following section sets up the bibliography.
 \usepackage{csquotes}
@@ -97,188 +97,190 @@ Literatura: Hao-Yu Wu, Michael Rubinstein, Eugene Shih, John Guttag, Fredo Duran
 \usepackage{amsfonts}
 \usepackage{url}
 \usepackage{menukeys}
+\usepackage{csvsimple, longtable, booktabs}
+\usepackage{lscape}
+
 \begin{document}
 
 \chapter{Úvod}
 \section{Digitální zpracování obrazu}
-Digitální zpracování obrazu je vědní obor informatiky, který nabízí techniky pro zkoumání digitálního obrazu za účelem zisku informací, či vyprodukování \emph{vylepšeného} obrazu. Typickým odvětvím, ve kterém nachází digitální zpracování obrazu uplatnění je medicína.
+Digitální zpracování obrazu je vědní obor informatiky, který nabízí techniky pro zkoumání digitálního obrazu za účelem zisku informací, či vyprodukování \emph{vylepšeného} obrazu. Typickým odvětvím, ve kterém nachází digitální zpracování obrazu uplatnění je medicína. 
 
-V medicíné se využívá např. pro zobrazení výsledků rentgenu, magnetické rezonanzce a dalších. Tato práce se bude zabývat dalším potenciálním využitím digitálního zpracování obrazu konkrétně pro zkoumání tepové frekvence lidského těla z optického záznamu.
+V~medicíně se využívá např. pro zobrazení výsledků rentgenu, magnetické rezonance a dalších. Tato práce se bude zabývat dalším potenciálním využitím digitálního zpracování obrazu konkrétně pro zkoumání tepové frekvence lidského těla z~optického záznamu. 
 
 \section{Tepová frekvence}
-Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep se projevuje mnoha jevy v lidském těle.
+Každý člověk má tep, který je vyvolán vypuzením krve ze srdeční komory do aorty a následně dále do těla. Tep odpovídá počtu úderů srdce za minutu. Jeho hodnota se liší člověk od člověka. 
 
-% TODO: Delší text
-% Podstatně prdloužit text, zde by mělo zaznít jaký má kdo tep
-% Vložit tabulku závislosti tepu na stáří
+Klidová tepová frekvence je jedním ze základních rutin měření v~medicínské péči. Tato frekvence odpovídá situaci, kdy srdce vypuzuje minimální množství krve. Pro správné měření musí být člověk zdravý a ve fyzickém i psychickém klidu.
+
+% TODO: Rozmezí -> PRACOVNÍ INTERVAL
+% Obrázek velký o O
+% Zkontrolovat odkazy na publikace
+Pro určení pracovního intervalu tepu, který má smysl zkoumat práce využívá \emph{Národní zdravotní statistické záznamy} \cite{national-health-statistics-reports} měřené roku 2011 v~USA. Klidový tep ovlivňuje více faktorů jako fyzická kondice, zdraví a především věk. Pro novorozence do jednoho roku je průměrná frekvence 129 tepů/min zatímco pro dospělé už jen 72 tepů/min.
+
+Srdeční frekvence nižší než 60 tepů se považuje za abnormálně pomalou a označuje se jako bradykardie. Hraniční hodnota se ovšem vždy vztahuje i k~věkové a výkonnostní kategorii, např. u~sportovců je běžné mít sníženou klidovou frekvenci i pod 60. Opakem bradykardie je tachykardie\footnote{Blíže viz \url{http://www.heart.org/HEARTORG/Conditions/Arrhythmia/AboutArrhythmia/Tachycardia-Fast-Heart-Rate_UCM_302018_Article.jsp}}, která je u~dospělých obvykle diagnostikována nad 100 tepů/min (u~dospělých).
+
+Práce vylučuje abnormální případy a zaměří se na interval 55-180 tepů/min, kterým bude pokryto vše kromě extrémně nízkých tepů způsobených bradykardií, či profesionálním tréninkem vrcholových sportovců. Pracovní interval bude stěžejní při odhalování výsledné frekvence z~videa. Rozšíření intervalu o~ještě nižší frekvence je problematické a většinou vede k~nekorektním výsledkům.
+
+Srdeční tep můžeme znázornit pomocí přístroje EKG. EKG je zkratka pro vyšetřovací metodu zvanou elektrokardiografie, kdy přístroj snímá elektrické aktivity srdce. Zanáší je do grafu zvaného elektrokardiogram (viz Obrázek \ref{fig:electrocardiograph}) a umožňuje hodnocení aktivity srdce\footnote{Blíže viz \url{http://emedicine.medscape.com/article/1894014-overview>}}. V~elektrokardiogramu odpovídají intervaly mezi jednotlivými lokálními minimy tepové frekvenci srdce.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/electrocardiograph.png}
+  \end{center}
+  \caption{Ilustrace ideálního elektrokardiogramu.}
+  \label{fig:electrocardiograph}
+\end{figure}
 
 \section{Cíle aplikace}
-Cílem této aplikace je využití fyziologických vlastností proudění krve v těle. V prvé řadě se bude práce zabývat odhalením tepové frekvence pouze ze záznamu obličeje a následně jejím vhodným zobrazením.
+Cílem této aplikace je využití fyziologických vlastností proudění krve v~těle za účelem určení tepové frekvence pouze ze záznamu obličeje. Po určení bude tep vhodným způsobem vyobrazen uživateli.
 
-Aplikace bude pracovat buď s vloženým záznamem, nebo pro záznam bude využívat přímo webkameru zařízení, na kterém poběží. Při snímání pomocí levnějších (běžných) webkamer se dají očekávat problémy s proměnlivou vzorkovací frekvencí a také s automatickou změnou expozice.
+Aplikace bude pracovat buď s~vloženým záznamem, nebo pro záznam bude využívat přímo webkameru zařízení, na kterém poběží. Při snímání pomocí levnějších (běžných) webkamer se dají očekávat problémy s~proměnlivou vzorkovací frekvencí a také s~automatickou změnou expozice.
 
-Vytvoříme tedy celkem 3 různé režimy
+Aplikace bude mít celkem 3 různé režimy:
 \begin{enumerate}
-	\item \emph{Statický} režim při dodaném záznamu \\
-    V tomto režimu uživatel dodá aplikaci hotový záznam. Ta bude zpracovávat záznam celý a výpočet skončí až po zpracování celého videa. Tento režim by měl (v závislosti na délce videa) vést k nejlepším výsledkům, zároveň je ale časově nejnáročnější a prodleva bez interakce s uživatelem je po celou dobu zpracování. Při implementaci se pokusím najít dostatečný počet zpracovávaných snímků z videa, které stačí pro stabilní detekci tepu a pro jeho zobrazení a zpracování videa rozdělit do více vláken pro urychlení výpočtu.
-    \item \emph{Reálný} \footnote{Slovem \emph{reálný} rozumějme situaci, kdy všechny výpočty probíhají paralelně se zobrazovaným výstupem uživateli. } režim webkamera \\
-    V tomto režimu bude aplikace přímo snímat záznam z webkamery. Snímaný obraz bude aplikace přímo zobrazovat a po výpočtu bude vhodně zobrazovat originální a zpracované video se zvýrazněnou fluktuací krve vedle sebe.
-	\item \emph{Reálný} režim při dodaném záznamu \\
-    Tento režim bude v velmi podobný předchozímu režimu se snímáním pomocí webkamery. Je vytvořen především kvůli jednoduššímu testování a hlavně kvůli tomu, aby simuloval chování pří zpracování online záznamu a nemusel se zaobírat případnými problémy se snímáním webkamerou.
+  \item \emph{Statický} režim při dodaném záznamu \\
+    V~tomto režimu uživatel dodá aplikaci hotový záznam. Ta bude zpracovávat záznam celý a výpočet skončí až po zpracování celého videa. Tento režim by měl (v~závislosti na délce videa) vést k~nejlepším výsledkům, zároveň je ale časově nejnáročnější a prodleva bez interakce s~uživatelem je po celou dobu zpracování. Dále v~práci bude diskutován dostatečný počet zpracovávaných snímků pro stabilní detekci tepu a jeho zobrazení. Potom bude možné zpracování videa rozdělit do více vláken pro urychlení výpočtu.
+    \item \emph{Reálný}\footnote{Slovem \emph{reálný} je myšlena situace, kdy všechny výpočty probíhají paralelně se zobrazovaným výstupem uživateli.} režim webkamera \\ 
+    V~tomto režimu bude aplikace snímat obraz webkamerou. Snímaný obraz bude aplikace přímo zobrazovat a po výpočtu bude vhodně zobrazovat originální a zpracované video se zvýrazněnou fluktuací krve vedle sebe.
+  \item \emph{Reálný} režim při dodaném záznamu \\
+    Tento režim bude velmi podobný předchozímu režimu se snímáním pomocí webkamery. Je vytvořen především kvůli jednoduššímu testování a pro simulaci chování pří zpracování online záznamu. Umožní se oprostit od případných problémů se snímáním webkamerou.
 \end{enumerate}
 
-Všechny režimy budou mít možnost uložení výstupu. V případě \emph{statického} režimu to bude uložení celého zpracovaného záznamu. Ve zbývajících to potom bude ukládání výstupu, dokud uživatel program neukončí.
+Všechny režimy budou mít možnost uložení výstupu. V~případě \emph{statického} režimu to bude uložení celého zpracovaného záznamu. Ve zbývajících to potom bude ukládání výstupu, dokud uživatel program neukončí.
 
 \chapter{Teorie}
-V práci budeme využívat pojmy v kontextu digitálního obrazu:
-\begin{itemize}
-	\item Diskrétní barevný obraz \\
-    Za diskrétní barevný obraz budeme považovat funkci intenzity $I$ definovanou jako: \\
-	$I(x,y,\lambda)$, kde \\
-	$x \in {x_1, ... , x_{nx}}, x_i = x_{min}+(i-1)*\Delta x, x_i \in R, \Delta x \in R$ \\	 	 	 $y \in {y_1, ... , y_{ny}}, y_i = y_{min}+(i-1)*\Delta y, y_i \in R, \Delta y \in R$ \\
-	$\lambda \in [\lambda_{min}, \lambda_{max}] \subseteq R$
-	$I \in [I_{min}, I_{max}] \subseteq R$
+Protože v~práci budou využívány pojmy v~kontextu digitálního obrazu, jsou v~dalším textu uvedeny potřebné definice.
+\section{Diskrétní obraz} 
+\subsection{Diskrétní šedotónový obraz}
+Práce bude pracovat s~definicí šedotónového obrazu jako intenzitní funkce $E$, která pro každý obrazový pixel $\mathbf{p} = (x,y)$ přiřazuje příslušnou skalární hodnotu $E(x,y)$, tedy
 
-    \item Diskrétní časově-proměnlivý barevný obraz \\
-    Za vstup aplikace povyžujme diskrétní časově-proměnlivý barevný obraz, ve kterém přechozí definici diskrétního barevného obrazu rozšíříme o časovout složku $t$. Definicí je znovu intensitní funkce $I$: \\
+\begin{equation}
+  E(p) = E(x,y),
+\end{equation}
+kde $x,y$ označíme jako celočíselné souřadnice obrazu na pravoúhlé mřížce, pro které platí $0 \leq x \leq M-1$, $0 \leq x \leq N-1$ s~tím, že $M, N$ odpovídá rozměru velikosti obrazu. Šedotónové intenzity $E(p)$ nabývají hodnot $0 \leq $ E(p) $ \leq G_{max}$. Práce pracuje se standardním 8-bitovým obrazem, tedy  $G_{max} = 2^8 - 1 = 255$.
 
-	$I(x,y,\lambda, t)$, kde \\
-    $x \in {x_1, ... , x_{nx}}, x_i = x_{min}+(i-1)*\Delta x, x_i \in R, \Delta x \in R$ \\	 	 	 $y \in {y_1, ... , y_{ny}}, y_i = y_{min}+(i-1)*\Delta y, y_i \in R, \Delta y \in R$ \\
-	$\lambda \in [\lambda_{min}, \lambda_{max}] \subseteq R$
-    $t \in [t_{min}, t_{max}] \subseteq R$
+\subsection {Diskrétní barevný obraz (se třemi kanály)}
+Práce bude dále pracovat s~definicí berevného obrazu se třemi kanály jako $C$.
 
-    \item{Fourierova transformace} \\
-    Pro analýzu frekvencí budeme využívat Fourierovu transformaci. Která je difnovaná jako: \\
-    $\Phi(\omega_x)= \int_{-\infty}^{\infty} \! f(x)exp[-i\omega_xx]\, \mathrm{d}x, i =\sqrt{-1}$, kde: \\
-    \begin{itemize}
-    	\item proměnná $\omega_x$ se nazývá jako \emph{prostorová / časová} frekvence \\
-	    \item proměnné $x$ a $\omega_x$ stejně jako hodnoty funkce $f(x)$ jsou reálná čísla \\
-		\item hodnoty funkce $\Phi(\omega_x)$ jsou komplexní čísla \\
-	    \item hodnota funkce $\Phi(\omega_x)$ pro dané $\omega_x$ je závislá na všech hodnotách $f(x)$ pro všecha $x$\\
-	\end{itemize}
-    Podrobněji se Fourierově transformaci budeme věnovat přímo při popisu použití.
-\end{itemize}
+\begin{equation}
+  C(x,y) = (E_1(x,y), E_2(x,y), E_3(x,y))^T,
+\end{equation}
+
+kde souřadnice $x,y$ jsou definovány stejně jako v~případě šedotónového obrazu. Každý vektor $(E_1, E_2, E_3)^T$, kde $0 \leq (E_1, E_2, E_3) \leq G_{max}$ odpovídá konkrétní barvě v~barevném prostoru. V~práci práci bude nejvíce použit barevný prostor \emph{RGB}, kde můžeme pro lepší orientaci označit $(E_1, E_2, E_3) = (r,g,b)$. Minoritně bude použit barevný prostor \emph{NTSC}, kde označení zůstane původní. 
+
+\subsection{Obrazový záznam}
+Za záznam (video) se dále považuje vektor $V$ diskrétních barevných obrazů v~barevném prostoru \emph{RGB}. Potom i-tý snímek odpovídá: 
+\begin{equation}
+  C_i = V(i),
+\label{def:video}
+\end{equation}
+
+kde $i$, $0 \leq i \leq K$, je index snímku v~poli $V$, $K$ délka vektoru $V$ a $fps$ je vzorkovací frekvence záznamu udávána v~jednotce $Hz$.
+
+        
+\section{Fourierova transformace}
+Pro analýzu frekvencí bude využita jednodimenzionální diskrétní Fourierova transformaci. Ta je definovaná jako:
+\begin{equation}
+    \Phi(\omega_x)= \sum_{x=0}^{N-1} f(x)\exp{(-i(\frac{2\pi}{N}\omega_xx))},
+  \label{fourier-equation}
+\end{equation}
+ 
+kde se proměnná $\omega_x$ nazývá \emph{prostorová / časová} frekvence, $x$ a $\omega_x$ stejně jako hodnoty funkce $f(x)$ jsou reálná čísla, $i = \sqrt[]{-1}$ je komplexní jednotka, hodnoty funkce $\Phi(\omega_x)$ jsou komplexní čísla, hodnota funkce $\Phi(\omega_x)$ pro dané $\omega_x$ je závislá na všech hodnotách $f(x)$ pro všechna $x$.
 
 \chapter{Aparáty pro realizaci práce}
 Lidské vidění má omezenou citlivost na prostorovo-časové změny \cite{eulerian-magnification}.
-Mnoho změn, které spadají mimo rozeznávací schopnosti nesou informace, které můžeme využívat pro různé účely. V kontextu této práce se budeme zabývat změnami, které jsou způsobené tepem (resp. prouděním krve). Takovéto změny jsou pro lidské oko nepostřehnutelné, ale pomocí záznamu kvalitní optickou soustavou a následným digitálním zpracováním obrazu je můžeme odhalit.
+Mnoho změn, které spadají mimo rozeznávací schopnosti, nesou informace, které se dají pomocí digitálního zpracování obrazu využívat pro různé účely. Práce bude využívat změny, které jsou způsobené tepem (resp. prouděním krve). Pro lidské oko jsou nepostřehnutelné, ale pomocí záznamu kvalitní optickou soustavou a následným digitálním zpracováním obrazu se dají odhalit.
 
 \section{Určení tepu}
-Pro potřeby zkoumání pomocí optického záznamu se budeme zabývat tzv. neinvazními metodami.
-
-\subsection{Neinvazivní metody}
-Obecně v medicíně spojením \emph{neinvazivní metody} myslíme taková vyšetření, při kterých není nutný zásah do lidského těla jako např. propíchnutí pleti v kontextu vyšetřovacích metod. My v kontextu práce samozřejmě eliminujeme i požadavek na připevnění jakéhokoli snímače na tělo snímané osoby.
+\label{sec:bpm-detect}
+Pro potřeby zkoumání pomocí optického záznamu se budeme zabývat tzv. neinvazními metodami. Obecně v~medicíně spojením \emph{neinvazivní metody} myslíme taková vyšetření, při kterých není nutný zásah do lidského těla jako např. propíchnutí pleti v~kontextu vyšetřovacích metod. My v~kontextu práce samozřejmě eliminujeme i požadavek na připevnění jakéhokoli snímače na tělo snímané osoby. 
 
 Pro účely této práce se nabízí dvě neinvazivní vyšetřovací metody a to:
 \begin{itemize}
-	\item Balistokardiografie
-    	\cite{balistography-source}.
-    \item Pletysmografie
-    	\cite{remote-plethysmographic}.
+  \item balistokardiografie,
+      \cite{balistography-source}
+    \item pletysmografie 
+      \cite{remote-plethysmographic}.
 \end{itemize}
 
-\subsubsection{Balistokardiografie}
-Balistokardiografie je neinvazivní metoda, která snímá pohyby částí těla činností kardiovaskulární aktivitou. Detekce tepu pomocí balistokardiografie spočívá v analýze pohybů obličeje s omezením na ty, které jsou odpovídají přílivu krve při každém úderu srdce.
+Balistokardiografie je neinvazivní metoda, která snímá pohyby částí těla způsobené činností kardiovaskulární systému. Detekce tepu pomocí balistokardiografie spočívá v~analýze pohybů obličeje s~omezením na ty pohyby, které odpovídají přílivu krve při každém úderu srdce.
 
-Využitím této metody se již zabývala skupina vědců z MIT\cite{headmotion-detection}. Pro experimentální určení tepu z optického záznamu využívají videa obličeje o minimální délce 60 - 90 sekund. V algoritmu využívají sledování obličeje pomocí registrace obrazu. Následně změny promítají na 1D signál, ve kterém hledají vrcholy grafu, které odpovídají úderům srdce.
+Využitím této metody se již zabývala skupina vědců z~MIT \cite{headmotion-detection}. Pro experimentální určení tepu z~optického záznamu využívají videa obličeje o~minimální délce 60 -- 90 sekund. V~algoritmu využívají sledování obličeje pomocí registrace obrazu. Následně změny převedou na 1D signál, ve kterém hledají vrcholy grafu, které odpovídají úderům srdce.
 
-Velkou výhodou jsou malé, resp. žádné nároky na viditelnost kůže. Např. v publikaci je dosaženo téměř stejných výsledků i v případě, že má snímaný na obličeji masku. Naopak největším problémem tohoto postupu je příliš velká časová náročnost, už jen samotné snímání podle autorů a jejich měření musí být minimálně minuta, tímto se postup stává pro účely této práce nevhodným.
+Velkou výhodou jsou malé, resp. žádné nároky na viditelnost kůže. Např. v~publikaci je dosaženo téměř stejných výsledků i v~případě, že má snímaný subjekt na obličeji masku. Naopak největším problémem tohoto postupu je příliš velká časová náročnost, už jen samotné snímání podle autorů a jejich měření musí být minimálně minuta. Tímto se postup stává pro účely této práce nevhodným.
 
 \begin{figure}
   \begin{center}
     \includegraphics[width=80mm]{images/balistocardiography-alg.png}
   \end{center}
-  \caption{Příklad vlastních vektorů při detekci tepu pomocí balistokardiografických pohybů obličeje. Každá bílá šipka odpovídá amplitudě a směru kontribuce příslušného registrovaného bodu k vlastnímu vektoru. Převzato z \url{<http://people.csail.mit.edu/balakg/cvpr2013_pulsepaper.pdf>}}
+  % TODO: Zkontrolovat
+  \caption{Příklad vlastních vektorů při detekci tepu pomocí balistokardiografických pohybů obličeje. Každá bílá šipka odpovídá amplitudě a směru kontribuce příslušného registrovaného bodu k~vlastnímu vektoru. Převzato z~\cite{headmotion-detection}.}
   \label{fig:balistografie-princip}
 \end{figure}
-
-\subsubsection{Pletysmografie}
 
 \begin{figure}
   \begin{center}
     \includegraphics[width=100mm]{images/pletysmography-alg-pulse.png}
   \end{center}
-  \caption{Zvýrazněný princip fotopletysmografie.}
+  \caption{Zvýrazněné barevné změny způsobené fluktuací krve. V~horní řadě jsou snímky videa v~daných časových okamžicích. Ve~spodní řadě je potom ilustrace tepu. Tepové údery by měly korespondovat se snímky, ve~kterých je pokožka odlišně zabarvená. Tyto barevné změny jsou okem nepostřehnutelné.}
   \label{fig:pletysmography-princip}
 \end{figure}
 
-Pletysmografie obecně vychází z měření změn velikosti orgánů. Vyšetření je realizováno pomocí pletysmografu \footnote{Přístroj, který se používá při běžných vyšetřeních, např. při pletysmografii plic.}.
+Pletysmografie obecně vychází z~měření změn velikosti orgánů. Vyšetření je realizováno pomocí pletysmografu\footnote{Přístroj, který se používá při běžných vyšetřeních, např. při pletysmografii plic.}.
 
-Z této metody vychází fotopletysmografie (PPG). Tato disciplína byla představena v roce 1930 a využívá světelnou odrazivost či propustnost krve. Vycházi z principu krev absorbuje více světla než okolní tkáň \cite{photo-plethysmographic}.
+Z~této metody vychází fotopletysmografie (PPG). Tato disciplína byla představena v~roce 1930 a využívá světelnou odrazivost a propustnost krve. Vychází z~principu, že krev absorbuje více světla než okolní tkáň \cite{photo-plethysmographic}. 
 
-Při proudění krve se přenáší metaloprotein červených krvinek hemoglobin. Tato látka vytváří pletysmografické signály, které se vyskytují ve všech barevných kanálech při zaznaménání pokožky v závislosti na čase. Nejsilnější jsou změny v zeleném kanálu, neboť hemoglobin absorbuje zelenou složku světla více než jiné \cite{green-channel-strongest}. Z tohoto důvodu se zpravidla nejvíce zkoumají intenzity právě zeleného kanálu.
+% TODO: "přenáše" se mělo něčím nahradit
+Hemoglobin, metaloprotein červených krvinek, je přenášen prouděním krve a vytváří tak pletysmografické signály. Tyto signály se projevují změnou hodnot intenzit barevných kanálů pokožky v~čase. Nejsilnější změny jsou v~zeleném kanálu, neboť hemoglobin absorbuje zelenou složku světla více než jiné \cite{green-channel-strongest}. Z~tohoto důvodu se zpravidla nejvíce zkoumají intenzity právě zeleného kanálu. Princip změny intenzit v~pokožce je ilustrován v~Obrázku \ref{fig:pletysmography-princip}.
 
-Čím větší plochu ve snímcích záznamu zabírá pokožka, tím se dají změny zaznamenat přesněji. Nejstabilnější využití tohoto přístupu se zdá být v případě, že pokožka zabírá celou plochu záznamu
-\footnote{Tento postup využívá např. aplikace \emph{Instant Heart Rate} dostupná pro platformu Android z https://play.google.com/store/apps/details?id=si.modula.android.instantheartrate.}. V kontextu aplikace se budeme snažit extrahovat dostatešně množství pixelů ze záznamu obličeje.
+Čím větší plochu ve snímcích záznamu zabírá pokožka, tím se dají změny detekovat přesněji. Nejstabilnější využití tohoto přístupu se zdá být v~případě, že pokožka zabírá celou plochu záznamu 
+\footnote{Tento postup využívá např. aplikace \emph{Instant Heart Rate} dostupná pro platformu Android z~\url{https://play.google.com/store/apps/details?id=si.modula.android.instantheartrate}.}. Aplikace se proto 
+bude snažit najít ve snímcích záznamu obličeje vhodnou masku pokožky, kterou bude dále zpracovávat.
 
-Ilustrace pricipu viz \ref{fig:pletysmography-princip}. V závistlosti na čase se mění průměrná intenzita v barevných kanálech v kůži. Tyto změny by měly odpovídat tepové frekvenci srdce, která je znázorněná černým grafem EKG
-\footnote{EKG je zkratka pro vyšetřovací metodu zvanou elektrokardiografie, který snímá elektrické srdeční aktivity. Zanáší je do grafu a umožňuje hodnocení aktivity. Blíže viz \url{http://emedicine.medscape.com/article/1894014-overview>}.} pod obrázkem.
+Pro detekci tepu je vybrána tato metodu, protože výsledky experimentů v~\cite{remote-plethysmographic} se zdají být časově méně náročné (délka záznamu i samotné zpracování) a stabilnější než přecházející metoda vycházející z~balistokardiografie.
 
-Pro detekci tepu jsem si vybral tuto metodu, protože výsledky experimentů\cite{remote-plethysmographic} zkoumajících pletysmografické signály odpovídající tepu by měly být časově méně náročné (délka záznamu i samotné zpracování) a stabilnější než přecházející metoda.
-
-\section {Vizualizace tepu}
-Pro vizualizaci tepu jsem se rozhodl využít algoritmus nazvaný \emph{Eulerian Video Magnification}\cite{eulerian-magnification} algoritmus. Cílem tohoto algoritmu je odhalovat změny v optických záznamech, které je pouhým okem nemožné (nebo velmi těžce) pozorovat.
+\section {Vizualizace tepu} 
+Vizualizace tepu je založená na algoritmu nazvaném \emph{Eulerian Video Magnification} \cite{eulerian-magnification}. Cílem tohoto postupu je odhalovat změny v~optických záznamech, které je pouhým okem nemožné (nebo velmi těžce) pozorovat. 
 
 Zaměřuje se na dva typy změn:
 \begin{itemize}
-	\item Zvýraznění malých pohybů
-    \item Zvýraznění barevných změn
+  \item zvýraznění malých pohybů,
+    \item zvýraznění barevných změn.
 \end{itemize}
 
-Postup pro zváýraznění barevných změn funguje na principu zvýrazňování frekvencí v časové frekvenční doméně.
-V publikaci je přímo ukázané zvýraznění proudění krve v obličeji za předpokladu, že dopředu známe tepovou frekvenci, kterou bude algoritmus zvýrazňovat.
+Postup pro odhalení barevných změn funguje na principu zvýrazňování frekvencí v~časové frekvenční doméně (bez omezení na objekt snímání). V~publikaci je mj. přímo demonstrované zvýraznění proudění krve v~obličeji \ref{fig:pletysmography-princip} s~dopředu známou tepovou frekvencí.
 
-Dostupný je implementovaný algoritmus
-\footnote{Implementace v MATLABu i spustielný program je dostupný z webových stránek projektu \url{<http://people.csail.mit.edu/mrub/evm/>}}
-v platformě MATLAB
-\footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s výbornou schopností vyjadřovat matematické výpočty. Blíže viz \url{<http://www.mathworks.com/products/matlab/.>}}.
-Implementace v MATLABu funguje dobře, nicméně je příliš pomalý na to, aby byl použitelný v kontextu online zpracování. Zpracování celého videa při rozlišení
-%TODO: trvá nejméně
+Dostupný je implementovaný algoritmus\footnote{Implementace v~MATLABu i spustitelný program je dostupný z~webových stránek projektu \url{<http://people.csail.mit.edu/mrub/evm/>}} v~platformě MATLAB\footnote{MATLAB je maticově orientovaná platforma pro řešení vědeckých a inženýrských výpočtů s~výbornou schopností vyjadřovat matematické výpočty. Blíže viz \url{<http://www.mathworks.com/products/matlab/.>}}. Implementace funguje příliš pomalu na to, aby byla použitelná v~kontextu online zpracování. Zpracování videa o~délce 10 sekund (při rozlišení 800x600 pixelů a vzorkovací frekvenci 30 snímků/s) trvá přes 2 minuty. 
 
-Proto jsem se rozhodl algoritmus reimplementovat, podrobněji prozkoumat, případně upravit, aby byl použitelný i pro toto využití.
+Proto je nutné algoritmus reimplementovat, podrobněji prozkoumat, případně upravit, aby byl použitelný i pro tuto práci. 
 
-\chapter{Použité technologie}
-Cíle této práce kladou velké nároky na výkon implementace. Aplikace bude zpracovávat náročný vstup v podobě optického záznamu, na který budou kladeny požadavky o minimálním rozlišení a kvalitě.
+\chapter{Použité vývojové a výzkumné nástroje}
+Cíle této práce kladou velké nároky na výkon implementace. Aplikace bude zpracovávat náročný vstup v~podobě optického záznamu, který musí splňovat požadavky na minimálním rozlišení, vzorkovací frekvenci a kvalitu (z~pohledu šumu).
 
-Po stanovení cílů aplikace jsem se pro implementaci rozhodl využít kompilovaný jazyk C++, který je pro svou rychlost vhodným pro tuto práci. Pro operace zpracování zpracování obrazu budu využívat knihovnu OpenCV
-\footnote{OpenCV (\emph{Open source computer vision}) je volně šířitelná knihovna navržená pro efektivní výpočty se silným důrazem na real-time práci. Dostupné z: \url{<http://opencv.org/>}.}.
-Pro jednoduché uživatelské rozhraní bude využit framework Qt\footnote{Qt je multiplatformní framework pro tvorbu uživatelského rozhraní. Dostupné z \url{<https://www.qt.io/>}}.
+Po stanovení cílů aplikace je pro implementaci využit kompilovaný jazyk C++, především díky své rychlosti. Pro operace zpracování obrazu bude použita knihovna OpenCV\footnote{OpenCV (\emph{Open source computer vision}) je volně šířitelná knihovna navržená pro efektivní výpočty se silným důrazem na real-time práci. Dostupné z: \url{<http://opencv.org/>}.}. 
+Jednoduché uživatelské rozhraní je imlementováno s~pomocí frameworku Qt\footnote{Qt je multiplatformní framework pro tvorbu uživatelského rozhraní. Dostupné z~\url{<https://www.qt.io/>}}.
 
-Pro nároky na výkon je nutné využívat vícevláknové programování, které citelně sníží časové nároky na zpracování. Pro tyto účely využiji část knihovny Boost
-\footnote{Boost poskytuje volné šířitelné, přenositelné knihovny pro C++. Dostupné z: \url{<http://www.boost.org/>}}
+Pro nároky aplikace je nutné vícevláknové programování, které citelně sníží časové nároky na zpracování. Pro tyto účely se nabízí část knihovny Boost\footnote{Boost poskytuje volně šiřitelné, přenositelné knihovny pro C++. Dostupné z: \url{<http://www.boost.org/>}} 
 pro C++.
 
-Vizualizace dat (generování grafů) bude provedeno v MATLABu\footnote{TODO:}. Ostatní použité technologie budou popsány přímo v části popisu aplikace a její demonstrace.
+Vizualizace dat (generování grafů) bude provedeno v~MATLABu. Ostatní použité technologie budou popsány přímo v~části popisu aplikace a její demonstrace.
 
-Aplikace bude vyvíjena na operačním systému OS X, ale díky povaze všech použitých technologií bude spustitelná na UNIXových distribucích i na systému Windows.
+Aplikace bude vyvíjena na operačním systému OS X, ale díky povaze všech použitých technologií bude spustitelná i na ostatních UNIXových distribucích a s~drobnými úpravami i na systému Windows.
 
-\section{Konfigurace hardware}
-Aplikaci je vyvíjena na notebooku MacBook Pro v konfiguraci Intel Core i5 2.7GHz Broadwell, RAM 8GB a integrovanou grafickou kartou Intel Iris Graphics 6100.
+\section{Použitý hardware}
+Aplikaci je vyvíjena a testována na notebooku MacBook Pro v~konfiguraci Intel Core i5 2.7 GHz Broadwell, RAM 8GB s~integrovanou grafickou kartou Intel Iris Graphics 6100.
 
-Pro pořizování záznamů jsem používal různé přístroje of poloprofesionální zrcadlovky Canon 60D, přes běžný kompakt Nikon
-% TODO: Napsat typ
-, až po integravanou webkameru v notebooku. Dále v části hodnocení dle naměřených hodnot budu diskutovat požadavky na kvalitu a rozlišení vstupního videa.
+Pro pořizování záznamů jsem používal různé přístroje od poloprofesionální zrcadlovky Canon 60D, přes běžný kompakt Nikon, až po integravanou webkameru v~notebooku. Dále v~části hodnocení dle naměřených hodnot budou diskutovány požadavky na kvalitu a rozlišení vstupního videa.
 
-% TODO: Konfigurace hw
 \chapter{Postup}
-\section{Určení tepu}
-V první řadě jsem se rozhodl určit, zda metoda pro určení tepu opravdu funguje, tedy zda je pro práci použitelná a co je potřeba zaručit pro stabilitu algoritmu. Začal jsem tedy nahrávat různé záznamy kůže a vyvíjet postup, pomocí kterého je možno extrahovat potřebné informace.
+\section{Objektivní pravda}
+Pojmem \emph{objektivní pravda} (z~angl. \emph{ground truth}) považujeme hodnotu, o~jejíž pravdivosti a přesností nemáme pochyb a vůči které se porovnávají další hodnoty, získané např. experimentem měření. V~rané fázi práce byla jako objektivní pravda použito počítání tepů srdce pomocí prstu přiloženého na zápěstí za časovou jednotku a následné přepočítání na výsledný tep. Ovšem pro zpřesnění výsledků byla nahrazena měřením pomocí tlakoměru. Zvolen byl běžně dostupný tlakoměr, který při měření tlaku měří i tep. U~běžně dostupných tlakoměrů se udává chyba měření tepu $\pm$ 5\%.
+% TODO: Proc nejde dopsat veta s footnote??
 
-Pro objektivní určení tepu jsem nejdříve používal pouhé počítání úderů srdce za časovou jednotku přiloženým prstem na žíle na zápěstí. Následně jsem vždy údery přepočítal na výsledným tep. Pro zpřesnění jsem za tzv. \emph{objektivní pravdu}
-%TODO: Zlepšit definici
-\footnote{Pojmem \emph{objektivní pravda} (z angl. \emph{ground truth}) považujeme hodnotu určenou přímým pozorováním / měřením oproti hodnotě určené experimentem. }
-zvolil běžně dostupný tlakoměr, který při měření tlaku měří i tep. U běžně dostupných tlakoměrů (včetně v práci používaného) se běžně udává chyba měření tepu +/- 5\% \footnote{Tlakoměr Sencor SBP 690 udává chybu +/- 5\%. Viz stránka produktu \url{<http://www.sencor.cz/tlakomer/sbp-690>}}.
-
-Základní postup demonstrujme na záznamu čela obličeje viz \ref{fig:initial-proof-forehead}. Tento záznam je pořízen v situaci, kdy snímaný leží na zemi a zároveň si měří tep pomocí tlakoměru.
-
-V této fázi pro ověření určímě manuálně masku kůže, kterou budeme dále snímat. Zvolíme ji tak, aby kůže pokrývala celou plochu viz \ref{fig:initial-proof-forehead} vpravo. V takto označené ploše zkoumáme intenzity v závislosti na čase.
-
-% Teď zobrazit 3 grafy - mediany orig, mediany cutoff freq, mediany exact filter podle detekovaneho tepu + jedno srovnat kdybych bral intezity odkudkoli - snad vyjde blbě
-
-% TODO: Zde by mělo být i video novorozence a ověření, že alg funguje i na rychlém
-% Nezapomenout ocitovat odkud je video
-
-\begin{figure}
+\section{Postup určení tepu}
+\label{sec:detect-pulse}
+\begin{figure}[t]
   \begin{minipage}{.5\textwidth}
     \includegraphics[width=\textwidth]{images/forehead_simple_sm.png}
   \end{minipage}
@@ -288,394 +290,351 @@ V této fázi pro ověření určímě manuálně masku kůže, kterou budeme d�
   \caption{Záznam čela a manuálně určená maska pro zpracování.}
   \label{fig:initial-proof-forehead}
 \end{figure}
+Nejprve práce testuje, zda metoda pro určení tepu opravdu funguje, zda je pro práci použitelná a co je potřeba zaručit pro stabilitu algoritmu. Bylo třeba začít nahrávat různé záznamy kůže a vyvíjet postup, pomocí kterého je možno extrahovat potřebné informace k~určení tepu.
 
+Základní postup bude demonstrován na záznamu čela obličeje, viz Obrázek \ref{fig:initial-proof-forehead}. Tento záznam je pořízen v~situaci, kdy snímaný leží na zemi a zároveň si měří tep pomocí tlakoměru.
 
+Pro ověření byla maska kůže pro analýzu určena manuálně. Maska je zvolena tak, aby kůže pokrývala celou plochu, viz Obrázek \ref{fig:initial-proof-forehead} vpravo. Právě na této ploše jsou nejsnáze dostupné informace, které chceme použít, v~podobě změn barevné intenzity v~čase. %TODO
 
-\chapter{These are}
-\begin{otherlanguage}{czech}
-Říká se, že závěrečné práce jsou vyvrcholením studia a tak jsem se
-rozhodl jednu také napsat. Pokud vše půjde podle plánu, odnesu si
-na konci semestru diplom. Držte mi palce!
-\end{otherlanguage}
-
-Říká se, že takto můžu psát další sloupec a nestarat se o formátování.
-
-\begin{otherlanguage}{german}
-Man munkelt, dass die Dissertation die Krönung der Ausbildung ist.
-Deshalb habe ich mich beschlossen meine eigene zu schreiben. Wenn
-alles gut geht, bekomme ich bald ein Diplom. Wünsch mir Glück!
-\end{otherlanguage}
-
-\begin{otherlanguage}{russian}\textrussian{%
-Говорят, что тезис -- это кульминация обучения. Поэтому я и решил
-написать собственный тезис. Если всё сработает по плану, я скоро
-получу диплом. Желайте мне удачи!
-}\end{otherlanguage}
-
-
-\section{the available}
-\subsection{sectioning}
-\subsubsection{commands.}
-\paragraph{Paragraphs and}
-\subparagraph{subparagraphs are available as well.}
-Inside the text, you can also use unnumbered lists,
-\begin{itemize}
-  \item such as
-  \item this one
-  \begin{itemize}
-    \item     and they can be nested as well.
-    \item[>>] You can even turn the bullets into something fancier,
-    \item[\S] if you so desire.
-  \end{itemize}
-\end{itemize}
-Numbered lists are
+Do vektoru s~video záznamem $V(i)$ budou vloženy obrazy, kde i-tá hodnota pole bude charakterizovat i-tý snímek ze záznamu. Máme více možností na co se v~každém snímku zaměřit:
 \begin{enumerate}
-  \item very
-  \begin{enumerate}
-    \item similar
-  \end{enumerate}
-\end{enumerate}
-and so are description lists:
-\begin{description}
-  \item[Description list]
-    A list of terms with a description of each term
-\end{description}
-The spacing of these lists is geared towards paragraphs of text.
-For lists of words and phrases, the \textsf{paralist} package
-offers commands
-\begin{compactitem}
-  \item that
-  \begin{compactitem}
-    \item are
-    \begin{compactitem}
-      \item better
-      \begin{compactitem}
-        \item suited
-      \end{compactitem}
-    \end{compactitem}
-  \end{compactitem}
-\end{compactitem}
-\begin{compactenum}
-  \item to
-  \begin{compactenum}
-    \item this
-    \begin{compactenum}
-      \item kind of
-      \begin{compactenum}
-        \item content.
-      \end{compactenum}
-    \end{compactenum}
-  \end{compactenum}
-\end{compactenum}
-The \textsf{amsthm} package provides the commands necessary for the
-typesetting of mathematical definitions, theorems, lemmas and
-proofs.
-
-%% We will define several mathematical sectioning commands.
-\newtheorem{theorem}{Theorem}[section] %% The numbering of theorems
-                               %% will be reset after each section.
-\newtheorem{lemma}[theorem]{Lemma}     %% The numbering of lemmas
-\newtheorem{corr}[theorem]{Corrolary}  %% and corrolaries will
-                                %% share the counter with theorems.
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}
-\theoremstyle{remark}
-\newtheorem*{remark}{Remark}
-
-\begin{theorem}
-  This is a theorem that offers a profound insight into the
-  mathematical sectioning commands.
-\end{theorem}
-\begin{theorem}[Another theorem]
-  This is another theorem. Unlike the first one, this theorem has
-  been endowed with a name.
-\end{theorem}
-\begin{lemma}
-  Let us suppose that $x^2+y^2=z^2$. Then
+  \item{Průměr intenzit všech kanálů}
   \begin{equation}
-    \biggl\langle u\biggm|\sum_{i=1}^nF(e_i,v)e_i\biggr\rangle
-    =F\biggl(\sum_{i=1}^n\langle e_i|u\rangle e_i,v\biggr).
+    \frac{\sum_{x=0}^{M-1} \sum_{y=0}^{N-1} r(x,y) + g(x,y) + b(x,y)}{M*N},
+    \label{suma-all-channels}
   \end{equation}
-\end{lemma}
-\begin{proof}
-  $\nabla^2 f(x,y)=\frac{\partial^2f}{\partial x^2}+
-   \frac{\partial^2f}{\partial y^2}$.
-\end{proof}
-\begin{corr}
-  This is a corrolary.
-\end{corr}
-\begin{remark}
-  This is a remark.
-\end{remark}
+  
+  \item{Průměr intenzit zeleného kanálu}
+  \begin{equation}
+    \frac{\sum_{x=0}^{M-1} \sum_{y=0}^{N-1} g(x,y)}{M*N},
+    \label{suma-green-channel}
+  \end{equation}
+  
+  \item{Medián intenzit zeleného kanálu}
+  \begin{equation}
+    median(g(x,y)), x \in [0, M-1], \ \in [0, N-1].
+    \label{median-green-values}
+  \end{equation}
+  
+\end{enumerate}
 
-\chapter{Floats and references}
+V~tomto případě jsou rozdíly mezi různými přístupy minimální. Zkoumaný záznam je téměř ideální pro extrakci informací. Kůže je stabilizovaná (snímaný má opřenou hlavu o~zem) a zabírá většinu záběru, záznam je ve vysokém rozlišení (1920x1080) a ve vzorkovací frekvenci 30 snímků/s. Dále budou rozdíly ilustrovány na méně kvalitních vstupech, kdy se výsledky budou lišit.
+
+Pro ilustrační účely je zvolena analýza pomocí  \emph{mediánu intenzit zeleného kanálu} měřena v~určené masce čela. Hodnoty mediánů zobrazme pomocí grafu na Obrázku \ref{fig:median-original}. Už v~tomto neupraveném grafu jsou viditelné periodické frekvence. Za funkci barevných změn odpovídajících tepu je považována cosinusoida. V~analyzovaném poli $V(i)$ se nachází frekvence $F$
+\begin{equation}
+F \in [0, (K-1) / K~* fps],
+\end{equation}
+kde $K$ je délka pole.
+
 \begin{figure}
   \begin{center}
-    %% PNG and JPG images can be inserted into the document as well,
-    %% but their resolution needs to be adequate. The minimum is
-    %% about 250 pixels per 1 centimeter. That means that a JPG or
-    %% PNG image typeset at 40 × 40 mm should be 1000 × 1000 px
-    %% large at minimum.
-    \includegraphics[width=40mm]{fithesis/logo/mu/fithesis-base.pdf}
+    \includegraphics[width=120mm]{images/median-original.pdf}
   \end{center}
-  \caption{The logo of the Masaryk University at 40\,mm}
-  \label{fig:mulogo1}
+  \caption{Originální hodnoty mediánů intenzit zeleného kanálu v~jednotlivých snímcích záznamu.}
+  \label{fig:median-original}
+\end{figure}
+
+Nejdříve je pole převedeno pomocí Fourierovy transformace do frekvenční domény. Pro omezení frekvencí na ty, které jsou pro tento účel informačně přínosné, využijeme dříve zmíněné obvyklé rozmezí tepu pro většinu lidí. Na základě této informace je použit lineární filtr \emph{pásmová propusť} ve frekvenční doméně. Jako rozsah tohoto filtru jsou nastaveny hodnoty 55 resp. 180 tepů/min, které jsou převedeny do jednotky Hz, tedy 55/60 Hz a 180/60 Hz. V~grafu na Obrázku \ref{fig:frequency-mask} je zobrazená reálná složka frekvenční domény dohromady s~filtrem pásmová propusť. Na ose x jsou označeny přítomné frekvence (v~jednotce Hz) a na ose y jejich normalizované hodnoty (v~jaké míře je daná frekevence přítomna). 
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/frequency-mask.pdf}
+  \end{center}
+  \caption{Frekvenční doména naměřených intenzit spolu s~maskou filtru pásmová propusť.}
+  \label{fig:frequency-mask}
+\end{figure}
+
+Graf změn mediánu v~závislosti na čase je vidět na Obrázku \ref{fig:median-cutoff-masked}.  V~tomto případě byl v~původním grafu na Obrázku \ref{fig:median-original} vidět celkový nárůst hodnot mediánu v~čase stejně jako příliš rychlé změny způsobené šumem, nebo malými posuny záběru. Jak pomalé, tak příliš rychlé změny byly filtrem odstraněny. Nyní po filtraci zbyly už jen frekvence, které potenciálně mohou odpovídat tepu. Nejsilnější z~nich bude potom odpovídat výslednému tepu.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/median-cutoff-masked.pdf}
+  \end{center}
+  \caption{Hodnoty mediánů intenzit zeleného kanálu v~jednotlivých snímcích záznamu po filtraci.}
+  \label{fig:median-cutoff-masked}
 \end{figure}
 
 \begin{figure}
-  \begin{minipage}{.66\textwidth}
-    \includegraphics[width=\textwidth]{fithesis/logo/mu/fithesis-base.pdf}
-  \end{minipage}
-  \begin{minipage}{.33\textwidth}
-    \includegraphics[width=\textwidth]{fithesis/logo/mu/fithesis-base.pdf} \\
-    \includegraphics[width=\textwidth]{fithesis/logo/mu/fithesis-base.pdf}
-  \end{minipage}
-  \caption{The logo of the Masaryk University at $\frac23$ and
-    $\frac13$ of text width}
-  \label{fig:mulogo2}
+  \begin{center}
+    \includegraphics[width=120mm]{images/frequencies_cutoff_masked.pdf}
+  \end{center}
+  \caption{Frekvenční doména naměřených intenzit po filtraci.}
+  \label{fig:frequencies-cutoff-masked}
 \end{figure}
 
+Na~grafu na Obrázku \ref{fig:frequencies-cutoff-masked} frekvenční domény po filtraci pásmovou propustí, je zřetelně vidět nejsilnější obsažená frekvence 0.8696 Hz (po přepočtení 69 tepů/min). Skutečná hodnota tepu pro tento záznam byla 67 tepů/min, při udávané chybě měření 5\% jsou tedy hodnoty v~rozmezí 64 -- 70 tepů/min považovány za korektní. Vypočítaný tep potom do rozmezí spadá.
+
+\subsubsection{Minimální délka}
+Pro stabilní určování tepu pro různé případy je nutné správně určit minimální délku záznamu. Tento problém se řešil po celou dobu implementace. Během testování se~ukázalo, že nejstabilnější délkou záznamu je 500 snímků (při vzorkovací frekvenci 30 snímků/s cca 16 sekund). Tato informace bude podrobněji rozvedena v~sekci testování.
+
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=120mm]{images/edge_examples.png}
+  \end{center}
+  \caption{Příklady různorodých záznamů pro ověření detekčních schopností postupu.}
+  \label{fig:edge_examples}
+\end{figure}
+
+\subsubsection{Iniciální ověření na záznamech}
+Mimo předchozího záznamu bylo potřeba pro iniciální ověření analyzovat různorodá videa. Jako netradiční případ se nabízí tep dítěte, který je podstatně vyšší než tep dospělého. Další atypický záznam může být obličej snědého člověka. Jako poslední záznam pro iniciální testování je nasnímaná ruka na podlaze. Na příkladu ruky i snědého obličeje určení fungovalo správně. U~záznamu dítěte nebyl k~dispozici přesný tep, v~tomto případě šlo především o~to, zda postup správně detekuje i vyšší tepy. Díky znalosti o~tepu dětí se dal předpokládat tep vyšší než 100 a to se potvrdilo, neboť výsledný tep byl 113 tepů/min. Náhledy jsou zobrazeny v~obrázku \ref{fig:edge_examples}. 
+
+\subsubsection{Limitace postupu}
+Filtrování ve frekvenční doméně má nesmírnou výhodu v~podobě zaměření se na potřebné frekvence. Analýza frekvencí je imunní vůči globálním změnám světla. Globální změna světla je změna intenzit všech pixelů najednou v~závislosti na čase --- důležité je, že tato změna se musí týkat všech pixelů v~obraze. V~případě, že by na analyzovanou pozici ve snímcích v~pravidelné frekvenci blikal dostatečně silný zdroj světla, algoritmus skončí s~nekorektními výsledky, kdy výsledná hodnota domnělého tepu bude odpovídat právě frekvenci blikajícího světla. Postup je také do do jisté míry robustní i vůči šumu, který se při analýze projevuje jako velmi vysoké frekvence.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/pulse-fastening-median.pdf}
+  \end{center}
+  \caption{Simulace hodnot mediánů intenzit zeleného kanálu v~jednotlivých snímcích záznamu po filtraci.}
+  \label{fig:pulse_fastening_median}
+\end{figure}
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/pulse-fastening-freq.pdf}
+  \end{center}
+  \caption{Frekvenční doména simulace zrychlujícího se pulzu s~detailem zaměřeným na relevantní frekvence.}
+  \label{fig:fastening_pulse_freq}
+\end{figure}
+
+Hledání nejsilnější frekvence ve frekvenční doméně selhává v~případě nepravidelné frekvence, např. hodně se zrychlující, nebo  zpomalující tep, což je zobrazeno na Obrázku \ref{fig:fastening_pulse_freq}. V~tomto případě při hledání nejsilnější frekvence není žádná frekvence dominantní, zobrazeno na obrázku \ref{fig:pulse_fastening_median}. Na druhou stranu v~takovéto situaci není příliš jasné jaká hodnota tepu je správná. Povaha navrhovaného měření, stejně jako u~ostatních konvenčních metod měření tepu, je založena na očekávání pravidelného tepu. Pro určení nepravidelného tepu by musel být využit jiný algoritmus pro detekci lokálních maxim, ale i~tak by se dalo jen přepočítat maxima na tepy/min, což by odpovídalo pouze průměrování.  
+
+Vzhledem k~tomu, že se práce zaměřuje na klidovou tepovou frekvenci, tak tento problém nebude vadit. Z~testovacích videí vyplynulo, že se během nahrávání po dobu cca 15 vteřin nezmění tep natolik, aby změna způsobila selhání.
+
+% diskutovat jake dalsi frekvence se vyskytuji ve videu - nejaka publikace
+
+\chapter{Implementace}
+Aplikace nejdříve zobrazí jednoduché uživatelské rozhraní pro volbu různých režimů, načtení videa a volbu pro uložení výstupu viz Obrázek \ref{fig:mode-menu}. Po spuštění se fungování aplikace liší pro \emph{reálné} režimy (zobrazení výstupu spolu s~výpočty) a \emph{statický} režim (zpracování celého videa a následné zobrazení výstupu).
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=100mm]{images/mode-menu.png}
+  \end{center}
+  \caption{Uživatelské rozhraní pro volbu režimu aplikace.}
+  \label{fig:mode-menu}
+\end{figure}
+
+\section{Datové struktury}
+Pro reprezentaci snímku implementace využívá datový typ \emph{Mat}. Tento typ podporuje více typů, takže je použitelný pro šedotónové i~barevné obrazy. Také umožňuje reprezentaci hodnot v~datovém typu \emph{float}.
+
+Záznam bude uložen pomocí datového typu \emph{vector}, konkrétně potom jako \emph{vector <Mat>} (vektor matic). Typ \emph{vector} je v \emph{OpenCV} doporučován jako základní typ~a měl by v~algoritmech pracovat nejrychleji.
+
+\section{Popis aplikace}
+Popis aplikace odpovídá použití jednoho z~\emph{reálných} režimů. Rozdíl oproti statickému režimu bude popsán po vysvětlení potřebných částí aplikace.
+
+\subsection{Hlavní cyklus}
+Snímky se zobrazují v~hlavním cyklu, kdy se při každé iteraci načítá další snímek ze zvoleného vstupu. Samotná časová náročnost tohoto cyklu přímo ovlivňuje plynulost aplikace. V~případě dodaného záznamu se jedná pouze o~\emph{trhání} záznamu, které neovlivňuje následné zpracování a~výpočty. Při použití webkamery se ale jedná přímo o~změnu vzorkovací frekvence, protože další snímek ze~vsutpnáho proudu webkamery se vždy načte až po uplynutí jednoho cyklu.
+
+V~každé iteraci cyklu je originální vstupní obraz vložen do bufferu\footnote{Za buffer je považován záznam dle standardní definice \ref{def:video}.}, který bude zpracován až po naplnění najednou. Velikost buffer je přímo určená potřebným počtem hodnot pro určení tepua je nastavena na hodnotu 500 snímků, tato volba je odůvodněna v~Kapitole \ref{sec:measure};
+
+\subsubsection{Vzorkovací frekvence}
+Už samotné zobrazování snímků při výběru vstupu z~webkamery je náročné, protože z proudu webkamery získáváme bezztrátové snímky bez komprese. Pravidelná maximální vzorkovací frekvence (podporovaná webkamerou) v~prostředí \emph{OpenCV} není zaručena ani při pouhém zobrazování v~cyklu bez jakýchkoli úprav. Bohužel není k~dispozici ani žádná funkce, která by vracela hodnotu skutečné frekvence. Z~tohoto důvodu aplikace pro určení využívá alternativní přístup, kdy počítá dobu každé iterace cyklu a aktualizuje aktuální vzorkovací frekvenci. Pro výpočet je využita knihovna \emph{chrono}\footnote{Bližší informace viz \url{http://www.cplusplus.com/reference/chrono/}}, která nabízí funkce pro měření uplynulého času a~je přenositelná napříč různými operačními systémy. Narozdíl od některých ostatních měřících funkcí vrací opravdu uplynulý čas a~ne jenom čas spotřebovaný procesorem. Přesnost funkce se pohybuje v~řádu milisekund.
+
+Pro zvýšení plynulosti uživatelského rozhraní, resp. pro vyšší vzorkovací frekvenci webkamery, jsou zobrazované snímky podvzorkovány (pouze pro uživatelské rozhraní, interně do bufferu se ukládají v~plné velikosti). Podvzorkování musí probíhat bez interpolace, proto vždy změnšujeme velikost $2^nx$. Interpolace je příliš výpočetně náročná, aby mohla být prováděna v~hlavním cyklu. Konstanta $n$ je zvolena tak, aby šířka, respektive výška v~případě vstupu orientovaného na výšku, byla co nejblíže zadefinované hodnotě \emph{480px}, která na použité konfiguraci zaručovala plynulý obraz.
+
+\subsubsection{Inicializace}
+Po startu nejdříve probíhá proces inicializace, kdy s~prvními 20 snímky aplikace nic nedělá a pouze je zobrazí. Z~pravidla se na začátků záznamu nachází artefakty, které~se takto ignorují. Jedná se především o~úpravu expozice u~levnějších (web)kamer, často také začíná záznam stisknutím spouště snímacího zařízení a s~tím spojené záchvěvy scény.
+
+\subsubsection{Detekce}
+\label{sec:detection}
+Pro fungování algoritmu pro určení tepu je třeba izolovat dostatečně velkou oblast, kterou bude vyplňovat pokožka jak bylo popsáno v~kapitole \ref{sec:bpm-detect}. V~obličeji se jako největší plocha celistvé kůže nabízí oblast čela, proto je třeba provádět co nejpřesnější detekci obličeje. Pro lepší určení pozice čela je vhodné použít taky detekci očí, díky ní se pozice čela určuje podstatně přesněji než jen ze znalosti pozice obličeje.
+
+Pro detekci obličeje a očí využívá práce algoritmus \emph{Haar Feature-based} kaskádové klasifikátory. Tuto metodu představili Paul Viola a Michael Jones v~roce 2001. Detekce je založena na porovnávání jasových rozdílů pomocí různých konvolučních jader. Nejdříve je potřeba klasifikátor \emph{trénovat} pomocí strojového učení z~velkého množství vzorků (pozitivních i negativních). \emph{OpenCV} pro použití nabízí již předtrénované klasifikátory. Mimo stabilitu je nesmírnou výhodou i časová efektivita této detekce.
+
+Detekce pomocí kaskádových klasifikátorů může skončit více výsledky, z~nichž jsou některé nekorektní. Práce využívá funkci, která v~případě více detekovaných obličejů vrací ten, který ve snímku zabírá největší plochu. To v~kontextu zpracovávaných záznamů zaručuje správný výsledek. V~případě více výsledků při detekci očí, jsou vybrány objekty, které mezi sebou mají nejmenší rozdíl v~y-ové složce polohy.
+
+Pro detekce je vytvořená zvláštní třída \emph{Detector}, která pracuje v~samostatném vlákně, aby zbytečně nezatěžovala hlavní cyklus. Třída se snaží detekovat jak obličej ve snímku s~originální velikostí, tak i ve zmenšeném.
+
+Potom, co je detekován obličej i oči, je na aktuální snímek v~uživatelském rozhraní vykresleno ohraničení obličeje i čela, které se při každé další detekci aktualizuje. Uživatel potom vidí sledování obličeje. Toto vykreslování je prováděno především pro zvýšení atraktivity (časové nároky na vykreslení jsou zanedbatelné).
+
+\subsection{Výpočetní třída}
+Buffer se po naplnění v~samostatném vlákně předává třídě \emph{Middleware}, která se chová jako mezivrstva uživatelského rozhraní a výpočetní třídy \emph{BpmVideoProcessor}. Ve třídě \emph{BpmVideoProcessor} se odehrávají všechny výpočty potřebné pro určení tepu a jeho vizualizaci. 
+
+Při inicializaci třídy \emph{BpmVideoProcessor} se provádí důležitá část určení plochy čela. Do třídy předáváme pozici a velikost již detekovaného obličeje při detekcích v~uživatelského rozhraní. Detekce očí v~některých případech nefunguje zcela přesně a určení plochy čela pro následné zpracování je natolik důležité, že je jeho určování komplikovanější.
+
+Čelo se při přímém pohledu člověka do kamery nachází (horizontálně) ve středu obličeje. Detekce probíhá postupně pro každý snímek v~záznamu dokud nejsou splněny definované podmínky. V~každém snímku je provedena detekce očí pomocí kaskádových klasifikátorů. Střed čela je potom určen posunutí bodu, který se nachází uprostřed oblasti mezi očima a jeho posunutím přibližně o~jednu desetinu výšky obličeje nahoru.
+
+Pozice čela je považována za korektní, je-li rozdíl mezi horizontálním středem obličeje a středem určeného čela menší než $0.15 x$ šířka obličeje, neboli:
+\begin{equation}
+abs(\frac{x_{face} + w_{face}}{2} - \frac{x_{forehead} + w_{forehead}}{2}) \leq 0.15 * w_{face}.
+\end{equation}
+
+Tento postup určení čela a definované podmínky se během testování ukázaly jaky vhodné.
+
+\subsection{Určení tepu}
+\label{sec:pulse-detect}
+Postup pro určení tepu je popsán v~kapitole \ref{sec:bpm-detect}. Během práce byly uvažovány také další rozšíření pro zpřesnění určení tepu.
+
+Bylo zkoumáno experimentální potlačení globálních světelných změn, jejichž frekvence spadají do rozsahu uvažovaného jako interval možného tepu. Tyto změny jsou imunní vůči filtrování ve frekvenční doméně. Pro potlačení je tentokrát třeba detekovat prostor mimo obličej, který je po celou dobu záznamu pozičně fixovaný a měly by se v~něm projevovat pouze globální změny. Vhodná místa jsou zobrazena na Obrázku \ref{fig:global-changes}.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=100mm]{images/global-changes.png}
+  \end{center}
+  \caption{Vhodná místa pro analýzu globálních světelných změn.}
+  \label{fig:global-changes}
+\end{figure}
+
+V~prostoru je vytvořeno pole s~charakteristikou intenzit snímků shodným způsobem jako v~masce čela. Vhodným odečtením polí od sebe a následným normalizováním by se měly globální frekvence potlačit a kýžené frekvence odpovídající tepu naopak zvýraznit. Během měření a~výsledků ovšem nebyly zaznamenány pozitivní výsledky po aplikaci tohoto postupu, proto nakonec není využit.
+
+Další - také nakonec nevyužitý pokus - spočíval ve stabilizaci záznamu pomocí sledování optického toku\footnote{Stabilizace byla inspirovaná algoritmem dostupným z~\url{http://nghiaho.com/?p=2093}.}. Před analýzou intenzit byl nejdřív záznam detekovaného čela stabilizován. Zpřesnění výsledků nebylo zaznamenáno, naopak v~některých případech, došlo ke zhoršení. K~narušení výsledků došlo pravděpodobně kvůli afinním transformacím prováděných pro každý snímek během stabilizace videa a~s~nimi spojenými interpolacemi.
+
+\subsection{Vizualizace tepu}
+Pro vizualizaci tepu je nejdříve třeba vytvořit časoprostorovou řadu ze záznamu detekovaného obličeje, která reprezentuje proměny hodnot intenzit jednotlivých pixelů v~závislosti na čase. Pro konstrukci je použit pouze zelený kanál a snímky jsou převedeny do barevného prostoru NTSC, který je použit i~v~algoritmu \emph{Eulerian magnification}. Časoprostorová řada bude mít $M$ snímků (pro každý jednopixelový sloupec v~detekovaném obličeji jeden snímek v~časové řadě), z~nichž každý bude mít velikost $K$ x $N$ (označení $M$, $N$, $K$ je ze standardní definice záznamu \ref{def:video}). Vytvoření jednoho snímku v~časové řadě je ilustrováno na~Obrázku \ref{fig:temporal-spatial-in-face}.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/temporal-spatial-in-face.png}
+  \end{center}
+  \caption{Ilustrace principu vytvoření jednoho snímku časové řady z~detekovaného obličeje.}
+  \label{fig:temporal-spatial-in-face}
+\end{figure}
+
+Pro každý snímek v časoprostorové řadě je sestrojena Gaussova pyramida. Gaussova je pyramida tvoří obraz ve více stupních rozlišení. Každá úroveň je podvzorkována na polovinu rozlišení úrovně o~stupeň vyšší a~následně je~rozostřena Gaussovým filtrem. Na jednotlivé úrovně v~pyramidě je aplikován filtr pásmová propusť. Jako střed intervalu filtru je nastaven již předem vypočítaný tep a rozsah intervalu je nastaven na 10 tepů/min (nastaveno podle subjektivního dojmu nejlepšího výsledku). Aby bylo možné algoritmus použít v~kontextu této práce, bylo nutné jej implementovat, tak aby bylo možné každou úroveň v~pyramidě zpracovávat v samostatném vlákně. Po tomto rozdělení trvá filtrování Gaussovy pyramidy stejnou dobu, jako kdyby byla zpracovávána jen nejvyšší úroveň. 
+
+Filtrováním snímků časoprostorové řady je dosaženo potlačení frekvencí, které neodpovídají tepové frekvenci (podobně jako při určování tepu). Po filtraci vždy odpovídající snímek normalizujeme. Z Gaussovy pyramida je zpět rekonstruována časoprostorová řadu, která je posléze převedena zpět do formátu standardního záznamu. Ten nazvěme jako \emph{vizualizace tepu}.
+
+V~hlavním cyklu pořád probíhají detekce obličeje, takže je stále k~dispozici aktuální pozice a velikost obličeje v~aktuálních vstupních snímcích. Pro kombinaci snímků je nejdříve nutné vytvořit snímek stejné velikosti jako vstupní snímky, který je nulový ve všech barevných kanálech na všech pozicích. Do tohoto snímku je na aktuální pozici obličeje vložen zpracovaný snímek z~\emph{vizualizace tepu} viz Obrázek \ref{fig:app-result}. Takto je tvořen výstupní snímek při každé iteraci hlavního cyklu.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/temporal-amplified.png}
+  \end{center}
+  \caption{Vlevo je zobrazen originální snímek z~časové řady. Vpravo je součet originálního snímku a~snímku po filtrování a~zvýraznění frekvencí. Proměnná $K$ odpovídá počtu snímků v~bufferu.}
+  \label{fig:temporal-amplified}
+\end{figure}
+
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=120mm]{images/app-result.png}
+  \end{center}
+  \caption{Uživatelské rozhraní po dokončení výpočtu tepu i~jeho vizualizace. Vlevo zobrazen aktuální vstupní snímek se zobrazením detekovaného obličeje a čela. Vpravo je zobrazen výsledný snímek s~vizualizací tepu a~s~hodnotou vypočítaného tepu.}
+  \label{fig:app-result}
+\end{figure}
+ 
+V~bufferu je po celou dobu maximální počet snímků, při vložení snímku nad kapacitu je nejstarší snímek odstraněn. Po dokončení prvního výpočtu aplikace se ihned předává buffer s~novými snímky k~dalšímu zpracování. Opakovaným zpracováním je možné detekovat i~pomalu se měnící tep během snímání. Takto aplikace funguje dokud ji uživatel neukončí. 
+
+\subsection{Rozdíl mezi režimy}
+Fungování \emph{reálného} režimu při použití webkamery a~při načteném externím záznamu je velmi podobné. Po vybrání módu se zobrazí okno, kde jsou zobrazeny 2 snímky vedle sebe. Nejdříve budou totožné a po dokončení iniciálního výpočtu jeden slouží pro zobrazení vstupního záznamu a~druhý naopak zobrazuje zpracované snímky.
+
+Jedním z rozdílů mezi \emph{reálným} a \emph{statickým} režimem je ve sběru snímků do bufferu. Zatímco v~\emph{reálném} režimu je zobrazen obraz spolu s~ukládáním snímků do bufferu, ve statickém režimu jsou snímky vloženy do bufferu aniž by bylo původní video viditelné. Pro rychlejší vkládání dat je program vyvíjen ve verzi \emph{OpenCV} s~podporou software \emph{FFmpeg\footnote{FFmpeg je multiplatformní software pro přehrávání, streamování a konvertování videa a zvuku. Dostupné z~\url{https://ffmpeg.org/}}}.
+
+Výpočet tepu je proveden shodným způspobem pro všechny režimy. Při výpočtu vizualizace ve \emph{statickém} režimu je záznam rozdělen na části po 250 snímcích a každá je zpracována ve vlastním vlákně. Toto nastavení velmi zrychluje průběh celého výpočtu.
+
+Odlišně je tvořeno i výstupní video. Díky tomu, že ve \emph{statickém} režimu není při výpočtech nic zobrazeno, aplikace po jeho dokončení může nastavit pozici ve videu zpět na začátek. Proto při kombinaci výstupních snímků vždy snímek z~\emph{vizualizace tepu} odpovídá vstupnímu snímku. Toto není možné při \emph{reálných} režimech, protože by bylo nutné vstup přetáčet. Tím by byla by porušena snaha o~online zpracování, protože by výstupní snímek (časově) neodpovídal vstupnímu.
+
+\section{Měření a požadavky na vstupní záznam}
+\label{sec:measure}
+Během implementace bylo nutné určit konstanty, které jsou ve výsledné verzi použity. Měření bylo provedeno na mnoha rozdílných záznamech v~rozmezí tepu 58 -- 82 tepů/min. Reálný tep je určen pomocí tlakoměru s~již zmíněnou nepřesností $\pm$ 5\%, proto jsou vypočítané hodnoty tepu spadající do tohoto intervalu považovány za korektní a chyba je udávána až pro hodnoty mimo interval.
+
+% 1. tabulka - roi placement
+Nejdříve ukážeme jak je důležité korektně určit masku čela. V~Tabulce \ref{tab:bpm-roi-type} je vidět, že pokus o~určení tepu bez provedení detekce čela je nekorektní především pro situace, kdy je reálný tep vyšší. V~této situaci postup selže jak při použití pouhé masky obličeje, tak při použití celých snímků.
+
+% 2. tabulka - pristup urceni
+Další určená hodnota pomocí měření v~Tabulce \ref{tab:bpm-detect-type} je přístup pro tvorbu charakteristických informací o~intenzitách v~každém snímku (popsáno v~kapitole \ref{sec:detect-pulse}). Měření opravdu ukázalo, že se barevné změny nejvíce projevují v~zeleném kanále. Nejpřesnějšího určení tepu je dosaženo s~využitím určování průměrných intenzit hodnot zeleného kanálu, proto bude tento postup nastaven jako výchozí.
+
+% 3. tabulka - delka buffer
+Podle provedených měření v~Tabulce \ref{tab:bpm-buffer-frames} byl určen minimální počet snímků pro určení určení tepu na hodnotu \textbf{500} snímků. Tato hodnota odpovídá při vstupní vzorkovací frekvenci 30 snímků/s cca 16 sekundám. Buffer by samozřejmě mohl obsahovat i více snímků, ale pro rychlost zpracování je nutné použít co nejnižší počet snímků.
+
+% FPS
+Pro možnost určení tepu je třeba určit i minimální vzorkovací frekvenci. Frekvence obsažené v~záznamu můžeme díky omezení na interval běžného tepu považovat za pásmově omezený. Podle \mbox{Nyquistova} pravidla je určena minimální vzorkovací frekvenci vstupu frekvenci jako dvojnásobek tepové frekvence snímané osoby, neboli:
+\begin{equation}
+fps_{min} \geq 2*bpm_{real},
+\end{equation}
+kde $bpm_{real}$ je reálná tepová frekvence. Např. při tepu 60 tepů/min (1 Hz) je potřeba nasnímat záznam minimální vzorkovací frekvencí 2 snímky/s (2 Hz). Toto omezení platí pro samotné určení tepu, nicméně pro uživatele je video už příliš trhané.
+
+% Kdy nefunguje
+Určení a vizualizace tepu funguje dobře při denním osvětlení. Během testovacím měření zobrazeném na Obrázku \ref{fig:noise-test} se ukázalo, že postup pro určení tepu není příliš náchylný na šum. Při použití určitého umělého osvětlení na bázi zářivek algoritmus nepracuje příliš dobře i při dostatečném nasvícení. Dá se říci, že je pro aplikaci vhodnější zašumělé video za denního světla než záznam s zářivkovým nasvícením - byť kvalitním.
+
+Největším problémem pro postup je, když se během záznamu obličej příliš hýbá. Takováto videa zpravidla vedou k~nekorektním výsledkům. Bohužel nepomáhá ani stabilizace obrazu před výpočty jak bylo diskutováno v~Kapitole \ref{sec:pulse-detect}.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=120mm]{images/noise.png}
+  \end{center}
+  \caption{Na levém snímku je zobrazen snímek z~původního videa. Pro testování je uměle přidáván Gaussovský šum a tep počítán znovu. Na každém snímku je zobrazena standardní odchylka šumu $\sigma$ a výsledný tep $bpm$. I~z~velmi silně zašumělého videa, ilustrovaného pravým snímkem, se podařilo vypočítat tep spadající do korektního intervalu.}
+  \label{fig:noise-test}
+\end{figure}
+
+V~repositáři je dostupných 20 testovacích z ve složce \textbf{testing}. Pro každé testovací video je vytvořena jedna složka, ve které se nachází:
+  \begin{itemize} 
+      \item{originální video nazvané podle reálného tepu snímané osoby,}
+        \item{výsledné video s~vypočítaným tepem a jeho vizualizací,}
+      \item{snímek detekovaného obličeje a čela,}
+        \item{textový soubor s~průměrem intenzit zeleného kanálu pro každý snímek použitý pro detekci tepu,}
+        \item{ukázku jak ovlivňuje použitá maska čela výsledek,}
+        \item{porovnání výsledků při použití různých přístupů z~Kapitoly \ref{sec:detect-pulse} pro určení tepu v~závislosti na počtu použitých snímků v~tabulce ve formátu \emph{.csv}.}
+    \end{itemize}
+
 \begin{table}
-  \begin{tabularx}{\textwidth}{lllX}
-    \toprule
-    Day & Min Temp & Max Temp & Summary \\
-    \midrule
-    Monday & $13^{\circ}\mathrm{C}$ & $21^\circ\mathrm{C}$ & A
-    clear day with low wind and no adverse current advisories. \\
-    Tuesday & $11^{\circ}\mathrm{C}$ & $17^\circ\mathrm{C}$ & A
-    trough of low pressure will come from the northwest. \\
-    Wednesday & $10^{\circ}\mathrm{C}$ &
-    $21^\circ\mathrm{C}$ & Rain will spread to all parts during the
-    morning. \\
-    \bottomrule
-  \end{tabularx}
-  \caption{A weather forecast}
-  \label{tab:weather}
+\label{tab:bpm-detect-type}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}rrrrrrr@{}}
+\toprule
+\textbf{Reálný tep}  & \multicolumn{2}{c}{\textbf{Všechny kanály}} & \multicolumn{2}{c}{\textbf{Zelený kanál}} & \multicolumn{2}{c}{\textbf{Medián zel. kanálu}} \\ \midrule
+                    & Výsl. tep                & Chyba {[}\%{]}               & Výsl. tep                 & Chyba {[}\%{]}                 & Výsl. tep            & Chyba {[}\%{]}            \\
+58                  & 68                          & 11                           & 61                           & 0                              & 61                      & 0                         \\
+60                  & 58                          & 0                            & 58                           & 0                              & 58                      & 0                         \\
+62                  & 62                          & 0                            & 68                           & 5                              & 68                      & 5                         \\
+66                  & 66                          & 0                            & 66                           & 0                              & 66                      & 0                         \\
+68                  & 68                          & 0                            & 68                           & 0                              & 72                      & 0                         \\
+70                  & 78                          & 3                            & 78                           & 3                              & 78                      & 3                         \\
+72                  & 71                          & 0                            & 71                           & 0                              & 78                      & 3                         \\
+73                  & 72                          & 0                            & 75                           & 0                              & 75                      & 0                         \\
+81                  & 58                          & 25                           & 83                           & 0                              & 115                     & 35                        \\
+82                  & 57                          & 27                           & 87                           & 1                              & 90                      & 5                         \\
+
+Součet chyb &                             & 66                           &                              & 9                              &                         & 51                        \\ \bottomrule
+\end{tabular}}
+\caption{Výsledky testování rozdílných charakteristik intenzit snímků popsaných v~Kapitole \ref{sec:detect-pulse} pro určení tepu. Ve sloupci \emph{Výsl. tep} je vždy vypočítaný tep aplikací pomocí příslušného přístupu v~hlavičce. V~tomto měření ještě nebyl kladen důraz na výkon aplikace, takže nebylo nutné použít co nejmenší počet snímků pro určení.}
 \end{table}
 
-The logo of the Masaryk University is shown in Figure
-\ref{fig:mulogo1} and Figure \ref{fig:mulogo2} at pages
-\pageref{fig:mulogo1} and \pageref{fig:mulogo2}. The weather
-forecast is shown in Table \ref{tab:weather} at page
-\pageref{tab:weather}. The following chapter is Chapter
-\ref{chap:matheq} and starts at page \pageref{chap:matheq}.
-Items \ref{item:star1}, \ref{item:star2}, and
-\ref{item:star3} are starred in the following list:
-\begin{compactenum}
-  \item some text
-  \item some other text
-  \item $\star$ \label{item:star1}
-  \begin{compactenum}
-    \item some text
-    \item $\star$ \label{item:star2}
-    \item some other text
-    \begin{compactenum}
-      \item some text
-      \item some other text
-      \item yet another piece of text
-      \item $\star$ \label{item:star3}
-    \end{compactenum}
-    \item yet another piece of text
-  \end{compactenum}
-  \item yet another piece of text
-\end{compactenum}
-If your reference points to a place that has not yet been typeset,
-the \verb"\ref" command will expand to \textbf{??} during the first
-run of
-\texttt{pdflatex \jobname.tex}
-and a second run is going to be needed for the references to
-resolve. With online services -- such as Overleaf -- this is
-performed automatically.
+\begin{table}
+\label{tab:bpm-roi-type}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrr}
+\multicolumn{1}{l}{\textbf{Reálný tep záznamu}} & \multicolumn{1}{l}{\textbf{Celý snímek}} & \multicolumn{1}{l}{\textbf{Detekovaný obličej}} & \multicolumn{1}{l}{\textbf{Detekované čelo}} \\
+70                                     & 129                             & 129                                    & 78                                  \\
+72                                     & 65                              & 65                                     & 72                                  \\
+81                                     & 58                              & 58                                     & 83                                  \\
+82                                     & 57                              & 57                                     & 87   
+\end{tabular}}
+\caption{Výsledky ovlivnění výsledků při určení masky pro výpočet intenzit snímků. Princip byl popsán v~Kapitole \ref{sec:detection}. Hodnoty ilustrují situace, kdy je pro výpočet intenzit využit nejdříve celý snímek, potom oblast detekovaného obličeje a nakonec čela.}
+\end{table}
 
-\chapter{Mathematical equations}
-\label{chap:matheq}
-\TeX{} comes pre-packed with the ability to typeset inline
-equations, such as $\mathrm{e}^{ix}=\cos x+i\sin x$, and display
-equations, such as \[
-  \mathbf{A}^{-1} = \begin{bmatrix}
-  a & b \\ c & d \\
-  \end{bmatrix}^{-1} =
-  \frac{1}{\det(\mathbf{A})} \begin{bmatrix}
-  \,\,\,d & \!\!-b \\ -c & \,a \\
-  \end{bmatrix} =
-  \frac{1}{ad - bc} \begin{bmatrix}
-  \,\,\,d & \!\!-b \\ -c & \,a \\
-  \end{bmatrix}.
-\] \LaTeX{} defines the automatically numbered \texttt{equation}
-environment:
-\begin{equation}
-  \gamma Px = PAx = PAP^{-1}Px.
-\end{equation}
-The package \textsf{amsmath} provides several additional
-environments that can be used to typeset complex equations:
-\begin{enumerate}
-  \item An equation can be spread over multiple lines using the
-    \texttt{multline} environment:
-    \begin{multline}
-      a + b + c + d + e + f + b + c + d + e + f + b + c + d + e +
-f \\
-      + f + g + h + i + j + k + l + m + n + o + p + q
-    \end{multline}
 
-  \item Several aligned equations can be typeset using the
-    \texttt{align} environment:
-    \begin{align}
-              a + b &= c + d     \\
-                  u &= v + w + x \\[1ex]
-      i + j + k + l &= m
-    \end{align}
+\begin{landscape}
+\begin{table}
+\label{tab:bpm-buffer-frames}
+\resizebox{1.5 \textwidth}{!}{%
+\begin{tabular}{lllllllllllll}
+\toprule
+\multicolumn{1}{c}{Reálný tep} & \multicolumn{2}{c}{200 snímků} & \multicolumn{2}{c}{300 snímků} & \multicolumn{2}{c}{400 snímků} & \multicolumn{2}{c}{450 snímků} & \multicolumn{2}{c}{475 snímků} & \multicolumn{2}{c}{500 snímků} \\
+                                       & Hodnota    & Chyba {[}\%{]}    & Hodnota    & Chyba {[}\%{]}    & Hodnota    & Chyba {[}\%{]}    & Hodnota    & Chyba {[}\%{]}    & Hodnota    & Chyba {[}\%{]}    & Hodnota    & Chyba {[}\%{]}    \\
+58                                     & 72         & 18                & 60         & 0                 & 63         & 3                 & 60         & 0                 & 61         & 0                 & 61         & 0                 \\
+60                                     & 63         & 0                 & 60         & 0                 & 59         & 0                 & 60         & 0                 & 61         & 0                 & 58         & 0                 \\
+62                                     & 65         & 0                 & 65         & 0                 & 69         & 6                 & 68         & 5                 & 68         & 5                 & 68         & 5                 \\
+66                                     & 78         & 13                & 57         & 10                & 74         & 7                 & 73         & 6                 & 72         & 4                 & 66         & 0                 \\
+68                                     & 78         & 10                & 73         & 3                 & 74         & 4                 & 73         & 3                 & 72         & 1                 & 66         & 0                 \\
+70                                     & 135        & 82                & 130        & 76                & 79         & 7                 & 77         & 4                 & 76         & 3                 & 78         & 5                 \\
+72                                     & 79         & 4                 & 72         & 0                 & 72         & 0                 & 71         & 0                 & 71         & 0                 & 72         & 0                 \\
+73                                     & 86         & 12                & 77         & 0                 & 76         & 0                 & 74         & 0                 & 73         & 0                 & 75         & 0                 \\
+81                                     & 63         & 18                & 60         & 22                & 86         & 1                 & 84         & 0                 & 83         & 0                 & 83         & 0                 \\
+82                                     & 60         & 23                & 60         & 23                & 55         & 30                & 56         & 28                & 57         & 27                & 87         & 1                 \\
+součet dílčích chyb                    &            & 180               &            & 134               &            & 58                &            & 46                &            & 40                &            & 11               
+\end{tabular}}
+\caption{Výsledky měření pro určení minimálního počtu snímků pro určení tepu. Pro každý záznam je několikrát určen tep pokaždé s~jiným počtem snímků.}
+\end{table}
+\end{landscape}
 
-  \item The \texttt{alignat} environment is similar to
-    \texttt{align}, but it doesn't insert horizontal spaces between
-    the individual columns:
-    \begin{alignat}{2}
-      a + b + c &+ d       &   &= 0 \\
-              e &+ f + g   &   &= 5
-    \end{alignat}
 
-  \item Much like chapter, sections, tables, figures, or list
-    items, equations -- such as \eqref{eq:first} and
-    \eqref{eq:mine} -- can also be labeled and referenced:
-    \begin{alignat}{4}
-      b_{11}x_1 &+ b_{12}x_2  &  &+ b_{13}x_3  &  &             &
-        &= y_1,                   \label{eq:first} \\
-      b_{21}x_1 &+ b_{22}x_2  &  &             &  &+ b_{24}x_4  &
-        &= y_2. \tag{My equation} \label{eq:mine}
-    \end{alignat}
+\chapter{Závěr}
+Podařilo se vytvořit funkční aplikaci pro detekci a následnou vizualizaci tepu, s možností výběru více režimů. Samotný režim s~využitím webkamery je velice náročný na hardwarové vybavení stroje, na kterém je používán, proto pravděpodobně nebude fungovat na starších hardwarových sestavách. Postup řešení byl obecně velmi náročný na výkon, proto bylo nutné hojně využívat vícevláknové programování pro ulehčení výpočtů. Aplikace umožňuje ve všech režimech uložit výstupní video ve formátu \emph{.avi}.
 
-  \item The \texttt{gather} environment makes it possible to
-    typeset several equations without any alignment:
-    \begin{gather}
-      \psi = \psi\psi, \\
-      \eta = \eta\eta\eta\eta\eta\eta, \\
-      \theta = \theta.
-    \end{gather}
+Při splnění požadavků diskutovaných v~Kapitole \ref{sec:measure} byl u~většiny případů tep určen korektně, s~maximální odchylkou 5\% tepů/min. Detekce tepu nefunguje korektně pro záznamy, v kterých snímaná osoba příliš hýba obličejem, např. při snímání fyzické zátěži. Pro korektní určení tepu je potřeba nejméně 500 snímků, což při vzorkovací frekvenci odpovídá přibližně 17 sekundám, což je doba po kterou je potřeba, aby snímaná osoba co nejméně hýbala obličejem.
 
-  \item Several cases can be typeset using the \texttt{cases}
-    environment:
-    \begin{equation}
-      |y| = \begin{cases}
-        \phantom-y & \text{if }z\geq0, \\
-                -y & \text{otherwise}.
-      \end{cases}
-    \end{equation}
-\end{enumerate}
-For the complete list of environments and commands, consult the
-\textsf{amsmath} package manual\footnote{
-  See \url{http://mirrors.ctan.org/macros/latex/required/amslatex/math/amsldoc.pdf}.
-  The \texttt{\textbackslash url} command is provided by the
-  package \textsf{url}.
-}.
+Dalším vylepšení do budoucna se nabízí v~řešení problémů příliš velkých pohybů obličeje při snímání, které pv současném stavu končí nekorektním určením tepu. Pro vylepšení vizualizace tepu by bylo možné zpřesnit obdélníkovou masku obličeje přímo na masku obličeje např. pomocí detekce hran a~vizualizaci zobrazovat jen do této masky. Z~hlediska výkonu by bylo možné přesunout část výpočtu na grafickou kartu a~tím celou aplikaci zrychlit, především potom při využití webkamery.
 
-\chapter{\textnormal{We \textsf{have} \texttt{several} \textsc{fonts}
-  \textit{at} \textbf{disposal}}}
-The serified roman font is used for the main body of the text.
-\textit{Italics are typically used to denote emphasis or
-quotations.} \texttt{The teletype font is typically used for source
-code listings.} The \textbf{bold}, \textsc{small-caps} and
-\textsf{sans-serif} variants of the base roman font can be used to
-denote specific types of information.
-
-\tiny We \scriptsize can \footnotesize also \small change \normalsize
-the \large font \Large size, \LARGE although \huge it \Huge
-is \huge usually \LARGE not \Large necessary.\normalsize
-
-A wide variety of mathematical fonts is also available, such as: \[
-  \mathrm{ABC}, \mathcal{ABC}, \mathbf{ABC}, \mathsf{ABC},
-  \mathit{ABC}, \mathtt{ABC}
-\] By loading the \textsf{amsfonts} packages, several additional
-fonts will become available: \[
-  \mathfrak{ABC}, \mathbb{ABC}
-\] Many other mathematical fonts are available\footnote{
-  See \url{http://tex.stackexchange.com/a/58124/70941}.
-}.
-
-\chapter{Inserting the bibliography}
-After loading the \texttt{biblatex} package and linking a
-bibliography data\-base file to the document using the
-\verb"\addbibresource" command, you can start citing the entries.
-This is just dummy text \cite{inbook-full} lightly sprinkled with
-citations \cite[p.~123]{incollection-full}.  Several sources can be
-cited at once \cite{whole-collection, manual-minimal,manual-full}.
-\citetitle{inbook-full} was written by \citeauthor{inbook-full} in
-\citeyear{inbook-full}. We can also produce \textcite{inbook-full}
-or%% Let us define a compound command:
-\def\citeauthoryear#1{(\textcite{#1},~\citeyear{#1})}
-\citeauthoryear{inbook-full}. The full bibliographic citation is:
-\emph{\fullcite{inbook-full}}. We can easily insert a bibliographic
-citation into the footnote\footfullcite{inbook-full}.
-
-The \verb"\nocite" command will not generate any
-output\nocite{booklet-full}, but it will insert its argument into
-the bibliography. The \verb"\nocite{*}" command will insert all the
-records in the bibliography database file into the bibliography.
-Try uncommenting the command
-%% \nocite{*}
-and watch the bibliography section come apart at the seams.
-
-When typesetting the document for the first time, citing a
-\texttt{work} will expand to [\textbf{work}] and the
-\verb"\printbibliography" command will produce no output. It is now
-necessary to generate the bibliography by running \texttt{biber
-\jobname.bcf} from the command line and then by typesetting the
-document again twice. During the first run, the bibliography
-section and the citations will be typeset, and in the second run,
-the bibliography section will appear in the table of contents.
-
-The \texttt{biber} command needs to be executed from within the
-directory, where the \LaTeX\ source file is located. In Windows,
-the command line can be opened in a directory by holding down the
-\keys{Shift} key and by clicking the right mouse button while
-hovering the cursor over a directory.  Select the \menu{Open
-Command Window Here} option in the context menu that opens shortly
-afterwards.
-
-With online services -- such as Overleaf -- all commands are
-executed automatically.
-
-{\csname captions\languagename\endcsname %% Temporarily override
-%% the BibLaTeX localization with the original babel definitions.
-\makeatletter %% Use the correct localization of the quotations.
-  \thesis@selectLocale{\thesis@locale}\makeatother
-\printbibliography[heading=bibintoc]} %% Print the bibliography.
-
-\chapter{Inserting the index}
-After using the \verb"\makeindex" macro and loading the
-\texttt{makeidx} package that provides additional indexing
-commands, index entries can be created by issuing the \verb"\index"
-command. \index{dummy text|(}It is possible to create ranged index
-entries, which will encompass a span of text.\index{dummy text|)}
-To insert complex typographic material -- such as $\alpha$
-\index{alpha@$\alpha$} or \TeX{} \index{TeX@\TeX} --
-into the index, you need to specify a text string, which will
-determine how the entry will be sorted. It is also possible to
-create hierarchal entries. \index{vehicles!trucks}
-\index{vehicles!speed cars}
-
-After typesetting the document, it is necessary to generate the
-index by running
-\begin{center}%
-  \texttt{texindy -I latex -C utf8 -L }$\langle$\textit{locale}%
-  $\rangle$\texttt{ \jobname.idx}
-\end{center}
-from the command line, where $\langle$\textit{locale}$\rangle$
-corresponds to the main locale of your thesis -- such as
-\texttt{english}, and then typesetting the document again.
-
-The \texttt{texindy} command needs to be executed from within the
-directory, where the \LaTeX\ source file is located. In Windows,
-the command line can be opened in a directory by holding down the
-\keys{Shift} key and by clicking the right mouse button while
-hovering the cursor over a directory. Select the \menu{Open Command
-Window Here} option in the context menu that opens shortly
-afterwards.
-
-With online services -- such as Overleaf -- the commands are
-executed automatically, although the locale may be erroneously
-detected, or the \texttt{makeindex} tool (which is only able to
-sort entries that contain digits and letters of the English
-alphabet) may be used instead of \texttt{texindy}. In either case,
-the index will be ill-sorted.
 
 \makeatletter\thesis@blocks@clear\makeatother
 \phantomsection %% Print the index and insert it into the
@@ -687,3 +646,5 @@ the index will be ill-sorted.
 Here you can insert the appendices of your thesis.
 
 \end{document}
+
+
