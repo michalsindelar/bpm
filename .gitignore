@@ -14,3 +14,5 @@ output/
 cmake_install.cmake
 CMakeCache.txt
 Makefile
+
+bpm.xcodeproj/
