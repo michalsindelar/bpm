@@ -26,8 +26,7 @@ void Middleware::compute(vector<Mat> videoBuffer){
     // At first fill class buffer with copies!
     this->setVideoBuffer(videoBuffer);
 
-    // Level for masking
-    // TODO: level omit
+    // Max Level for masking
     int level = 6;
 
     // Resizing should be set according to face SIZE !!
@@ -37,11 +36,9 @@ void Middleware::compute(vector<Mat> videoBuffer){
     bpmVideoProcessor.computeBpm();
     updateBpm(bpmVideoProcessor.getBpm());
 
-
     // Magic inside class
     bpmVideoProcessor.computeAmplifiedMask();
     this->visualization = bpmVideoProcessor.getOut();
-
 
     // Resize and crop video to similar size as face in gui
     resizeCropVideo(this->visualization, this->resizedFace.width);

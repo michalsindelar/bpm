@@ -183,7 +183,6 @@ class BpmVideoProcessor {
 
 
                 // Keep only red channel
-                // TODO: Do weights make sense?
                 amplifyChannels(outputFrame, 80.0, 0.1f, 0.1f);
 
                 dst.push_back(outputFrame);
@@ -341,9 +340,8 @@ class BpmVideoProcessor {
         }
 
         static void amplifyVideo(vector<Mat> &video, vector<Mat> &out, int doubleDownscalingLevel, int level, int bpm, double fps) {
-            // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
-            // TODO: process all but in threads
 
+            // Use only first FRAMES_FOR_VISUALIZATION frames - enough for fine amplification
             vector<vector<Mat> > pyramid =  vector <vector <Mat> >();
             vector<Mat> temporalSpatial = vector<Mat> ();
 
@@ -359,18 +357,6 @@ class BpmVideoProcessor {
 
             // GDown pyramid for masking video
             buildGDownPyramid(video , pyramid, level);
-
-            /*
-            if (true) {
-        //        saveIntensities(countIntensities(forehead), (string) DATA_DIR+"/full-0.txt");
-        //        saveIntensities(countIntensities(forehead, 0, 1, 0), (string) DATA_DIR+"/green-0.txt");
-                // Measure
-        //        ofstream dataFile;
-        //        dataFile.open((string) DATA_DIR + "/measure_72.txt", ios::app);
-        //        printIterationRow(blurred, framesCount, fps, 72, dataFile);
-        //        dataFile.close();
-            }
-             */
 
             // Create beating mask for visualization
             BpmVideoProcessor::amplifyFrequencyInPyramid(pyramid, temporalSpatial, out, bpm, level, fps);

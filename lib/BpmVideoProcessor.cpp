@@ -19,8 +19,6 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
 
     // Detect forehead
     this->getForeheadSkinArea();
-
-
 }
 
 
@@ -53,7 +51,6 @@ void BpmVideoProcessor::computeAmplifiedMask() {
         z.push_back(new boost::thread(&ThreadWorker::amplifyVideo, boost::ref(workerParts[i]),
                                       vector<Mat>(faceVideo.begin() + start, faceVideo.begin() + end),
                                       doubleDownscalingLevel, level, bpm, fps));
-
     }
 
     // Wait for threads
@@ -73,9 +70,12 @@ void BpmVideoProcessor::computeAmplifiedMask() {
 
 void BpmVideoProcessor::computeBpm(int computeType) {
 
-    // Stabilize forehead
-    // TODO: Compare results
-    stabilizeVideo(this->forehead);
+    // Not working experiments
+    // 1. Stabilize forehead
+    // stabilizeVideo(this->forehead);
+    // 2. Supress global changes
+    // vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
+    // suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
 
     switch (computeType) {
         case AVG_COMPUTE:
@@ -90,21 +90,7 @@ void BpmVideoProcessor::computeBpm(int computeType) {
             break;
     }
 
-//    vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
-    //suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
-
     this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
-
-//    stabilizeVideo(this->forehead);
-
-//    vector <double> globalIntensities = countOutsideIntensities(origVideo, faceRoi, 0, 1, 0, computeType);;
-//suppressGlobalChanges(this->foreheadIntensities, globalIntensities);
-
-
-    if (DATA_LOGGING) {
-        saveIntensities(this->foreheadIntensities, (string) DATA_DIR+"/localIntensities.txt");
-//        saveIntensities(globalIntensities, (string) DATA_DIR+"/global.txt");
-     }
 
 }
 void BpmVideoProcessor::setMaxPyramidLevel() {
@@ -131,7 +117,7 @@ void BpmVideoProcessor::getForeheadSkinArea() {
 
     // At first we try to detect forehead using eyes detection 10x
     int detected = false;
-    // TODO: Check how long does it take
+
     for (int i = 0; i < faceVideo.size(); i++) {
         if (Detector::detectForeheadFromFaceViaEyesDetection(faceVideo[i], this->foreheadRoi)) {
             detected = true;
@@ -145,17 +131,6 @@ void BpmVideoProcessor::getForeheadSkinArea() {
     }
 
     cropToVideo(faceVideo, forehead, foreheadRoi);
-
-    if (true){
-        for (int i = 0; i < 10; i++) {
-            Mat tmp = faceVideo[i];
-            rectangle(tmp, Point(foreheadRoi.x, foreheadRoi.y), Point(foreheadRoi.x + foreheadRoi.width, foreheadRoi.y + foreheadRoi.height), Scalar(255,255,255));
-            imwrite( (string) PROJECT_DIR+"/images/forehead/head-sking"+to_string(i)+".jpg", tmp );
-            imwrite( (string) PROJECT_DIR+"/images/forehead/forehead"+to_string(i)+".jpg", forehead[i]);
-            imwrite( (string) PROJECT_DIR+"/images/forehead/head"+to_string(i)+".jpg", faceVideo[i] );
-        }
-    }
-
 }
 
 // Currently not used -> same results from only one level == orig video
