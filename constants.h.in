@@ -8,8 +8,8 @@
 #define VIDEO_SAMPLES_DIR DATA_DIR+"/videoSamples"
 
 // How many frames should be in buffer (amplification process together)
-#define BUFFER_FRAMES 425
-#define FRAMES_FOR_VISUALIZATION 200
+#define BUFFER_FRAMES 500
+#define FRAMES_FOR_VISUALIZATION 250
 
 // Experimental settings of fps
 #define FPS 30

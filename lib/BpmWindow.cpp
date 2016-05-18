@@ -69,13 +69,6 @@ void Bpm::init(int sourceMode, int maskMode) {
     this->measuringIteration = 20;
     this->workerIteration = 0;
 
-    if (false) {
-        ofstream dataFile;
-        dataFile.open((string) DATA_DIR + "/measure_72.txt", ios::out);
-        printIterationHead(dataFile);
-        dataFile.close();
-    }
-
     // Initial state
     this->state = DETECTING;
 
@@ -155,9 +148,7 @@ int Bpm::runRealVideoMode() {
         controlMiddleWare(index);
 
         // Show bpmVisualization video after initialization compute
-        // TODO: Check if this is performance ok
         visualize(in, out, index);
-
 
         // Start to save file after visualization is detected
         if (saveOutput && this->state == VISUALIZATION_DETECTED) {
@@ -170,7 +161,7 @@ int Bpm::runRealVideoMode() {
         imshow(this->OSWindowName, window);
 
         // Handling frame rate & time for closing window
-        if (waitKey(1) >= 0) break;
+        if (waitKey(1) == 27) break;
     }
 
     destroyAllWindows();
@@ -201,7 +192,6 @@ int Bpm::runStaticVideoMode() {
     input.set(CV_CAP_PROP_POS_MSEC, 0);
 
     // Buffer video frames
-    // TODO: ffmpeg || libancv library for faster buffering?
     int bufferFrames = 0;
     while(true) {
         input >> in;
@@ -261,7 +251,7 @@ int Bpm::runStaticVideoMode() {
         imshow(this->OSWindowName, window);
 
         // Handling frame rate & time for closing window
-        if (waitKey(1) >= 0) break;
+        if (waitKey(1) == 27) break;
     }
 
     return 0;

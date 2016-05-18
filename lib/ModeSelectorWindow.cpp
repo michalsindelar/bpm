@@ -12,7 +12,7 @@ ModeSelectorWindow::ModeSelectorWindow(QWidget *parent)
     this->saveOutput = false;
 
     // Default camera
-    this->mode = CAMERA_SOURCE_MODE;
+    this->mode = 0;
 
     this->inputFilePath = QString();
     this->outputFolderPath = QString();

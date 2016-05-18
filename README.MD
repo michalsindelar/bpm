@@ -22,10 +22,6 @@ Prefered way via brew.
 `brew linkapps qt5`
 
 `brew install moc` - auto mock needed for qt
-### Linux
-[ ] TODO: Confirm OS X instructions working
-### Windows
-[ ] TODO: Check compatibility
 
 ---
 
@@ -46,3 +42,7 @@ For better performance you could try increasing priority of process (especially 
 `$ nice -n -10 ./bpm`
 
 Enjoy!
+
+### Windows
+[ ] TODO: Check compatibility
+
