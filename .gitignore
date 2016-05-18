@@ -1,13 +1,11 @@
 build/
 .idea/
-config.h
-intensitities.txt
 data/
 resources/
 bpm.xcodeproj/
 CMakeFiles/
 images/
-
+constants.h
 
 testing/
 thesis/
