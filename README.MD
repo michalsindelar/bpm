@@ -9,7 +9,7 @@ The aim of this thesis is an implementation of an application, which detects hea
 
 Thesis at first explores physiological consequences of blood circulation in the skin, which could be suitable for detecting the heartbeat. After comparing different options is analysis of skin's hue fluctuation due to blood circulation chosen for detecting. Then theoretical describing possible technique for detecting final heartbeat from measured hue changes follows. This technique uses temporal frequency domain created with Fourier transform. Final heartbeat is gathered from found strongest frequency in acceptable beat interval set from statistical data about human heartbeat.
 
-In practical part is described implemented application in OpenCV environment and demonstrated its functionality on input record. Also, requirements on input record are discussed here. It must have at least 500 frames with minimal sampling rate twice higher than the actual heartbeat frequency. It is very important to assure stable position of the measured face. In the end are described measurements of heartbeat from various records which accomplish input's requirements. Maximal measurement error is about 5\% bpm.
+In practical part is described implemented application in OpenCV environment and demonstrated its functionality on input record. Also, requirements on input record are discussed here. It must have at least 500 frames with minimal sampling rate twice higher than the actual heartbeat frequency. It is very important to assure stable position of the measured face. In the end are described measurements of heartbeat from various records which accomplish input's requirements. Maximal measurement error is about 5% bpm.
 
 
 ## Output samples

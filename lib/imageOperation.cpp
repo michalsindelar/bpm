@@ -314,58 +314,6 @@ Mat maskingCoeffs(int width, float fl, float fh, double fps) {
     return row;
 }
 
-
-
-/**
-* BINOMIAL 5 - kernel
-* 1 4 6 4 1
-* 4 16 24 16 4
-* 6 24 36 24 6
-* 4 16 24 16 4
-* 1 4 6 4 1
-*/
-Mat binom5Kernel() {
-    Mat kernel(5, 5, CV_32FC1);
-
-    // 1st row
-    kernel.at<float>(0,0) = 1.0f;
-    kernel.at<float>(1,0) = 4.0f;
-    kernel.at<float>(2,0) = 6.0f;
-    kernel.at<float>(3,0) = 4.0f;
-    kernel.at<float>(4,0) = 1.0f;
-
-    // 2nd row
-    kernel.at<float>(0,1) = 4.0f;
-    kernel.at<float>(1,1) = 16.0f;
-    kernel.at<float>(2,1) = 24.0f;
-    kernel.at<float>(3,1) = 16.0f;
-    kernel.at<float>(4,1) = 4.0f;
-
-    // 3rd row
-    kernel.at<float>(0,2) = 6.0f;
-    kernel.at<float>(1,2) = 24.0f;
-    kernel.at<float>(2,2) = 36.0f;
-    kernel.at<float>(3,2) = 24.0f;
-    kernel.at<float>(4,2) = 6.0f;
-
-    // 4th row
-    kernel.at<float>(0,3) = 4.0f;
-    kernel.at<float>(1,3) = 16.0f;
-    kernel.at<float>(2,3) = 24.0f;
-    kernel.at<float>(3,3) = 16.0f;
-    kernel.at<float>(4,3) = 4.0f;
-
-    // 5th row
-    kernel.at<float>(0,4) = 1.0f;
-    kernel.at<float>(1,4) = 4.0f;
-    kernel.at<float>(2,4) = 6.0f;
-    kernel.at<float>(3,4) = 4.0f;
-    kernel.at<float>(4,4) = 1.0f;
-
-    kernel = kernel/256.0f;
-
-    return kernel;
-}
 void blurDn(Mat & frame, int level, Mat kernel) {
     if (level == 1) return;
     if (level > 1) blurDn(frame, level-1, kernel);
