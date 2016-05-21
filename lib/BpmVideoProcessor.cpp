@@ -21,7 +21,9 @@ BpmVideoProcessor::BpmVideoProcessor(vector<Mat> video, float fl, float fh, int 
     this->getForeheadSkinArea();
 }
 
-
+/**
+ * Creates amplified mask based on Eulerian magnification
+ */
 void BpmVideoProcessor::computeAmplifiedMask() {
 
     // Set pyr down resizing
@@ -68,6 +70,9 @@ void BpmVideoProcessor::computeAmplifiedMask() {
     }
 }
 
+/**
+ * Handles whole porcess of computing heartbeaet
+ */
 void BpmVideoProcessor::computeBpm(int computeType) {
 
     // Not working experiments
@@ -93,6 +98,10 @@ void BpmVideoProcessor::computeBpm(int computeType) {
     this->bpm = (int) round(findStrongestRowFreq(foreheadIntensities, framesCount, fps));
 
 }
+
+/**
+ * Automatically set how many level should have pyramid
+ */
 void BpmVideoProcessor::setMaxPyramidLevel() {
 
     // Respect further downscaling of video
@@ -113,6 +122,9 @@ void BpmVideoProcessor::setMaxPyramidLevel() {
     }
 }
 
+/**
+ * Detects forehead mask
+ */
 void BpmVideoProcessor::getForeheadSkinArea() {
 
     // At first we try to detect forehead using eyes detection 10x
@@ -133,7 +145,9 @@ void BpmVideoProcessor::getForeheadSkinArea() {
     cropToVideo(faceVideo, forehead, foreheadRoi);
 }
 
-// Currently not used -> same results from only one level == orig video
+/**
+ * Computes bpm in each level of gaussian pyramid
+ */
 void BpmVideoProcessor::computeBpmFromPyramid() {
     float bpmSum = 0;
     int bpmLevel = 0;

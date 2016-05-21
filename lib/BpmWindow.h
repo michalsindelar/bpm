@@ -108,14 +108,12 @@ class Bpm {
 
         // Run modes
         int run();
-        int runCameraMode();
         int runRealVideoMode();
         int runStaticVideoMode();
 
         // Buffer
         void pushInputToBuffer(Mat frame, int index);
         void pushInputToBuffer(Mat in);
-        bool isBufferFull();
 
         // Middleware control
         void controlMiddleWare(int index);
@@ -129,11 +127,8 @@ class Bpm {
 
         // Detectors control
         void handleDetector(Mat in, int type);
-        bool isFaceDetected(Rect face);
-        bool isForeheadDetected();
         void updateFace(Rect src, Rect & dst);
         void updateTmpFace(Rect src);
-        void mergeFaces();
         void updateFps(std::chrono::time_point<std::chrono::high_resolution_clock> & prev, int index);
 
         // OS Window
@@ -152,6 +147,18 @@ class Bpm {
         void setOutputFilePath(const string &outputFilePath) {
             Bpm::outputFilePath = outputFilePath;
             Bpm::saveOutput = true;
+        }
+
+        bool isFaceDetected(Rect face) {
+            return !!face.x;
+        }
+
+        bool isForeheadDetected() {
+            return !!Bpm::forehead.x;
+        }
+
+        bool isBufferFull() {
+            return Bpm::videoBuffer.size() == Bpm::bufferFrames;
         }
 };
 

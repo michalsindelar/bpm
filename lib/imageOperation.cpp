@@ -1,6 +1,6 @@
 #include "imageOperation.h"
 
-Mat resizeImage (Mat image, const double width, int interpolation) {
+Mat resizeImage(Mat image, const double width, int interpolation) {
     // Check if image has size
     if (image.rows == 0) {
         return image;
@@ -29,7 +29,6 @@ int setDoubleDownscalingLevel(int origWidth, int resultWidth) {
     return doubleDownscalingLevel;
 }
 
-
 Mat resizeImage(Mat image, const double width) {
     return resizeImage(image, width, INTER_LINEAR);
 }
@@ -40,7 +39,6 @@ void resizeCropVideo(vector<Mat> &video, int width) {
         video[i] = cropImageBorder(video[i], ERASED_BORDER_WIDTH);
     }
 }
-
 
 void pyrUpVideo(vector<Mat> &video, vector<Mat> &dst, Size size, int level) {
     for (int i = 0; i < video.size(); i++) {
@@ -72,7 +70,6 @@ void unifyMatSize(Mat & frame, Size unifiedSize) {
     }
 }
 
-
 void normalizeVid(vector<Mat> &video, int min, int max, int type) {
     for (int i = 0; i < video.size(); i++) {
         normalize(video[i], video[i], min, max, type);
@@ -82,9 +79,7 @@ void normalizeVid(vector<Mat> &video, int min, int max, int type) {
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];
-//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
         dst.push_back(cropImageBorder(tmp, borderWidth));
-//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
     }
 }
 
@@ -94,9 +89,7 @@ void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
 
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];
-//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
         dst.push_back(tmp(roi));
-//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
     }
 }
 
@@ -118,34 +111,6 @@ void handleRoiPlacement(Rect &roi, const Size frame, int erasedBorder) {
     roi.height = (maxYIndex > frame.height) ?
                  roi.height - (maxYIndex - frame.height) :
                  roi.height;
-}
-
-void fakeBeating (Mat image, double index, int maxValue, Rect face) {
-
-    double alpha = 1;
-    double brightness = 30*sin(index * 4);
-
-    // Mask init
-    Mat mask; image.copyTo(mask);
-    mask.setTo(Scalar(0,0,0));
-
-    // Mask filled
-    Point center( face.x + int(face.width*0.5f), face.y + int(face.height * 0.5f));
-    ellipse( mask, center, Size( int(face.width*0.6f), int(face.height*0.7f)), 0, 0, 360, Scalar( 255, 255, 255 ), -1, 8, 0 );
-
-    // Blur mask
-    // GaussianBlur(mask, newMask, Size(10,10), 0, 0);
-    
-    for( int y = 0; y < image.rows; y++ ){
-        for( int x = 0; x < image.cols; x++ ) {
-            if (mask.at<Vec3b>(y,x)[1] == 0) continue;
-            
-            for( int c = 0; c < 3; c++ ) {
-                image.at<Vec3b>(y,x)[c] =
-                saturate_cast<uchar>( alpha*( image.at<Vec3b>(y,x)[c] ) + brightness );
-            }
-        }
-    }
 }
 
 Mat cropImageBorder (Mat image, int borderWidth) {
