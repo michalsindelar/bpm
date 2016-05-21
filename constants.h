@@ -65,7 +65,7 @@
 
 // BPM COMPUTE TYPE
 #define AVG_COMPUTE 210
-#define MEAN_COMPUTE 220
+#define MEDIAN_COMPUTE 220
 
 // Generate app data (images)
 #define DATA_LOGGING false
