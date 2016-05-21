@@ -506,8 +506,11 @@ void Bpm::renderStateBar(int index) {
     this->stateBar = Scalar(246,246,246);
     putText(
             this->stateBar,
-            this->stateNotes[this->state]
-            + "..." + (this->state == FETCHING ? ("Needed more " + to_string(this->fps) + " frames") : ""),
+            "Use ESC key to exit, " +
+            this->stateNotes[this->state] +
+            (this->state == FETCHING ? ("Needed more " + to_string(max(bufferFrames - index, 0)) + " frames") : "") +
+            (this->sourceMode == CAMERA_SOURCE_MODE  ? (", Sampling " + to_string(this->fps) + " fps") : "")
+            ,
             Point(20, 20),
             FONT_HERSHEY_SIMPLEX,
             0.5f, // font scale
