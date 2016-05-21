@@ -81,12 +81,12 @@ void BpmVideoProcessor::computeBpm(int computeType) {
         case AVG_COMPUTE:
             this->foreheadIntensities = countIntensities(forehead, 0, 1, 0);
             break;
-        case MEAN_COMPUTE:
-            this->foreheadIntensities = countMeanValues(forehead, GREEN_CHANNEL);
+        case MEDIAN_COMPUTE:
+            this->foreheadIntensities = countMedianValues(forehead, GREEN_CHANNEL);
             break;
         // Default mean values
         default:
-            this->foreheadIntensities = countMeanValues(forehead, GREEN_CHANNEL);
+            this->foreheadIntensities = countMedianValues(forehead, GREEN_CHANNEL);
             break;
     }
 

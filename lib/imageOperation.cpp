@@ -454,7 +454,7 @@ vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, fl
                     g * frameSum[GREEN_CHANNEL] +
                     b * frameSum[BLUE_CHANNEL];
             break;
-            case MEAN_COMPUTE:
+            case MEDIAN_COMPUTE:
                 frameMeans = mean(strips);
                 intensities.at(i) =
                     r * frameMeans[RED_CHANNEL] +
@@ -471,7 +471,7 @@ vector<double> countOutsideIntensities(vector<Mat> video, Rect face, float r, fl
     return intensities;
 }
 
-vector<double> countMeanValues(vector<Mat> video, int channel) {
+vector<double> countMedianValues(vector<Mat> video, int channel) {
     vector <double> values(video.size());
     for (int i = 0; i < video.size(); i++) {
         Scalar color = mean(video[i]);
