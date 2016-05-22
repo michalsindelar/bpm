@@ -4,10 +4,9 @@
 
 #include "BpmWindow.h"
 
-// Constructor
-
-
-
+/**
+ * Initialization of gui window
+ */
 void Bpm::init(int sourceMode, int maskMode) {
 
     this->sourceMode = sourceMode;
@@ -79,6 +78,9 @@ void Bpm::init(int sourceMode, int maskMode) {
     this->stateBar = Mat((int) round(frameSize.height * 0.1), 2*frameSize.width, CV_8UC3);
 }
 
+/**
+ * Starts computes in given mode
+ */
 int Bpm::run() {
     // Application window
     namedWindow( this->OSWindowName, CV_WINDOW_AUTOSIZE);
@@ -91,12 +93,13 @@ int Bpm::run() {
         case CAMERA_SOURCE_MODE:
             return runRealVideoMode();
         default:
-            return runRealVideoMode();
+            return 0;
     }
-
-    return 0;
 }
 
+/**
+ * Real video mode used for both video input and webcamera
+ */
 int Bpm::runRealVideoMode() {
 
     // Timestamps
@@ -169,6 +172,10 @@ int Bpm::runRealVideoMode() {
     return 0;
 }
 
+/**
+ * Static video mode
+ * Whole video is processed and than figured
+ */
 int Bpm::runStaticVideoMode() {
 
     // Fill buffer from whole video
@@ -257,18 +264,27 @@ int Bpm::runStaticVideoMode() {
     return 0;
 }
 
+/**
+ * Handles pushing into buffer
+ */
 void Bpm::pushInputToBuffer(Mat in, int index) {
     if (index > CAMERA_INIT && this->isFaceDetected(this->fullFace)) {
         pushInputToBuffer(in);
     }
 }
 
+/**
+ * Handles pushing into buffer
+ */
 void Bpm::pushInputToBuffer(Mat in) {
     if (this->isFaceDetected(this->fullFace)) {
         videoBuffer.push_back(in);
     }
 }
 
+/**
+ * Control state of middleware
+ */
 void Bpm::controlMiddleWare(int index) {
     bool shouldCompute = (index > CAMERA_INIT + this->bufferFrames && this->isBufferFull() && !bpmWorker.isWorking());
     bool shouldUpdateMiddleWare = (!this->bpmWorker.isWorking() && this->bpmWorker.getInitialFlag() && this->isBufferFull());
@@ -305,15 +321,20 @@ void Bpm::controlMiddleWare(int index) {
     }
 }
 
+/**
+ * Starts computing in own thread
+ */
 void Bpm::compute(bool thread) {
     if (thread) {
         boost::thread workerThread(&Middleware::compute, &bpmWorker, videoBuffer);
-        mergeFaces();
     } else {
         bpmWorker.compute(videoBuffer);
     }
 }
 
+/**
+ * Handles what can be visualized
+ */
 void Bpm::visualize(Mat & in, Mat & out, int index) {
 
     if (state == FETCHING) {
@@ -336,7 +357,9 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
 
 }
 
-
+/**
+ * Visualizes detected face and forehead
+ */
 void Bpm::visualizeDetected(Mat &in) {
     if (isFaceDetected(this->tmpFace)) {
         printRectOnFrame(in, tmpFace, Scalar(255,255,255));
@@ -351,6 +374,9 @@ void Bpm::visualizeDetected(Mat &in) {
     }
 }
 
+/**
+ * Visualizes amplified mask
+ */
 void Bpm::visualizeAmplified(Mat &in, Mat &out, int index, bool origSize) {
     // Orig full size vs Resized
     Rect face = origSize ? this->fullFace : this->resizedFace;
@@ -377,11 +403,14 @@ void Bpm::visualizeAmplified(Mat &in, Mat &out, int index, bool origSize) {
             Scalar(200, 200, 200), 2);
 }
 
-
+/**
+ * Visualizes amplified mask
+ */
 void Bpm::visualizeAmplified(Mat &in, Mat &out, int index) {
     // Default face is tmp face
     visualizeAmplified(in, out, index, false);
 }
+
 
 void Bpm::updateFace(Rect src, Rect& dst) {
     // After initial detection update only position (not size)
@@ -393,6 +422,10 @@ void Bpm::updateFace(Rect src, Rect& dst) {
     }
 }
 
+/**
+ * Handles updating detected face
+ * Several conditions must be filled to prevent cotinuous updating
+ */
 void Bpm::updateTmpFace(Rect src) {
     float variation = DETECTOR_UPDATE_VARIATION;
     if (abs(this->tmpFace.x - src.x) > this->tmpFace.x * variation) {
@@ -409,22 +442,10 @@ void Bpm::updateTmpFace(Rect src) {
     }
 }
 
-void Bpm::mergeFaces() {
-//    this->face = this->tmpFace;
-}
 
-bool Bpm::isFaceDetected(Rect face) {
-    return !!face.x;
-}
-
-bool Bpm::isForeheadDetected() {
-    return !!this->forehead.x;
-}
-
-bool Bpm::isBufferFull() {
-    return videoBuffer.size() == this->bufferFrames;
-}
-
+/**
+ * Handles all detectors in own threads
+ */
 void Bpm::handleDetector(Mat in, int type) {
 
     // Detect face in own thread

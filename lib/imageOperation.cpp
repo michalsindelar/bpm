@@ -1,6 +1,6 @@
 #include "imageOperation.h"
 
-Mat resizeImage (Mat image, const double width, int interpolation) {
+Mat resizeImage(Mat image, const double width, int interpolation) {
     // Check if image has size
     if (image.rows == 0) {
         return image;
@@ -29,7 +29,6 @@ int setDoubleDownscalingLevel(int origWidth, int resultWidth) {
     return doubleDownscalingLevel;
 }
 
-
 Mat resizeImage(Mat image, const double width) {
     return resizeImage(image, width, INTER_LINEAR);
 }
@@ -40,7 +39,6 @@ void resizeCropVideo(vector<Mat> &video, int width) {
         video[i] = cropImageBorder(video[i], ERASED_BORDER_WIDTH);
     }
 }
-
 
 void pyrUpVideo(vector<Mat> &video, vector<Mat> &dst, Size size, int level) {
     for (int i = 0; i < video.size(); i++) {
@@ -72,7 +70,6 @@ void unifyMatSize(Mat & frame, Size unifiedSize) {
     }
 }
 
-
 void normalizeVid(vector<Mat> &video, int min, int max, int type) {
     for (int i = 0; i < video.size(); i++) {
         normalize(video[i], video[i], min, max, type);
@@ -82,9 +79,7 @@ void normalizeVid(vector<Mat> &video, int min, int max, int type) {
 void cropToVideo(vector<Mat> src, vector<Mat>& dst, int borderWidth) {
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];
-//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
         dst.push_back(cropImageBorder(tmp, borderWidth));
-//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
     }
 }
 
@@ -94,9 +89,7 @@ void cropToVideo(vector<Mat> src, vector<Mat>& dst, Rect roi) {
 
     for (int i = 0; i < src.size(); i++) {
         Mat tmp = src[i];
-//        imwrite((string)PROJECT_DIR+"/images/before.jpg", tmp );
         dst.push_back(tmp(roi));
-//        imwrite((string)PROJECT_DIR+"/images/after.jpg", dst[i] );
     }
 }
 
@@ -118,34 +111,6 @@ void handleRoiPlacement(Rect &roi, const Size frame, int erasedBorder) {
     roi.height = (maxYIndex > frame.height) ?
                  roi.height - (maxYIndex - frame.height) :
                  roi.height;
-}
-
-void fakeBeating (Mat image, double index, int maxValue, Rect face) {
-
-    double alpha = 1;
-    double brightness = 30*sin(index * 4);
-
-    // Mask init
-    Mat mask; image.copyTo(mask);
-    mask.setTo(Scalar(0,0,0));
-
-    // Mask filled
-    Point center( face.x + int(face.width*0.5f), face.y + int(face.height * 0.5f));
-    ellipse( mask, center, Size( int(face.width*0.6f), int(face.height*0.7f)), 0, 0, 360, Scalar( 255, 255, 255 ), -1, 8, 0 );
-
-    // Blur mask
-    // GaussianBlur(mask, newMask, Size(10,10), 0, 0);
-    
-    for( int y = 0; y < image.rows; y++ ){
-        for( int x = 0; x < image.cols; x++ ) {
-            if (mask.at<Vec3b>(y,x)[1] == 0) continue;
-            
-            for( int c = 0; c < 3; c++ ) {
-                image.at<Vec3b>(y,x)[c] =
-                saturate_cast<uchar>( alpha*( image.at<Vec3b>(y,x)[c] ) + brightness );
-            }
-        }
-    }
 }
 
 Mat cropImageBorder (Mat image, int borderWidth) {
@@ -349,58 +314,6 @@ Mat maskingCoeffs(int width, float fl, float fh, double fps) {
     return row;
 }
 
-
-
-/**
-* BINOMIAL 5 - kernel
-* 1 4 6 4 1
-* 4 16 24 16 4
-* 6 24 36 24 6
-* 4 16 24 16 4
-* 1 4 6 4 1
-*/
-Mat binom5Kernel() {
-    Mat kernel(5, 5, CV_32FC1);
-
-    // 1st row
-    kernel.at<float>(0,0) = 1.0f;
-    kernel.at<float>(1,0) = 4.0f;
-    kernel.at<float>(2,0) = 6.0f;
-    kernel.at<float>(3,0) = 4.0f;
-    kernel.at<float>(4,0) = 1.0f;
-
-    // 2nd row
-    kernel.at<float>(0,1) = 4.0f;
-    kernel.at<float>(1,1) = 16.0f;
-    kernel.at<float>(2,1) = 24.0f;
-    kernel.at<float>(3,1) = 16.0f;
-    kernel.at<float>(4,1) = 4.0f;
-
-    // 3rd row
-    kernel.at<float>(0,2) = 6.0f;
-    kernel.at<float>(1,2) = 24.0f;
-    kernel.at<float>(2,2) = 36.0f;
-    kernel.at<float>(3,2) = 24.0f;
-    kernel.at<float>(4,2) = 6.0f;
-
-    // 4th row
-    kernel.at<float>(0,3) = 4.0f;
-    kernel.at<float>(1,3) = 16.0f;
-    kernel.at<float>(2,3) = 24.0f;
-    kernel.at<float>(3,3) = 16.0f;
-    kernel.at<float>(4,3) = 4.0f;
-
-    // 5th row
-    kernel.at<float>(0,4) = 1.0f;
-    kernel.at<float>(1,4) = 4.0f;
-    kernel.at<float>(2,4) = 6.0f;
-    kernel.at<float>(3,4) = 4.0f;
-    kernel.at<float>(4,4) = 1.0f;
-
-    kernel = kernel/256.0f;
-
-    return kernel;
-}
 void blurDn(Mat & frame, int level, Mat kernel) {
     if (level == 1) return;
     if (level > 1) blurDn(frame, level-1, kernel);

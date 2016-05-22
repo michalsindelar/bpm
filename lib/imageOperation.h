@@ -20,7 +20,6 @@
 using namespace cv;
 using namespace std;
 
-// TODO: clean!!
 // Resizing
 Mat resizeImage (Mat image, const double width);
 Mat resizeImage (Mat image, const double width, int interpolation);
@@ -31,7 +30,6 @@ int setDoubleDownscalingLevel(int origWidth, int resultWidth);
 // Blurring
 void pyrUpVideo(vector<Mat>& video, Size size, int level);
 void pyrUpVideo(vector<Mat> &video, vector<Mat> &dst, Size size, int level);
-Mat binom5Kernel();
 void blurDn(Mat & frame, int level, Mat kernel);
 
 // Cropping
@@ -63,7 +61,6 @@ float freqToBpmMapper(double fps, int framesCount, int index);
 float findStrongestRowFreq(vector<double> row, int framesCount, double fps);
 float findStrongestRowFreq(Mat row, int framesCount, double fps);
 
-// TODO: rename according to numpy
 Mat generateFreqMask(float freq, int framesCount, double fps);
 Mat maskingCoeffs(int width, float fl, float fh, double fps);
 

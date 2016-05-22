@@ -5,15 +5,16 @@
 #include "Middleware.h"
 
 Middleware::Middleware() {
-    // Default fps
-    this->fps = FPS;
-
+    this->fps = FPS; // overwritten from bpm window
     this->initialFlag = false;
     this->working = false;
     this->bpm = 0;
     this->bpmDetected = false;
 };
 
+/**
+ * Initialize compute
+ */
 void Middleware::compute(vector<Mat> videoBuffer){
     // Just to be extra sure worker is ready
     if (this->working) return;
@@ -50,6 +51,10 @@ void Middleware::compute(vector<Mat> videoBuffer){
 
 };
 
+/**
+ * Updates current bpm with respect to previous value
+ * prevents big changes
+ */
 void Middleware::updateBpm(int bpm) {
     // Prevent big changes
     this->bpm = this->bpm ? (this->bpm + bpm) / 2 : bpm;
