@@ -25,7 +25,7 @@ Video samples outputs are available in external [cloud storage](https://app.box.
 
 
 ## How to run
-Install all dependencies at first.
+Install all dependencies at first. You can try run executable file `bpm` on OS X.
 
 ### Unix based system
 Prefered way with brew (linuxbrew).
@@ -52,7 +52,7 @@ Then run following commands:
 
 `./bpm`
 
-For better performance you could try increasing priority of process (especially when using webcamera).
+For better performance you could try increasing priority of process especially when using webcamera.
 
 `$ nice -n -10 ./bpm`
 
