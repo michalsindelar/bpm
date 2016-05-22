@@ -343,7 +343,7 @@ void Bpm::visualize(Mat & in, Mat & out, int index) {
     else if (state == BPM_DETECTED) {
         out = in.clone();
         putText(out, to_string(this->bpmWorker.getBpm()), Point(out.cols / 2 - 30, out.rows - 30), FONT_HERSHEY_SIMPLEX, 1.0,
-                Scalar(200, 200, 200), 2);
+                Scalar(200, 200, 200), 3);
     }
     else if (state == VISUALIZATION_DETECTED) {
         visualizeAmplified(in, out, index);
@@ -529,8 +529,9 @@ void Bpm::renderStateBar(int index) {
             this->stateBar,
             "Use ESC key to exit, " +
             this->stateNotes[this->state] +
-            (this->state == FETCHING ? ("Needed more " + to_string(max(bufferFrames - index, 0)) + " frames") : "") +
-            (this->sourceMode == CAMERA_SOURCE_MODE  ? (", Sampling " + to_string(this->fps) + " fps") : "")
+            (this->state == FETCHING ? (" Needed more " + to_string(max(bufferFrames - index, 0)) + " frames") : "") +
+            (this->sourceMode == CAMERA_SOURCE_MODE  ? (", Sampling " + to_string((int) round(this->fps)) + " fps") : "") +
+            (this->state == BPM_DETECTED  ? (to_string(this->bpmWorker.getBpm()) + " bpm") : "")
             ,
             Point(20, 20),
             FONT_HERSHEY_SIMPLEX,
