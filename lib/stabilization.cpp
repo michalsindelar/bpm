@@ -125,7 +125,7 @@ int stabilizeVideo(vector<Mat>& src) {
         int count = 0;
 
         for(int j=-SMOOTHING_RADIUS; j <= SMOOTHING_RADIUS; j++) {
-            if((i+j >= 0) && i+j < trajectory.size()) {
+            if(i+j < trajectory.size()) {
                 sum_x += trajectory[i+j].x;
                 sum_y += trajectory[i+j].y;
                 sum_a += trajectory[i+j].a;
