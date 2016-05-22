@@ -1,6 +1,5 @@
 build/
 .idea/
-data/
 resources/
 bpm.xcodeproj/
 CMakeFiles/
