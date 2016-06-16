@@ -15,6 +15,18 @@ In practical part is described implemented application in OpenCV environment and
 ## Output samples
 Video samples outputs are available in external [cloud storage](https://app.box.com/s/mrfgf7ximq980dwm3mwnod3dhpzm185w). Folders and video files are named based on real heartbeat measured via blood pressure monitor. Several files are generated in each folder such as measured csv table comparing different settings for detecting pulse, different number of used frames etc.
 
+
+
+## Further projects and visions
+- [BPMonitor](https://github.com/michalsindelar/BPMonitor)
+    - Experimental application to monitor heart rate during work in front of notebook using integrated camera, which informs user about potential dangerous heart rate.
+- [Awake Monitor](https://github.com/michalsindelar/awakeMonitor)
+    - Vision how to prevent driver to fall asleep via heart rate monitoring.
+- [SMirror](https://github.com/michalsindelar/SMirror)
+    - Long time vision of smart mirror with face detection authentication, heart rate detect, widgets on dashbord and lot more.
+
+
+
 ## Dependencies
 * C++
 * OpenCv > 2
@@ -58,8 +70,6 @@ For better performance you could try increasing priority of process especially w
 
 Enjoy!
 
-### Windows
-Application is developed on OS X, but in multi-platform environment, therefor no problems expected on Windows.
-
-[ ] TODO: Check compatibility
+## TODO list
+[ ] Fix Windows compatibility
 
