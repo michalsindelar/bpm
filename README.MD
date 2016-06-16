@@ -15,6 +15,7 @@ In practical part is described implemented application in OpenCV environment and
 ## Output samples
 Video samples outputs are available in external [cloud storage](https://app.box.com/s/mrfgf7ximq980dwm3mwnod3dhpzm185w). Folders and video files are named based on real heartbeat measured via blood pressure monitor. Several files are generated in each folder such as measured csv table comparing different settings for detecting pulse, different number of used frames etc.
 
+![Screenshot sample](documentation/images_samples/app-result.png)
 
 
 ## Further projects and visions
